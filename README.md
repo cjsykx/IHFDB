@@ -76,4 +76,11 @@ IHFPredicate *predicate = [[IHFPredicate alloc] initWithFormat:@"name = %@",@"�
 跟上述的类似，也有级联关系
 -(void)updateWithPredicate:(IHFPredicate *)predicate isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion;
 
+级联默认是YES， 也就是会根据你的Patient下带的如Bed模型一起进行更新，如果是NOT的话，也只会更新Patient的基本数据,关系表不做更新。
+
+
+--------------------------- 也可以通过简书 http://www.jianshu.com/p/1f6e56ed76de 也看看说明。
+有问题的话assues我163邮箱：cjsykx@163.com. 谢谢！
+
+
 
