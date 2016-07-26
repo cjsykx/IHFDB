@@ -15,4 +15,13 @@
              @"drugs" : [Drug class],
              };
 }
+
++(NSDictionary *)propertyNamesForWhiteList{
+    
+    return @{
+             @"age" : @"ages",
+             };
+}
+
+
 @end

@@ -28,8 +28,10 @@ static NSString *_update = @"UPDATE";
 // delete 
 static NSString *_delete = @"DELETE FROM";
 
-
 static FMDatabaseQueue *_queue; /**< main queue */
+
+@interface IHFDataBaseExecute ()
+@end
 
 @implementation IHFDataBaseExecute
 
@@ -52,11 +54,15 @@ static FMDatabaseQueue *_queue; /**< main queue */
     _sqliteName = sqliteName;
     
     // create FMDatabaseQueue
-    NSString *dataBasePath = [[NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject] stringByAppendingPathComponent:sqliteName];
+    _queue = [FMDatabaseQueue databaseQueueWithPath:self.dataBasePath];
+}
+
+-(NSString *)dataBasePath{
     
-    NSLog(@"dataBasePath = %@",dataBasePath);
-    
-    _queue = [FMDatabaseQueue databaseQueueWithPath:dataBasePath];
+    if (!_dataBasePath) {
+        _dataBasePath = [[NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject] stringByAppendingPathComponent:_sqliteName];
+    }    
+    return _dataBasePath;
 }
 
 #pragma mark - data base operation
@@ -148,15 +154,15 @@ static FMDatabaseQueue *_queue; /**< main queue */
     
     if(predicate){
         if (predicate.predicateFormat) {
-            [selectSql appendFormat:@"WHERE %@",predicate.predicateFormat];
+            [selectSql appendFormat:@"WHERE %@ ",predicate.predicateFormat];
         }
         
         if (predicate.orderBy) {
-            [selectSql appendFormat:@"ORDER BY %@",predicate.orderBy];
+            [selectSql appendFormat:@"ORDER BY %@ ",predicate.orderBy];
         }
     }
     
-    NSLog(@"predicate = %@",selectSql);
+//    NSLog(@"predicate = %@",selectSql);
     return [self executeQueryWithClass:newClass sqlStatement:selectSql inDataBase:db];
 }
 
@@ -225,12 +231,13 @@ static FMDatabaseQueue *_queue; /**< main queue */
     
     BOOL rollBack = NO;
     
-    return [self executeUpdateWithModels:relationTableArray useTransaction:YES inTableName:tableName inDataBase:db rollback:&rollBack updateCompletion:^(BOOL success, IHFRelationTable *relationTable, FMDatabase *db, BOOL *rollback) {
+    BOOL result =  [self executeUpdateWithModels:relationTableArray useTransaction:YES inTableName:tableName inDataBase:db rollback:&rollBack updateCompletion:^(BOOL success, IHFRelationTable *relationTable, FMDatabase *db, BOOL *rollback) {
         
         [self enumerateSourceObject:relationTable inDataBase:db rollBack:rollback];
-        
-        if (completion) completion(success);
     }];
+    
+    if (completion) completion(result);
+    return result;
 }
 
 -(BOOL)executeUpdateModelArray:(NSArray<IHFRelationTable *> *)modelArray inTableName:(NSString *)tableName inDataBase:(FMDatabase *)db{

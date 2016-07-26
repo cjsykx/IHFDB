@@ -197,6 +197,8 @@ const NSString *IHFDBPrimaryKey_ObjectIDKey                = @"objectIDKey";
     return [execute executeQueryWithClass:self sqlStatement:sqlStatement inDataBase:db];
 }
 
+
+
 // Update contain : update , delete and insert
 +(void)executeUpdateWithSqlStatement:(NSString *)sqlStatement{
     [self executeUpdateWithSqlStatement:sqlStatement completeBlock:nil];

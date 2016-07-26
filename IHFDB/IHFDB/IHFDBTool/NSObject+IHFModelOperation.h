@@ -10,10 +10,19 @@
 #import "IHFProperty.h"
 #import "IHFDBObjectDataSource.h"
 @interface NSObject (IHFModelOperation)<IHFDBObejctDataSource>
-//model转字典
-- (NSDictionary*)getDictionary;
+
+// Model convert to dict
+-(NSDictionary *)dictionaryBeConvertedFromModel;
+
+
+// model Array convert to dict Array
+-(NSArray <NSDictionary *> *)dictionaryArrayBeConvertedFromModelArray;
+
 //字典转model
-+(id)modelWithDictionary:(NSDictionary *)dict;
++(instancetype)modelBeConvertFromDictionary:(NSDictionary *)dict;
+
++(NSArray <id> *)modelArrayBeConvertFromDictionaryArray:(NSArray <NSDictionary *> *)dict;
+
 
 /** return all property name */
 
