@@ -23,5 +23,9 @@
              };
 }
 
++(NSString *)customPrimarykey{
+    
+    return @"patientID";
+}
 
 @end

@@ -22,4 +22,6 @@
 
 @property (strong,nonatomic) NSNumber * idCard ;
 @property (strong,nonatomic) Bed *bed;
+
+@property (strong,nonatomic) NSString * patientID ;
 @end

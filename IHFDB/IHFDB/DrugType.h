@@ -14,5 +14,5 @@
 @property (copy,nonatomic) NSString *type;
 @property (copy,nonatomic) NSString *doctorType;
 @property (strong,nonatomic) TypeCatagoty *typeCatagoty;
-
+@property (strong,nonatomic) NSNumber *drugTypeId;
 @end

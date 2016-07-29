@@ -31,11 +31,11 @@
 /** Return the property names which tou want to change column name */
 + (NSDictionary * _Nullable)propertyNamesForWhiteList;
 
-//TODO
+//TODO : May the custom primary key is array!
 
 /**
  * Return custom primary key set by user 
-   It will be use for judge if the data base exist the same data , so that not to insert !
+   It will be use for judge if the data base exist the same data , so that not to insert ,instead of update!
  */
 + (NSString * _Nullable)customPrimarykey;
 

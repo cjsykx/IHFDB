@@ -12,4 +12,6 @@
 @property (copy,nonatomic) NSString *name;
 @property (strong,nonatomic) NSNumber *price;
 @property (strong,nonatomic) DrugType *drugType;
+@property (strong,nonatomic) NSNumber *drugID;
+
 @end

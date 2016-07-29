@@ -89,6 +89,8 @@ Table name is the class name
 +(void)deleteWithPredicate:(IHFPredicate *)predicate completeBlock:(IHFDBCompleteBlock)completion;
 +(void)deleteAllDidCompleteBlock:(IHFDBCompleteBlock)completion;
 
+
+
 /** Cascade : Default yes , means not only delete the model with fit the predicate ,but also delete the all it relation model! */
 
 +(void)deleteWithPredicate:(IHFPredicate *)predicate isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion;
@@ -103,6 +105,16 @@ Table name is the class name
 
 +(void)deleteWithPredicate:(IHFPredicate *)predicate inTableName:(NSString *)tableName inDataBase:(FMDatabase *)db isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion;
 +(void)deleteAllInTableName:(NSString *)tableName inDataBase:(FMDatabase *)db isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion;
+
+/** Delete dirty data which is the network not but your sqlite have with predicate , if the colunm Dirty is 0 , it will be delete!
+ Warning : If data update or insert in DB , it will change the dirty is 1! But if call the method , it will reset it 0! So you'd better call the method after network request success and DO update or insert ,it will help you to delete the dirty data。
+ */
+
++(void)deleteDirtyDataWithPredicate:(IHFPredicate *)predicate;
++(void)deleteDirtyDataWithPredicate:(IHFPredicate *)predicate isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion;
+
++(void)deleteDirtyDataWithPredicate:(IHFPredicate *)predicate inTableName:(NSString *)tableName inDataBase:(FMDatabase *)db isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion;
+
 
 // Sql statement by user
 

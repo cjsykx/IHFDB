@@ -9,8 +9,6 @@
 #import "NSObject+IHFDB.h"
 #import "IHFDataBaseExecute.h"
 
-#define sqliteName @"IHFDB.sqlite"
-
 const NSString *IHFDBPrimaryKey_ObjectIDKey                = @"objectIDKey";
 
 @implementation NSObject (IHFDB)
@@ -34,7 +32,7 @@ const NSString *IHFDBPrimaryKey_ObjectIDKey                = @"objectIDKey";
 }
 
 +(BOOL)createTableWithName:(NSString *)tableName inDataBase:(id)db CompleteBlock:(IHFDBCompleteBlock)completion{
-    IHFDataBaseExecute *execute = [[IHFDataBaseExecute alloc] initWithSqliteName:sqliteName];
+    IHFDataBaseExecute *execute = [IHFDataBaseExecute shareDataBaseExecute];
     return [execute createTableWithClass:self customTableName:tableName inDataBase:db completeBlock:completion];
 }
 
@@ -57,7 +55,7 @@ const NSString *IHFDBPrimaryKey_ObjectIDKey                = @"objectIDKey";
 
 +(NSArray *)selectWithPredicate:(IHFPredicate *)predicate inTableName:(NSString *)tableName inDataBase:(FMDatabase *)db{
     
-    IHFDataBaseExecute *execute = [[IHFDataBaseExecute alloc] initWithSqliteName:sqliteName];
+    IHFDataBaseExecute *execute = [IHFDataBaseExecute shareDataBaseExecute];
     return [execute selectFromClass:self predicate:predicate customTableName:tableName inDataBase:db];
 
 }
@@ -105,7 +103,7 @@ const NSString *IHFDBPrimaryKey_ObjectIDKey                = @"objectIDKey";
 
 +(BOOL)saveModelArray:(NSArray *)modelArray inTableName:(NSString *)tableName inDataBase:(FMDatabase *)db completeBlock:(IHFDBCompleteBlock)completion{
     
-    IHFDataBaseExecute *execute = [[IHFDataBaseExecute alloc] initWithSqliteName:sqliteName];
+    IHFDataBaseExecute *execute = [IHFDataBaseExecute shareDataBaseExecute];
     return [execute insertIntoClassWithModelArray:modelArray inTableName:tableName inDataBase:db completeBlock:completion];
 }
 
@@ -133,7 +131,7 @@ const NSString *IHFDBPrimaryKey_ObjectIDKey                = @"objectIDKey";
 
 -(void)updateWithPredicate:(IHFPredicate *)predicate isCascade:(BOOL)cascade inTableName:(NSString *)tableName inDataBase:(FMDatabase *)db completeBlock:(IHFDBCompleteBlock)completion{
     
-    IHFDataBaseExecute *execute = [[IHFDataBaseExecute alloc] initWithSqliteName:sqliteName];
+    IHFDataBaseExecute *execute = [IHFDataBaseExecute shareDataBaseExecute];
     [execute updateModel:self predicate:predicate customTableName:tableName inDataBase:db isCascade:cascade completeBlock:completion ];
 }
 
@@ -175,7 +173,7 @@ const NSString *IHFDBPrimaryKey_ObjectIDKey                = @"objectIDKey";
 
 +(void)deleteWithPredicate:(IHFPredicate *)predicate inTableName:(NSString *)tableName inDataBase:(FMDatabase *)db isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion{
     
-    IHFDataBaseExecute *execute = [[IHFDataBaseExecute alloc] initWithSqliteName:sqliteName];
+    IHFDataBaseExecute *execute = [IHFDataBaseExecute shareDataBaseExecute];
     [execute deleteFromClass:self predicate:predicate customTableName:tableName inDataBase:db isCascade:cascade completeBlock:completion];
 }
 
@@ -193,11 +191,9 @@ const NSString *IHFDBPrimaryKey_ObjectIDKey                = @"objectIDKey";
 
 +(NSArray *)executeQueryWithSqlStatement:(NSString *)sqlStatement inDataBase:(FMDatabase *)db{
     
-    IHFDataBaseExecute *execute = [[IHFDataBaseExecute alloc] initWithSqliteName:sqliteName];
+    IHFDataBaseExecute *execute = [IHFDataBaseExecute shareDataBaseExecute];
     return [execute executeQueryWithClass:self sqlStatement:sqlStatement inDataBase:db];
 }
-
-
 
 // Update contain : update , delete and insert
 +(void)executeUpdateWithSqlStatement:(NSString *)sqlStatement{
@@ -206,7 +202,7 @@ const NSString *IHFDBPrimaryKey_ObjectIDKey                = @"objectIDKey";
 
 +(void)executeUpdateWithSqlStatement:(NSString *)sqlStatement completeBlock:(IHFDBCompleteBlock)completion{
     
-    IHFDataBaseExecute *execute = [[IHFDataBaseExecute alloc] initWithSqliteName:sqliteName];
+    IHFDataBaseExecute *execute = [IHFDataBaseExecute shareDataBaseExecute];
     [execute executeUpdateWithClass:self sqlStatement:sqlStatement completeBlock:completion];
 }
 

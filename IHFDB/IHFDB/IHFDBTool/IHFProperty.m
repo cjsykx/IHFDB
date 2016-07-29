@@ -49,7 +49,11 @@
 }
 
 -(IHFPropertyType)type{
-    return [self typeConvertFormString:self.typeString];
+    
+    if (!_type) {
+        _type = [self typeConvertFormString:self.typeString];
+    }
+    return _type;
 }
 
 -(BOOL)isTypeOfFundation{
@@ -93,6 +97,5 @@
     }
     return _fundationTypes;
 }
-
 
 @end

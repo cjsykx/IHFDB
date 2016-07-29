@@ -9,4 +9,9 @@
 #import "DrugType.h"
 @implementation DrugType
 
++(NSString *)customPrimarykey{
+    
+    return @"drugTypeId";
+}
+
 @end

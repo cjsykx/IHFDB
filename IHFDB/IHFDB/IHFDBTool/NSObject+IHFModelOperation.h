@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 #import "IHFProperty.h"
 #import "IHFDBObjectDataSource.h"
+
 @interface NSObject (IHFModelOperation)<IHFDBObejctDataSource>
 
 // Model convert to dict
@@ -41,10 +42,6 @@
 /** return type name in sqlite with the type  */
 
 -(NSString *)sqlTypeNameWithTypeName:(NSString *)TypeName;
-
-/** Give the model assignment */
-
--(void)giveWithDict:(NSDictionary *)dic;
 
 /** Get value with property name */
 

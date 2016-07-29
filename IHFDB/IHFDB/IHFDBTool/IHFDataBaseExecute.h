@@ -17,8 +17,8 @@
 @interface IHFDataBaseExecute : NSObject<IHFDBObejctDataSource>
 
 @property (copy,nonatomic) NSString *sqliteName;
-@property (copy,nonatomic) NSString *dataBasePath;
 
++ (instancetype)shareDataBaseExecute;
 
 +(instancetype)dataBaseWithSqliteName:(NSString *)sqliteName;
 -(instancetype)initWithSqliteName:(NSString *)SqliteName;

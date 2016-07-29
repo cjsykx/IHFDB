@@ -41,6 +41,11 @@ typedef NS_OPTIONS(NSUInteger, IHFPropertyType) {
 @property (nonatomic, assign) IHFPropertyType type;
 @property (nonatomic, copy) NSString *typeString;
 
+
+@property (nonatomic, assign) Class classInArray; /**< If the property type is Array , the CLASS is contain in the Array */
+@property (nonatomic, assign) Class classInModel; /**< If the property type is Model , the CLASS is the relation Model */
+
+
 @property (nonatomic, assign,readonly,getter=isTypeOfFundation) BOOL typeOfFundation; /**< If the type from fundation , Object type ! such as 'NSString' */
 
 @property (nonatomic, assign,readonly,getter=isTypeOfBasicData) BOOL typeOfBasicData; /**< Basic data types , not object,such as int ,bool */
