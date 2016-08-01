@@ -329,7 +329,7 @@ static NSMutableDictionary *_allowedPropertyNamesDict;
         [theClass enumeratePropertiesUsingBlock:^(IHFProperty *property, NSUInteger idx, BOOL *stop) {
             
             id value = [model getValueWithPropertName:property.propertyName];
-            if(!value) return ;
+            if(!value || value == [NSNull null]) return ;
             
             IHFPropertyType propertyType = property.type;
 
@@ -368,7 +368,7 @@ static NSMutableDictionary *_allowedPropertyNamesDict;
     
     __weak typeof(self) weakSelf = self;
     __block NSMutableArray *models = [NSMutableArray array];
-
+    
     [dictArray enumerateObjectsUsingBlock:^(NSDictionary * _Nonnull dict, NSUInteger idx, BOOL * _Nonnull stop) {
         
         id model = [[weakSelf alloc] init];
@@ -376,7 +376,7 @@ static NSMutableDictionary *_allowedPropertyNamesDict;
         [weakSelf enumeratePropertiesUsingBlock:^(IHFProperty *property, NSUInteger idx, BOOL *stop) {
             
             id value = [dict objectForKey:property.propertyName];
-            if(!value) return ;
+            if(!value || value == [NSNull null]) return ;
             IHFPropertyType propertyType = property.type;
 
             if (propertyType == IHFPropertyTypeArray) { // Deal with array
@@ -402,15 +402,16 @@ static NSMutableDictionary *_allowedPropertyNamesDict;
 
         [models addObject:model];
     }];
+
     return models;
 }
 
-static id objectType(NSString *typeString)
-{
+static id objectType(NSString *typeString){
     if ([typeString containsString:@"@"]) {
         NSArray* strArray = [typeString componentsSeparatedByString:@"\""];
         if (strArray.count >= 1) {
             return strArray[1];
+            
         }else
             return nil;
     }else

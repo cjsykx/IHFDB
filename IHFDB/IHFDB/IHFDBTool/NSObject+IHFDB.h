@@ -32,10 +32,19 @@ Table name is the class name
 +(BOOL)createTableWithName:(NSString *)tableName inDataBase:(FMDatabase *)db;
 
 
-/** Select */
+/** Select
+ recursive : Default -> YES . If is not , it only fetch the basic property , not the relation!
+ */
 
 +(NSArray *)selectWithPredicate:(IHFPredicate *)predicate;
 +(NSArray *)selectAll;
+
++(NSArray *)selectWithPredicate:(IHFPredicate *)predicate isRecursive:(BOOL)recursive;
++(NSArray *)selectAllWithRecursive:(BOOL)recursive;
+
++(NSArray *)selectWithPredicate:(IHFPredicate *)predicate inTableName:(NSString *)tableName inDataBase:(FMDatabase *)db isRecursive:(BOOL)recursive;
++(NSArray *)selectAllInTableName:(NSString *)tableName inDataBase:(FMDatabase *)db isRecursive:(BOOL)recursive;
+
 
 +(NSArray *)selectWithPredicate:(IHFPredicate *)predicate inTableName:(NSString *)tableName inDataBase:(FMDatabase *)db;
 +(NSArray *)selectAllInTableName:(NSString *)tableName inDataBase:(FMDatabase *)db;
@@ -111,6 +120,8 @@ Table name is the class name
  */
 
 +(void)deleteDirtyDataWithPredicate:(IHFPredicate *)predicate;
++(void)deleteDirtyDataWithPredicate:(IHFPredicate *)predicate completeBlock:(IHFDBCompleteBlock)completion;
+
 +(void)deleteDirtyDataWithPredicate:(IHFPredicate *)predicate isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion;
 
 +(void)deleteDirtyDataWithPredicate:(IHFPredicate *)predicate inTableName:(NSString *)tableName inDataBase:(FMDatabase *)db isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion;

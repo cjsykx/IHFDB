@@ -10,6 +10,8 @@
 #import "IHFDataBaseExecute.h"
 
 const NSString *IHFDBPrimaryKey_ObjectIDKey                = @"objectIDKey";
+const NSString *IHFDB_DirtyKey                             = @"dirtyKey";
+
 
 @implementation NSObject (IHFDB)
 
@@ -49,20 +51,32 @@ const NSString *IHFDBPrimaryKey_ObjectIDKey                = @"objectIDKey";
     return [self selectWithPredicate:predicate inTableName:nil inDataBase:nil];
 }
 
++(NSArray *)selectWithPredicate:(IHFPredicate *)predicate isRecursive:(BOOL)recursive{
+    return [self selectWithPredicate:predicate inTableName:nil inDataBase:nil isRecursive:recursive];
+}
+
++(NSArray *)selectAllWithRecursive:(BOOL)recursive{
+    return [self selectAllInTableName:nil inDataBase:nil isRecursive:recursive];
+}
+
 +(NSArray *)selectAll{
     return [self selectWithPredicate:nil];
 }
 
 +(NSArray *)selectWithPredicate:(IHFPredicate *)predicate inTableName:(NSString *)tableName inDataBase:(FMDatabase *)db{
     
-    IHFDataBaseExecute *execute = [IHFDataBaseExecute shareDataBaseExecute];
-    return [execute selectFromClass:self predicate:predicate customTableName:tableName inDataBase:db];
-
+    return [self selectWithPredicate:predicate inTableName:tableName inDataBase:db isRecursive:YES];
 }
+
 +(NSArray *)selectAllInTableName:(NSString *)tableName inDataBase:(FMDatabase *)db{
     return [self selectWithPredicate:nil inTableName:tableName inDataBase:db];
 }
 
++(NSArray *)selectWithPredicate:(IHFPredicate *)predicate inTableName:(NSString *)tableName inDataBase:(FMDatabase *)db isRecursive:(BOOL)recursive{
+    
+    IHFDataBaseExecute *execute = [IHFDataBaseExecute shareDataBaseExecute];
+    return [execute selectFromClass:self predicate:predicate customTableName:tableName inDataBase:db isRecursive:recursive];
+}
 
 // insert
 -(BOOL)save{
@@ -181,7 +195,6 @@ const NSString *IHFDBPrimaryKey_ObjectIDKey                = @"objectIDKey";
     [self deleteWithPredicate:nil inTableName:tableName inDataBase:db isCascade:cascade completeBlock:completion];
 }
 
-
 // Sql statement by user
 
 // Select
@@ -206,6 +219,26 @@ const NSString *IHFDBPrimaryKey_ObjectIDKey                = @"objectIDKey";
     [execute executeUpdateWithClass:self sqlStatement:sqlStatement completeBlock:completion];
 }
 
+#pragma mark - delete dirty data
++(void)deleteDirtyDataWithPredicate:(IHFPredicate *)predicate{
+    [self deleteDirtyDataWithPredicate:predicate completeBlock:nil];
+}
+
++(void)deleteDirtyDataWithPredicate:(IHFPredicate *)predicate completeBlock:(IHFDBCompleteBlock)completion{
+    [self deleteDirtyDataWithPredicate:predicate isCascade:YES completeBlock:completion];
+}
+
++(void)deleteDirtyDataWithPredicate:(IHFPredicate *)predicate isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion{
+    [self deleteDirtyDataWithPredicate:predicate inTableName:nil inDataBase:nil isCascade:YES completeBlock:completion];
+}
+
++(void)deleteDirtyDataWithPredicate:(IHFPredicate *)predicate inTableName:(NSString *)tableName inDataBase:(FMDatabase *)db isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion{
+    
+    IHFDataBaseExecute *execute = [IHFDataBaseExecute shareDataBaseExecute];
+    [execute deleteDirtyDataFromClass:self predicate:predicate customTableName:tableName inDataBase:db isCascade:cascade completeBlock:completion];
+
+}
+
 #pragma mark - protocol method
 
 -(void)setObjectID:(NSInteger)objectID{
@@ -221,6 +254,21 @@ const NSString *IHFDBPrimaryKey_ObjectIDKey                = @"objectIDKey";
     }
     return 0;
 }
+
+-(void)setDirty:(NSInteger)dirty{
+    
+    objc_setAssociatedObject(self, &IHFDB_DirtyKey, @(dirty), OBJC_ASSOCIATION_COPY_NONATOMIC);
+}
+
+-(NSInteger)dirty{
+    id dirty = objc_getAssociatedObject(self, &IHFDB_DirtyKey);
+    
+    if ([dirty isKindOfClass:[NSNumber class]]) {
+        return [dirty integerValue];
+    }
+    return 0;
+}
+
 
 
 @end

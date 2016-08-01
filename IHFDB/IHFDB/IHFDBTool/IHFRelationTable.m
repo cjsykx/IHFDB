@@ -76,8 +76,8 @@
 
 -(NSArray *)selectRelationsInDataBase:(FMDatabase *)db{
     
+    // Fetch the Object ID in relation table
     IHFPredicate *predicate = [[IHFPredicate alloc] initWithFormat:@"sourceObjectID = %ld",(long)self.sourceObjectID];
-    
     NSArray *relations = [[self class] selectWithPredicate:predicate inTableName:[self tableName] inDataBase:db];
     
     __block NSMutableArray *selectArray = [NSMutableArray array];
@@ -88,11 +88,12 @@
         if (![obj isKindOfClass:[IHFRelationTable class]]) return ;
         
         IHFRelationTable *table = obj;
-        
-        IHFPredicate *predicate = [[IHFPredicate alloc] initWithFormat:@"ObjectID = %ld",(long)table.destinationObjectID];
 
+        NSString *predicateStr = [NSString stringWithFormat:@"%@ = %ld",_primaryKey,(long)table.destinationObjectID];
+        IHFPredicate *predicate = [IHFPredicate predicateWithString:predicateStr];
+
+        // run loop!
         NSArray *relationModels = [[weakSelf.destinationObject class] selectWithPredicate:predicate inTableName:nil inDataBase:db];
-        
         if ([relationModels count]) { // If have count , because predicate is ObjectID , so there is only one object!
             [selectArray addObject:[relationModels lastObject]];
         }

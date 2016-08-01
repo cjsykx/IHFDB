@@ -59,6 +59,7 @@
     
     // 2.成员类型
     NSString *attrs = @(property_getAttributes(property));
+
     NSUInteger dotLoc = [attrs rangeOfString:@","].location;
     NSString *code = nil;
     NSUInteger loc = 1;
@@ -68,6 +69,7 @@
         code = [attrs substringWithRange:NSMakeRange(loc, dotLoc - loc)];
     }
     _type = [MJPropertyType cachedTypeWithCode:code];
+
 }
 
 /**

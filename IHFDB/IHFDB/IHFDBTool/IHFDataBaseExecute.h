@@ -13,6 +13,11 @@
 #import "NSObject+IHFDB.h"
 #import "IHFDBObjectDataSource.h"
 #import "IHFRelationTable.h"
+
+// Primary key and dirty Are the Column auto create in the sqlite
+static NSString *_primaryKey = @"IHFDB_ObjectID";
+static NSString *_dirtyKey = @"IHFDB_Dirty";
+
 @class IHFRelationTable;
 @interface IHFDataBaseExecute : NSObject<IHFDBObejctDataSource>
 
@@ -36,7 +41,7 @@ typedef void(^IHFDBUpdateCompleteBlock)(BOOL success,IHFRelationTable *relationT
 
 // Select
 
--(NSArray<id<IHFDBObejctDataSource>> *)selectFromClass:(Class)newClass predicate:(IHFPredicate *)predicate customTableName:(NSString *)tableName inDataBase:(FMDatabase *)db;
+-(NSArray<id<IHFDBObejctDataSource>> *)selectFromClass:(Class)newClass predicate:(IHFPredicate *)predicate customTableName:(NSString *)tableName inDataBase:(FMDatabase *)db isRecursive:(BOOL)recursive;
 
 
 // Insert
@@ -56,6 +61,10 @@ typedef void(^IHFDBUpdateCompleteBlock)(BOOL success,IHFRelationTable *relationT
 
 // Delete
 -(void) deleteFromClass:(Class)newClass predicate:(IHFPredicate *)predicate customTableName:(NSString *)tableName inDataBase:(FMDatabase *)db isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion;
+
+// Delete dirty data
+-(void) deleteDirtyDataFromClass:(Class)newClass predicate:(IHFPredicate *)predicate customTableName:(NSString *)tableName inDataBase:(FMDatabase *)db isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion;
+
 
 // Sql statement by user
 -(NSArray<id<IHFDBObejctDataSource>> *)executeQueryWithClass:(Class)newClass sqlStatement:(NSString *)sqlStatement inDataBase:(FMDatabase *)db;

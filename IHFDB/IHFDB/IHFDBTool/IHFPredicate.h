@@ -14,6 +14,9 @@
 
 // TODO: add groupBy 
 @property (nonatomic,copy) NSString * groupBy;
+// TODO: add limitCount
+@property (nonatomic,copy) NSString * limitCount;
+
 
 - (instancetype)initWithString:(NSString*)string;
 

@@ -56,10 +56,12 @@
     return _type;
 }
 
--(BOOL)isTypeOfFundation{
+-(NSNumber *)typeOfFundation{
     
-    if ([self.fundationTypes containsObject:@(self.type)]) return YES;
-    return NO;
+    if (!_typeOfFundation) {
+        return ([self.fundationTypes containsObject:@(self.type)]) ? @(YES) : @(NO);
+    }
+    return _typeOfFundation;
 }
 
 -(BOOL)isTypeOfBasicData{

@@ -25,8 +25,11 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
     
-//    [self createTable];
+    [self createTable];
     [self insertManyModelToDataBase];
+//
+    [self deleteDirtyData];
+//    [self selectFromDataBase];
     
 //    [self selectFromDataBase];
     
@@ -222,7 +225,9 @@
     
     NSMutableArray *patients = [NSMutableArray array];
     
-    for (int i = 0; i < 5000; i++) {
+    for (int i = 0; i < 50; i++) {
+        
+        if(i % 2 != 0) continue;
         
         NSMutableArray *array1 = [NSMutableArray array];
         
@@ -290,66 +295,68 @@
         [patients addObject:patient];
     }
     
-    NSDate *beginDate = [NSDate date];
-    NSLog(@"begin model -> dict");
-    NSArray *dicts = [patients dictionaryArrayBeConvertedFromModelArray];
-    NSLog(@"cost time for model -> dict ＝ %f",[[NSDate date] timeIntervalSince1970] - [beginDate timeIntervalSince1970]);
-    
-    NSDate *beginDateMJ = [NSDate date];
-    NSLog(@"begin MJ model -> dict");
-    NSArray *dictsMJ = [Patient mj_keyValuesArrayWithObjectArray:patients];
-    NSLog(@"cost time MJ for model -> dict ＝ %f",[[NSDate date] timeIntervalSince1970] - [beginDateMJ timeIntervalSince1970]);
-    
-    NSDate *beginDate1 = [NSDate date];
-    NSLog(@"begin dict -> model");
-    NSArray *models = [Patient modelArrayBeConvertFromDictionaryArray:dicts];
-    NSLog(@"cost time for dict -> model ＝ %f",[[NSDate date] timeIntervalSince1970] - [beginDate1 timeIntervalSince1970]);
-    
-    NSDate *beginDate1MJ = [NSDate date];
-    NSLog(@"begin dict -> model");
-    NSArray *modelsMJ = [Patient mj_objectArrayWithKeyValuesArray:dicts];
-    NSLog(@"cost time for MJ dict -> model ＝ %f",[[NSDate date] timeIntervalSince1970] - [beginDate1MJ timeIntervalSince1970]);
-
-    if ([patients count]) {
-        
-        for (Patient *patient in models) {
-            NSLog(@"%@",patient.name);
-            
-            for (Drug *durg in patient.drugs) {
-                NSLog(@"durgName = %@",durg.name);
-                
-                NSLog(@"durgtype name = %@",durg.drugType.type);
-                
-                NSLog(@"durgtype catagoty = %@",durg.drugType.typeCatagoty.catagoty);
-                
-                NSLog(@"durgtype - typeCatagoty - catagoty = %@",durg.drugType.typeCatagoty.typeCatagoty.catagoty);
-                
-                for (TypeCatagoty *ca in durg.drugType.typeCatagoty.typeCatagotys) {
-                    NSLog(@"durgtype - typeCatagoty - catagotys - catori = %@", ca.catagoty);
-                }
-                
-            }
-            NSLog(@"age = %d",patient.age);
-            NSLog(@"%@",patient.recordDate);
-            NSLog(@"11--%@",patient.idCard);
-            NSLog(@"class--%@",[patient.idCard class]);
-            
-            NSLog(@"height--%f",patient.height);
-            
-            NSLog(@"id = %d",patient.objectID);
-            NSLog(@"111--%@",[DateTool dateToolForGetDateStringWithdate:patient.recordDate]);
-        }
-    }
-
-    
     // 建议在病人多的情况下，调用
     
+    NSDate *beginDate = [NSDate date];
+
+    [Patient saveModelArray:patients completeBlock:^(BOOL success) {
+        //        NSLog(@"因为这是使用事务,增加插入速度");
+        NSLog(@"话费时间 ＝ %f",[[NSDate date] timeIntervalSince1970] - [beginDate timeIntervalSince1970]);
+    }];
+
+    
 //    NSDate *beginDate = [NSDate date];
+//    NSLog(@"begin model -> dict");
+//    NSArray *dicts = [patients dictionaryArrayBeConvertedFromModelArray];
+//    NSLog(@"cost time for model -> dict ＝ %f",[[NSDate date] timeIntervalSince1970] - [beginDate timeIntervalSince1970]);
 //    
-//    [Patient saveModelArray:patients completeBlock:^(BOOL success) {
-//        //        NSLog(@"因为这是使用事务,增加插入速度");
-//        NSLog(@"话费时间 ＝ %f",[[NSDate date] timeIntervalSince1970] - [beginDate timeIntervalSince1970]);
-//    }];
+//    NSDate *beginDateMJ = [NSDate date];
+//    NSLog(@"begin MJ model -> dict");
+//    NSArray *dictsMJ = [Patient mj_keyValuesArrayWithObjectArray:patients];
+//    NSLog(@"cost time MJ for model -> dict ＝ %f",[[NSDate date] timeIntervalSince1970] - [beginDateMJ timeIntervalSince1970]);
+//    
+//    NSDate *beginDate1 = [NSDate date];
+//    NSLog(@"begin dict -> model");
+//    NSArray *models = [Patient modelArrayBeConvertFromDictionaryArray:dicts];
+//    NSLog(@"cost time for dict -> model ＝ %f",[[NSDate date] timeIntervalSince1970] - [beginDate1 timeIntervalSince1970]);
+//    
+//    NSDate *beginDate1MJ = [NSDate date];
+//    NSLog(@"begin dict -> model");
+//    NSArray *modelsMJ = [Patient mj_objectArrayWithKeyValuesArray:dicts];
+//    NSLog(@"cost time for MJ dict -> model ＝ %f",[[NSDate date] timeIntervalSince1970] - [beginDate1MJ timeIntervalSince1970]);
+
+//    if ([patients count]) {
+//        
+//        for (Patient *patient in patients) {
+//            NSLog(@"%@",patient.name);
+//            
+//            for (Drug *durg in patient.drugs) {
+//                NSLog(@"durgName = %@",durg.name);
+//                
+//                NSLog(@"durgtype name = %@",durg.drugType.type);
+//                
+//                NSLog(@"durgtype catagoty = %@",durg.drugType.typeCatagoty.catagoty);
+//                
+//                NSLog(@"durgtype - typeCatagoty - catagoty = %@",durg.drugType.typeCatagoty.typeCatagoty.catagoty);
+//                
+//                for (TypeCatagoty *ca in durg.drugType.typeCatagoty.typeCatagotys) {
+//                    NSLog(@"durgtype - typeCatagoty - catagotys - catori = %@", ca.catagoty);
+//                }
+//                
+//            }
+//            NSLog(@"age = %d",patient.age);
+//            NSLog(@"%@",patient.recordDate);
+//            NSLog(@"11--%@",patient.idCard);
+//            NSLog(@"class--%@",[patient.idCard class]);
+//            
+//            NSLog(@"height--%f",patient.height);
+//            
+//            NSLog(@"id = %d",patient.objectID);
+//            NSLog(@"111--%@",[DateTool dateToolForGetDateStringWithdate:patient.recordDate]);
+//        }
+//    }
+//
+    
 }
 
 -(void)selectFromDataBase{
@@ -401,7 +408,15 @@
     }else{
         
     }
+}
 
+-(void)deleteDirtyData{
+    
+    NSDate *beginDate = [NSDate date];
+    NSLog(@"%@",@"begin delete dirty data");
+    IHFPredicate *predicate = [[IHFPredicate alloc] initWithFormat:@"age < %d",5000];
+    [Patient deleteDirtyDataWithPredicate:predicate];
+    NSLog(@"delete dirty data cost time ＝ %f",[[NSDate date] timeIntervalSince1970] - [beginDate timeIntervalSince1970]);
 
 }
 

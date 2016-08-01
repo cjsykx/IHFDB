@@ -15,8 +15,20 @@
 @optional
 
 // ObjectID is primary key in sqlite !
+
+/** set objectID */
 - (void)setObjectID:(NSInteger)objectID;
+
+/** get objectID ,witch is primary key in sqlite */
 - (NSInteger)objectID;
+
+// dirty !
+
+/** set dirty */
+- (void)setDirty:(NSInteger)dirty;
+
+/** get dirty */
+- (NSInteger)dirty;
 
 /** Return the relationships which the class in array
  the relationships is one-To-Many */
