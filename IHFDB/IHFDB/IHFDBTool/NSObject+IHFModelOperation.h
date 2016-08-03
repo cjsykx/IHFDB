@@ -12,40 +12,41 @@
 
 @interface NSObject (IHFModelOperation)<IHFDBObejctDataSource>
 
-// Model convert to dict
--(NSDictionary *)dictionaryBeConvertedFromModel;
+/** Model convert to dict */
+- (NSDictionary *)dictionaryBeConvertedFromModel;
 
+/** Model Array convert to dict Array */
+- (NSArray <NSDictionary *> *)dictionaryArrayBeConvertedFromModelArray;
 
-// model Array convert to dict Array
--(NSArray <NSDictionary *> *)dictionaryArrayBeConvertedFromModelArray;
+/** Dict convert to Model */
++ (instancetype)modelBeConvertFromDictionary:(NSDictionary *)dict;
 
-//字典转model
-+(instancetype)modelBeConvertFromDictionary:(NSDictionary *)dict;
+/** Dict Array convert to Model Array*/
 
-+(NSArray <id> *)modelArrayBeConvertFromDictionaryArray:(NSArray <NSDictionary *> *)dict;
++ (NSArray <id> *)modelArrayBeConvertFromDictionaryArray:(NSArray <NSDictionary *> *)dict;
 
 
 /** return all property name */
 
-+(NSArray *)getAllPropertyName;
--(NSArray *)getAllPropertyName;
++ (NSArray *)getAllPropertyName;
+- (NSArray *)getAllPropertyName;
 
 /** return all property name and type */
 
-+(NSDictionary *)getAllPropertyNameAndType;
--(NSDictionary *)getAllPropertyNameAndType;
++ (NSDictionary *)getAllPropertyNameAndType;
+- (NSDictionary *)getAllPropertyNameAndType;
 
--(NSString *)getTypeNameWith:(NSString *)propertyName;
+- (NSString *)getTypeNameWith:(NSString *)propertyName;
 
--(void)setValue:(NSObject *)value propertyName:(NSString *)name propertyType:(NSString *)type;
+- (void)setValue:(NSObject *)value propertyName:(NSString *)name propertyType:(NSString *)type;
 
 /** return type name in sqlite with the type  */
 
--(NSString *)sqlTypeNameWithTypeName:(NSString *)TypeName;
+- (NSString *)sqlTypeNameWithTypeName:(NSString *)TypeName;
 
 /** Get value with property name */
 
-- (id)getValueWithPropertName:(NSString *)propertyName;
+- (instancetype)getValueWithPropertName:(NSString *)propertyName;
 
 // Block
 typedef void (^IHFPropertiesEnumeration)(IHFProperty *property,NSUInteger idx, BOOL *stop);
@@ -54,5 +55,10 @@ typedef void (^IHFPropertiesEnumeration)(IHFProperty *property,NSUInteger idx, B
 
 + (void)enumeratePropertiesUsingBlock:(IHFPropertiesEnumeration)enumeration;
 
+// Create setter method
+- (SEL)createSetSEL:(NSString *)propertyName;
+
+/** Fetch the property with the its name */
+- (IHFProperty *)propertyWithName:(NSString *)propertyame;
 
 @end

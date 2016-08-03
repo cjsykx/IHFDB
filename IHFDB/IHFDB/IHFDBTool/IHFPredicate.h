@@ -9,16 +9,28 @@
 #import <Foundation/Foundation.h>
 
 @interface IHFPredicate : NSObject
+
+// TODO: It have BUG if you want a predicate format = [[IHFPredicate alloc] initWithFormat:@"%@ = %@",@"RecordDate",[NSDate date]] ;
+
+// IF You must use
+// format = [[IHFPredicate alloc] initWithFormat:@"@"RecordDate = %@",[NSDate date]];
+// Or
+//NSStirng *str = [[IHFPredicate alloc] initWithFormat:@"%@ = %@",@"RecordDate",[NSDate date]];
+//format = [[IHFPredicate alloc] initWithString:str];
+//
+
 @property (nonatomic,copy) NSString * predicateFormat;
 @property (nonatomic,copy) NSString * orderBy;
 
-// TODO: add groupBy 
+@property (nonatomic,assign) BOOL  isDesc; /**< Defalt is ASC (NO) , if you want DESC , you can set it YES */
+
+// TODO: add groupBy . Because group by need count !
 @property (nonatomic,copy) NSString * groupBy;
-// TODO: add limitCount
-@property (nonatomic,copy) NSString * limitCount;
+
+@property (nonatomic,assign) NSRange limitRange; /**< the range of data you want to select , it can be "limit (range.location,range.location + range.length)"*/
 
 
-- (instancetype)initWithString:(NSString*)string;
+- (instancetype)initWithString:(NSString *)string;
 
 - (instancetype)initWithString:(NSString *)string OrderBy:(NSString *)orderBy;
 
@@ -34,7 +46,7 @@
 
 + (instancetype)predicateWithFormat:(NSString *)name, ...NS_FORMAT_FUNCTION(1,2);
 
-+ (instancetype)predicateWithOrderBy:(NSString *)orderBy Format:(NSString*)name, ...NS_FORMAT_FUNCTION(1,3);
++ (instancetype)predicateWithOrderBy:(NSString *)orderBy Format:(NSString *)name, ...NS_FORMAT_FUNCTION(1,3);
 
 
 @end

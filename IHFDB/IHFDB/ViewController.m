@@ -25,13 +25,13 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
     
-    [self createTable];
-    [self insertManyModelToDataBase];
-//
-    [self deleteDirtyData];
-//    [self selectFromDataBase];
+//    [self createTable];
+//    [self insertManyModelToDataBase];
+
+//    [self deleteDirtyData];
+    [self selectFromDataBase];
     
-//    [self selectFromDataBase];
+//    [self deletePatient];
     
 //    int i = 16;
 //    NSMutableArray *array1 = [NSMutableArray array];
@@ -157,6 +157,15 @@
     // Dispose of any resources that can be recreated.
 }
 
+-(void)deletePatient{
+    
+    NSDate *beginDate = [NSDate date];
+    IHFPredicate *predicate = [[IHFPredicate alloc] initWithFormat:@"age < %d",100];
+    [Patient deleteWithPredicate:predicate];
+    NSLog(@"cost time ＝ %f",[[NSDate date] timeIntervalSince1970] - [beginDate timeIntervalSince1970]);
+
+}
+
 -(void)createTable{
     
     [Patient createTableDidCompleteBlock:^(BOOL success) {
@@ -227,7 +236,7 @@
     
     for (int i = 0; i < 50; i++) {
         
-        if(i % 2 != 0) continue;
+//        if(i % 2 != 0 || i % 3 != 0)  continue;
         
         NSMutableArray *array1 = [NSMutableArray array];
         
@@ -359,25 +368,30 @@
     
 }
 
--(void)selectFromDataBase{
+- (void)selectFromDataBase{
     
     NSDate *beginDate = [NSDate date];
     
-//    IHFPredicate *predicate = [[IHFPredicate alloc] initWithFormat:@"any  < %d",100];
+    IHFPredicate *predicate = [[IHFPredicate alloc] initWithFormat:@"age < %d",5000];
 
 
-    IHFPredicate *predicate = [[IHFPredicate alloc] initWithFormat:@"age < %d",100];
+//    IHFPredicate *predicate = [[IHFPredicate alloc] initWithFormat:@"recordDate < %@",[NSDate dateWithTimeIntervalSinceNow:-60 * 60 * 4]];
     
-    predicate.orderBy = @"recordDate asc";
-
-    NSArray *patients =  [Patient selectWithPredicate:predicate];
+    predicate.orderBy = @"recordDate";
+//    predicate.limitRange = NSMakeRange(0, 3);
+    NSArray *patients =  [Patient selectWithPredicate:predicate isRecursive:NO];
     NSLog(@"cost time ＝ %f",[[NSDate date] timeIntervalSince1970] - [beginDate timeIntervalSince1970]);
-
 
     if ([patients count]) {
 
         for (Patient *patient in patients) {
             NSLog(@"%@",patient.name);
+            
+            NSArray *drugs = [patient selectRelationModelWithPropertyName:@"drugs"];
+            
+            for (Drug *durg in drugs) {
+                NSLog(@"test  = %@",durg.name);
+            }
 
             for (Drug *durg in patient.drugs) {
                 NSLog(@"durgName = %@",durg.name);
@@ -391,10 +405,14 @@
                 for (TypeCatagoty *ca in durg.drugType.typeCatagoty.typeCatagotys) {
                     NSLog(@"durgtype - typeCatagoty - catagotys - catori = %@", ca.catagoty);
                 }
-
             }
+            
+            
+            
             NSLog(@"age = %d",patient.age);
-            NSLog(@"%@",patient.recordDate);
+            NSLog(@"bedNumber  = %@",patient.bed.bedNumber);
+
+            NSLog(@"recordDate = %@",patient.recordDate);
             NSLog(@"11--%@",patient.idCard);
             NSLog(@"class--%@",[patient.idCard class]);
 

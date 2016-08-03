@@ -10,7 +10,7 @@
 
 @implementation IHFProperty
 
--(IHFPropertyType)typeConvertFormString:(NSString *)aString{
+- (IHFPropertyType)typeConvertFormString:(NSString *)aString{
     
     IHFPropertyType type = IHFPropertyTypeModel; // Model type
     if ([aString isEqualToString:@"NSString"]) {
@@ -48,15 +48,7 @@
     return type;
 }
 
--(IHFPropertyType)type{
-    
-    if (!_type) {
-        _type = [self typeConvertFormString:self.typeString];
-    }
-    return _type;
-}
-
--(NSNumber *)typeOfFundation{
+- (NSNumber *)typeOfFundation{
     
     if (!_typeOfFundation) {
         return ([self.fundationTypes containsObject:@(self.type)]) ? @(YES) : @(NO);
@@ -64,13 +56,13 @@
     return _typeOfFundation;
 }
 
--(BOOL)isTypeOfBasicData{
+- (BOOL)isTypeOfBasicData{
     
     if ([self.basicDataTypes containsObject:@(self.type)]) return YES;
     return NO;
 }
 
--(NSSet *)fundationTypes{
+- (NSSet *)fundationTypes{
     if (_fundationTypes == nil) {
         _fundationTypes = [NSSet setWithObjects:
                              @(IHFPropertyTypeNumber),
@@ -86,7 +78,7 @@
     return _fundationTypes;
 }
 
--(NSSet *)basicDataTypes{
+- (NSSet *)basicDataTypes{
 
     if (_fundationTypes == nil) {
         _fundationTypes = [NSSet setWithObjects:
