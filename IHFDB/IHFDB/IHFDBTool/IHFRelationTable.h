@@ -33,12 +33,11 @@ typedef NS_OPTIONS(NSUInteger, IHFRelation) {
 
 @property (assign,nonatomic) IHFRelation relation;
 
+//@property (copy,nonatomic) NSString *tableName;  /**< Get table name */
+
 typedef void(^IHFDBCompleteBlock)(BOOL success);
 
-/** Get table name */
-
 - (NSString *)tableName;
-
 - (instancetype)initWithSourceObject:(id<IHFDBObejctDataSource>)sourceObject destinationObject:(id<IHFDBObejctDataSource>)destinationObject relationName:(NSString *)relationName relation:(IHFRelation)relation;
 + (instancetype)relationTableWithSourceObject:(id<IHFDBObejctDataSource>)sourceObject destinationObject:(id<IHFDBObejctDataSource>)destinationObject relationName:(NSString *)relationName relation:(IHFRelation)relation;;
 

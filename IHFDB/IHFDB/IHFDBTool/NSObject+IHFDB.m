@@ -44,6 +44,10 @@ const NSString *IHFDB_DirtyKey                             = @"dirtyKey";
 
 // select
 
+/////
+// select by predicate
+/////
+
 + (NSArray *)selectWithPredicate:(IHFPredicate *)predicate{
     
     return [self selectWithPredicate:predicate inTableName:nil inDataBase:nil];
@@ -79,6 +83,57 @@ const NSString *IHFDB_DirtyKey                             = @"dirtyKey";
 + (NSArray *)selectAllInTableName:(NSString *)tableName inDataBase:(FMDatabase *)db isRecursive:(BOOL)recursive{
     return [self selectWithPredicate:nil inTableName:tableName inDataBase:db isRecursive:recursive];
 }
+
+/////
+// Select count by predicate
+/////
+
++ (NSInteger)selectCountWithPredicate:(IHFPredicate *)predicate{
+    
+    return [self selectCountWithPredicate:predicate inTableName:nil inDataBase:nil];
+}
++ (NSInteger)selectCountWithPredicate:(IHFPredicate *)predicate inTableName:(NSString *)tableName inDataBase:(FMDatabase *)db{
+    IHFDataBaseExecute *execute = [IHFDataBaseExecute shareDataBaseExecute];
+    return [execute selectCountFromClass:self predicate:predicate customTableName:tableName inDataBase:db];
+}
+
+
+/////
+// Select by custom primary key
+/////
+
++ (NSArray *)selectWithCostomPrimaryKeyValue:(id)value {
+    return [self selectWithCostomPrimaryKeyValue:value isRecursive:YES];
+}
+
++ (NSArray *)selectWithCostomPrimaryKeyValue:(id)value isRecursive:(BOOL)recursive{
+    return [self selectWithCostomPrimaryKeyValue:value inTableName:nil inDataBase:nil isRecursive:recursive];
+}
+
++ (NSArray *)selectWithCostomPrimaryKeyValue:(id)value inTableName:(NSString *)tableName inDataBase:(FMDatabase *)db{
+    return [self selectWithCostomPrimaryKeyValue:value inTableName:tableName inDataBase:db isRecursive:YES];
+}
+
++ (NSArray *)selectWithCostomPrimaryKeyValue:(id)value inTableName:(NSString *)tableName inDataBase:(FMDatabase *)db isRecursive:(BOOL)recursive{
+    
+    if ([self respondsToSelector:@selector(customPrimarykey)]) { // Have custom primary key
+        
+        // If have the custom key , it judge the DB if have existed the data , if exist ,update , otherwise insert!
+        
+        NSString *customPrimarykey = [self customPrimarykey];
+        NSAssert(customPrimarykey, @"costom primary key can not be nil");
+        
+        if(customPrimarykey){
+            
+            NSString *predicateStr = [NSString stringWithFormat:@"%@ = '%@'",customPrimarykey,value];
+            IHFPredicate *predicate = [IHFPredicate predicateWithString:predicateStr];
+            return [self selectWithPredicate:predicate inTableName:tableName inDataBase:db isRecursive:recursive];
+        }
+    }
+    return nil;
+}
+
+
 
 - (NSArray *)selectRelationModelWithPropertyName:(NSString *)propertyName{
 

@@ -35,11 +35,18 @@ typedef NS_OPTIONS(NSUInteger, IHFPropertyType) {
 
 @interface IHFProperty : NSObject
 
+- (instancetype)initWithName:(NSString *)name typeString:(NSString *)typeString;
++ (instancetype)propertyWithName:(NSString *)name typeString:(NSString *)typeString;
+
+
 @property (nonatomic, assign) objc_property_t property; /** Belong to */
 
-@property (nonatomic, copy) NSString *propertyName;
-@property (nonatomic, assign) IHFPropertyType type;
-@property (nonatomic, copy) NSString *typeString;
+@property (nonatomic, copy,readonly) NSString *propertyName;
+@property (nonatomic, assign,readonly) IHFPropertyType type;
+@property (nonatomic, copy,readonly) NSString *typeString;
+
+@property (nonatomic, assign,readonly) SEL setSel;
+@property (nonatomic, assign,readonly) SEL getSel;
 
 
 @property (nonatomic, assign) Class objectClass; /**< CLASS is contain in the Array OR the class is the relation class*/

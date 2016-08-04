@@ -92,4 +92,36 @@
     return _fundationTypes;
 }
 
+- (instancetype)initWithName:(NSString *)name typeString:(NSString *)typeString{
+    
+    self = [super init];
+    if (self) {
+        _propertyName = name;
+        _typeString = typeString;
+        _type = [self typeConvertFormString:_typeString];
+        
+        _setSel = [self createSetSELWithPropertyName:name];
+        _getSel = [self createGetSELWithPropertyName:name];
+    }
+    return self;
+}
+
++ (instancetype)propertyWithName:(NSString *)name typeString:(NSString *)typeString{
+    return [[self alloc] initWithName:name typeString:typeString];
+}
+
+// create Setter method
+- (SEL)createSetSELWithPropertyName:(NSString *)propertyName{
+    NSString* firstString = [propertyName substringToIndex:1].uppercaseString;
+    propertyName = [propertyName stringByReplacingCharactersInRange:NSMakeRange(0, 1) withString:firstString];
+    propertyName = [NSString stringWithFormat:@"set%@:",propertyName];
+    return NSSelectorFromString(propertyName);
+}
+
+// create Getter method
+- (SEL)createGetSELWithPropertyName:(NSString*)propertyName{
+    return NSSelectorFromString(propertyName);
+}
+
+
 @end

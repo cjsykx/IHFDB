@@ -43,6 +43,8 @@ typedef void(^IHFDBUpdateCompleteBlock)(BOOL success,IHFRelationTable *relationT
 
 - (NSArray<id<IHFDBObejctDataSource>> *)selectFromClass:(Class)newClass predicate:(IHFPredicate *)predicate customTableName:(NSString *)tableName inDataBase:(FMDatabase *)db isRecursive:(BOOL)recursive;
 
+// Select count
+- (NSInteger)selectCountFromClass:(Class)newClass predicate:(IHFPredicate *)predicate customTableName:(NSString *)tableName inDataBase:(FMDatabase *)db;
 
 // Insert
 

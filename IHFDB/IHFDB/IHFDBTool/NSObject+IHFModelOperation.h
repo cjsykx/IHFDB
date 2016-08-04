@@ -38,15 +38,9 @@
 
 - (NSString *)getTypeNameWith:(NSString *)propertyName;
 
-- (void)setValue:(NSObject *)value propertyName:(NSString *)name propertyType:(NSString *)type;
-
 /** return type name in sqlite with the type  */
 
 - (NSString *)sqlTypeNameWithTypeName:(NSString *)TypeName;
-
-/** Get value with property name */
-
-- (instancetype)getValueWithPropertName:(NSString *)propertyName;
 
 // Block
 typedef void (^IHFPropertiesEnumeration)(IHFProperty *property,NSUInteger idx, BOOL *stop);
@@ -60,5 +54,14 @@ typedef void (^IHFPropertiesEnumeration)(IHFProperty *property,NSUInteger idx, B
 
 /** Fetch the property with the its name */
 - (IHFProperty *)propertyWithName:(NSString *)propertyame;
+
+// set model
+-(void)setValue:(id)aValue forProperty:(IHFProperty *)property;
+- (void)setValue:(NSObject *)value propertyName:(NSString *)name propertyType:(NSString *)type;
+
+// Get model value
+/** Get value with property name */
+- (instancetype)getValueWithPropertName:(NSString *)propertyName;
+- (instancetype)getValueWithProperty:(IHFProperty *)property;
 
 @end

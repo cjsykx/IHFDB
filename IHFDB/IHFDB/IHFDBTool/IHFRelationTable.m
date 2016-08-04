@@ -113,7 +113,7 @@
     
     IHFPredicate *predicate = [[IHFPredicate alloc] initWithFormat:@"sourceObjectID = %ld",(long)self.sourceObjectID];
     
-    [[self class]deleteWithPredicate:predicate inTableName:[self tableName] inDataBase:db completeBlock:^(BOOL success) {
+    [[self class] deleteWithPredicate:predicate inTableName:[self tableName] inDataBase:db completeBlock:^(BOOL success) {
         if(completion) completion(success);
     }];
 }

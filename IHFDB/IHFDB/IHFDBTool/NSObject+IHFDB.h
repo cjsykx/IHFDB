@@ -34,6 +34,10 @@ Table name is the class name
 + (BOOL)createTableWithName:(NSString *)tableName inDataBase:(FMDatabase *)db;
 
 
+/////
+// Select
+// If you set recursive -> NO ! You can use the following method to find it relation model
+
 /** Select with predicate
  recursive : Default -> YES . If is not , it only fetch the basic property , not the relation!
  */
@@ -50,14 +54,28 @@ Table name is the class name
 + (NSArray *)selectWithPredicate:(IHFPredicate *)predicate inTableName:(NSString *)tableName inDataBase:(FMDatabase *)db;
 + (NSArray *)selectAllInTableName:(NSString *)tableName inDataBase:(FMDatabase *)db;
 
+/** select with custom primary key value , If you NOT set the Custom primary key for the model , it select will error */
 
-// If you set recursive -> NO ! You can use the following method to find it relation model
++ (NSArray *)selectWithCostomPrimaryKeyValue:(id)value ;
++ (NSArray *)selectWithCostomPrimaryKeyValue:(id)value isRecursive:(BOOL)recursive;
++ (NSArray *)selectWithCostomPrimaryKeyValue:(id)value inTableName:(NSString *)tableName inDataBase:(FMDatabase *)db;
 
-/**  Fetch the model's relation models Using the property : obejctClass , type And propertyName is need */
++ (NSArray *)selectWithCostomPrimaryKeyValue:(id)value inTableName:(NSString *)tableName inDataBase:(FMDatabase *)db isRecursive:(BOOL)recursive;
+
+
+
+/**  Fetch the model's relation models Using the property name */
 
 - (NSArray *)selectRelationModelWithPropertyName:(NSString *)propertyName;
 
-/** Insert */
+/** Select Count for your predicate */
+
++ (NSInteger)selectCountWithPredicate:(IHFPredicate *)predicate;
++ (NSInteger)selectCountWithPredicate:(IHFPredicate *)predicate inTableName:(NSString *)tableName inDataBase:(FMDatabase *)db;
+
+
+//////////////////////
+/** ------ Insert */
 
 //  If you want to insert more models , you'd better use the method than - (void)insertIntoClassWithModel:(id)newModel completeBlock:(IHFDBCompleteBlock)completion , because of it use intranstion , insert more fastly!
 
