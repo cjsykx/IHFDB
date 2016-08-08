@@ -80,23 +80,22 @@ static NSMutableDictionary *_allowedPropertyNamesDict;
     
     if ([self respondsToSelector:setSel]) {
     
+        IMP imp = property.imp;
+
         switch (property.type) {
             case IHFPropertyTypeArray:{
                 //Fetch the model contained in the array , to select the relation table
                 
                 if(![aValue isKindOfClass:[NSArray class]]) return;
-                IMP imp = [self methodForSelector:setSel];
                 void (*func) (id,SEL,NSArray*) = (void*)imp;
                 func(self,setSel,(NSArray *)aValue);
             }break;
             case IHFPropertyTypeModel:{
                 //Fetch the model contained in the array , to select the relation table
-                IMP imp = [self methodForSelector:setSel];
                 void (*func) (id,SEL,id) = (void*)imp;
                 func(self,setSel,aValue);
             }break;
             case IHFPropertyTypeDate:{
-                IMP imp = [self methodForSelector:setSel];
                 void (*func) (id,SEL,NSDate*) = (void*)imp;
                 func(self,setSel,(NSDate *)aValue);
             }break;
@@ -104,38 +103,32 @@ static NSMutableDictionary *_allowedPropertyNamesDict;
             case IHFPropertyTypeBOOL :{
                 if ([aValue isKindOfClass:[NSNumber class]]) {
                     int value = [((NSNumber *)aValue) intValue];
-                    IMP imp = [self methodForSelector:setSel];
                     void (*func) (id,SEL,int) = (void *)imp;
                     func(self,setSel,value);
                 }
             }break;
             case IHFPropertyTypeLong :{
                 long value = [((NSNumber*)aValue) longValue];
-                IMP imp = [self methodForSelector:setSel];
                 void (*func) (id,SEL,long) = (void*)imp;
                 func(self,setSel,value);
             }break;
             case IHFPropertyTypeDouble :{
                 double value = [((NSNumber *)aValue) doubleValue];
-                IMP imp = [self methodForSelector:setSel];
                 void (*func) (id,SEL,double) = (void*)imp;
                 func(self,setSel,value);
             }break;
             case IHFPropertyTypeFloat :{
                 float value = [((NSNumber *)aValue) floatValue];
-                IMP imp = [self methodForSelector:setSel];
                 void (*func) (id,SEL,float) = (void*)imp;
                 func(self,setSel,value);
             }break;
             case IHFPropertyTypeData :
             case IHFPropertyTypeImage :{
                 NSData* value = (NSData *)aValue;
-                IMP imp = [self methodForSelector:setSel];
                 void (*func) (id,SEL,NSData*) = (void*)imp;
                 func(self,setSel,value);
             }break;
             case IHFPropertyTypeString :{
-                IMP imp = [self methodForSelector:setSel];
                 void (*func) (id,SEL,NSString *) = (void *)imp;
                 func(self,setSel,(NSString *)aValue);
             }break;
@@ -149,14 +142,12 @@ static NSMutableDictionary *_allowedPropertyNamesDict;
                     value = [format numberFromString:(NSString *)aValue];
                 }
                 
-                IMP imp = [self methodForSelector:setSel];
                 void (*func) (id,SEL,NSNumber*) = (void*)imp;
                 func(self,setSel,value);
             }break;
                 
             default:{
                 
-                IMP imp = [self methodForSelector:setSel];
                 void (*func) (id,SEL,id) = (void*)imp;
                 func(self,setSel,aValue);
             }break;
@@ -447,22 +438,28 @@ static NSMutableDictionary *_allowedPropertyNamesDict;
                 // Fetch the model contained in the array , to create table
                 
                 if (property.objectClass) {
-                    
                     if([value isKindOfClass:[NSArray class]] && [value count]){
-                        [dict setValue:[value dictionaryArrayBeConvertedFromModelArray] forKey:property.propertyName];
+                        value = [value dictionaryArrayBeConvertedFromModelArray];
                     }
                 }
             }else if (propertyType == IHFPropertyTypeModel){ // deal with model
+                value = [value dictionaryBeConvertedFromModel];
                 [dict setValue:[value dictionaryBeConvertedFromModel] forKey:property.propertyName];
-            }else{
-                [dict setValue:value forKey:property.propertyName];
             }
+            // Key change to mapper
+            NSString *key = property.propertyName;
+            if (property.propertyNameMapped) key = property.propertyNameMapped;
+            [dict setValue:value forKey:key];
         }];
 
         [modelArray addObject:dict];
     }
     
     return modelArray;
+}
+
++ (NSArray<NSDictionary *> *)dictionaryArrayWithConvertedFromModelArray:(NSArray *)modelArray{
+    return [modelArray dictionaryArrayBeConvertedFromModelArray];
 }
 
 + (instancetype)modelBeConvertFromDictionary:(NSDictionary *)dict{
@@ -484,7 +481,10 @@ static NSMutableDictionary *_allowedPropertyNamesDict;
         
         [weakSelf enumeratePropertiesUsingBlock:^(IHFProperty *property, NSUInteger idx, BOOL *stop) {
             
-            id value = [dict objectForKey:property.propertyName];
+            NSString *key = property.propertyName;
+            if(property.propertyNameMapped) key = property.propertyNameMapped; // change to mapper
+            
+            id value = [dict objectForKey:key];
             if(!value || value == [NSNull null]) return ;
             IHFPropertyType propertyType = property.type;
 
@@ -495,21 +495,14 @@ static NSMutableDictionary *_allowedPropertyNamesDict;
                 if (property.objectClass) {
                                         
                     if([value isKindOfClass:[NSArray class]]){
-                        NSArray *models = [property.objectClass modelArrayBeConvertFromDictionaryArray:value];
-//                        [model setValue:models propertyName:property.propertyName propertyType:property.typeString];
-                        [model setValue:models forProperty:property];
+                        [model setValue:[property.objectClass modelArrayBeConvertFromDictionaryArray:value] forProperty:property];
                     }
                 }
             }else if (propertyType == IHFPropertyTypeModel){ // Deal with model
                 
-                id model1 = [property.objectClass modelBeConvertFromDictionary:value];
-                [model setValue:model1 forProperty:property];
-
-//                [model setValue:[property.objectClass modelBeConvertFromDictionary:value] propertyName:property.propertyName propertyType:property.typeString];
+                [model setValue:[property.objectClass modelBeConvertFromDictionary:value] forProperty:property];
             }else{
-//                [model setValue:value propertyName:property.propertyName propertyType:property.typeString];
                 [model setValue:value forProperty:property];
-
             }
         }];
 
@@ -556,18 +549,10 @@ static id objectType(NSString *typeString){
                 // Get type
                 NSString *propertyType = [NSString stringWithUTF8String:property_getAttributes(property)];
 
-                IHFProperty *theProperty = [[IHFProperty alloc] initWithName:propertyName typeString:objectType(propertyType)];
+                IHFProperty *theProperty = [[IHFProperty alloc] initWithName:propertyName typeString:objectType(propertyType) srcClass:self];
+                
 //                theProperty.property = property;
                              
-                if(theProperty.type == IHFPropertyTypeArray){
-                    
-                    if ([self respondsToSelector:@selector(relationshipDictForClassInArray)]) {
-                        NSDictionary *relationshipDict = [self relationshipDictForClassInArray];
-                        theProperty.objectClass = [relationshipDict objectForKey:propertyName];
-                    }
-                }else if (theProperty.type == IHFPropertyTypeModel){
-                    theProperty.objectClass = NSClassFromString(theProperty.typeString);
-                }
                 [allowProperties addObject:theProperty];
             }
         }

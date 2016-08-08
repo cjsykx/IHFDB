@@ -28,7 +28,7 @@
 
 - (NSString *)tableName{
     
-    if (self.sourceObject && self.destinationObject) {
+    if (self.sourceObject && self.relationName) {
         
         return [NSString stringWithFormat:@"%@_%@_Relation",NSStringFromClass([self.sourceObject class]),self.relationName];
     }

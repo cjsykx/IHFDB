@@ -40,8 +40,8 @@
 /** Return the property names which tou want to ignore , so that it can't to be a column in table */
 + (NSArray * _Nullable)propertyNamesForIgnore;
 
-/** Return the property names which tou want to change column name */
-+ (NSDictionary * _Nullable)propertyNamesForWhiteList;
+/** Return the property names which tou want to map */
++ (NSDictionary * _Nullable)propertyNameDictForMapper;
 
 //TODO : May the custom primary key is array!
 

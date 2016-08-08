@@ -9,23 +9,23 @@
 #import "Patient.h"
 
 @implementation Patient
-+(NSDictionary *)relationshipDictForClassInArray{
++ (NSDictionary *)relationshipDictForClassInArray{
     
     return @{
              @"drugs" : [Drug class],
              };
 }
 
-+(NSDictionary *)propertyNamesForWhiteList{
-    
-    return @{
-             @"age" : @"ages",
-             };
-}
-
-+(NSString *)customPrimarykey{
++ (NSString *)customPrimarykey{
     
     return @"patientID";
+}
+
++ (NSDictionary *)propertyNameDictForMapper{
+    return @{ @"mapperStr1" : @"mapperStr",
+              @"mapperNumber1" :@"mapperNumber",
+             
+             };
 }
 
 @end

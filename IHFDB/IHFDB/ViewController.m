@@ -25,16 +25,16 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
     
-//    [self createTable];
-//    [self insertManyModelToDataBase];
-//
-//    [self deleteDirtyData];
+    [self createTable];
+    [self insertManyModelToDataBase];
+    [self deleteDirtyData];
     
 //    [self selectByCustomIdFromDataBase];
 //    [self selectFromDataBase];
     
-    [self convertTo];
+//    [self convertTo];
 //    [self deletePatient];
+//    [self mapperTest];
     
 //    int i = 16;
 //    NSMutableArray *array1 = [NSMutableArray array];
@@ -174,6 +174,36 @@
     [Patient createTableDidCompleteBlock:^(BOOL success) {
         // 创建成功后的回调;
     }];
+}
+
+- (void)mapperTest{
+    
+    NSMutableArray *array1 = [NSMutableArray array];
+
+    for (int i = 0 ; i < 5000 ; i++) {
+        
+        NSString *maperString = [NSString stringWithFormat:@"映射%d",i];
+        
+        NSDictionary *dict = @{ @"name" : @"张飞",
+                                @"mapperStr" : maperString,
+                                @"mapperNumber" : @(i),
+                               };
+        
+        [array1 addObject:dict];
+    }
+    
+    NSArray *patients = [Patient modelArrayBeConvertFromDictionaryArray:array1];
+    
+//    for (Patient *patient in patients) {
+//        NSLog(@"name = %@",patient.name);
+//        NSLog(@"age = %d",patient.age);
+//        NSLog(@"str  = %@",patient.mapperStr1);
+//        NSLog(@"number = %@",patient.mapperNumber1);
+//    }
+    
+    NSArray *dicts = [patients dictionaryArrayBeConvertedFromModelArray];
+
+    NSLog(@"dicts = %@",dicts);
 }
 
 -(void)insertOneModelToDataBase{
@@ -328,7 +358,9 @@
         NSArray *modelsMJ = [Patient mj_objectArrayWithKeyValuesArray:dicts];
         NSLog(@"cost time for MJ dict -> model ＝ %f",[[NSDate date] timeIntervalSince1970] - [beginDate1MJ timeIntervalSince1970]);
     
+    
     [self printPatients:models];
+
 
 }
 
@@ -338,7 +370,9 @@
     
     for (int i = 0; i < 5000; i++) {
         
-        if(i % 2 != 0)  continue;
+//        if(i % 2 != 0 )  continue;
+//        if(i % 2 != 0 || i % 3 != 0)  continue;
+
         
         NSMutableArray *array1 = [NSMutableArray array];
         
@@ -459,9 +493,13 @@
 
 - (void)selectFromDataBase{
     
+//    NSString *createIndex = @"CREATE unique INDEX if not exists age_index on Patient (age);";
+//    [Patient executeUpdateWithSqlStatement:createIndex];
     NSDate *beginDate = [NSDate date];
     
     IHFPredicate *predicate = [[IHFPredicate alloc] initWithFormat:@"age < %d",5000];
+
+//    IHFPredicate *predicate = [[IHFPredicate alloc] initWithFormat:@"IHFDB_ObjectID < %d and IHFDB_ObjectID > 1000",5000];
 
 //    NSInteger count = [Patient selectCountWithPredicate:predicate];
 //    NSLog(@"count = %d",count);
@@ -470,7 +508,7 @@
     
     predicate.orderBy = @"recordDate";
 //    predicate.limitRange = NSMakeRange(0, 3);
-    NSArray *patients =  [Patient selectWithPredicate:predicate isRecursive:YES];
+    NSArray *patients =  [Patient selectWithPredicate:predicate isRecursive:NO];
     NSLog(@"cost time ＝ %f",[[NSDate date] timeIntervalSince1970] - [beginDate timeIntervalSince1970]);
 
     [self printPatients:patients];

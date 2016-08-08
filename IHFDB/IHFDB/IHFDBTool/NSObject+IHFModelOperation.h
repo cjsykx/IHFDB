@@ -12,11 +12,17 @@
 
 @interface NSObject (IHFModelOperation)<IHFDBObejctDataSource>
 
+///  *********** Model Model convert to Dict ****************
+
 /** Model convert to dict */
 - (NSDictionary *)dictionaryBeConvertedFromModel;
 
 /** Model Array convert to dict Array */
 - (NSArray <NSDictionary *> *)dictionaryArrayBeConvertedFromModelArray;
++ (NSArray <NSDictionary *> *)dictionaryArrayWithConvertedFromModelArray:(NSArray *)modelArray;
+
+
+///  ***********  Dict convert to Model ****************
 
 /** Dict convert to Model */
 + (instancetype)modelBeConvertFromDictionary:(NSDictionary *)dict;

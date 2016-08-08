@@ -13,7 +13,7 @@
 #import "IHFDB.h"
 @interface Patient : NSObject
 @property (copy,nonatomic) NSString * name ;
-@property (strong,nonatomic) NSArray <Drug *>* drugs ;
+@property (strong,nonatomic) NSMutableArray <Drug *>* drugs ;
 
 @property (assign,nonatomic) NSInteger  age ;
 @property (assign,nonatomic) CGFloat  height ;
@@ -24,4 +24,8 @@
 @property (strong,nonatomic) Bed *bed;
 
 @property (strong,nonatomic) NSString * patientID ;
+
+@property (strong,nonatomic) NSString * mapperStr1 ;
+@property (strong,nonatomic) NSString * mapperNumber1 ;
+
 @end
