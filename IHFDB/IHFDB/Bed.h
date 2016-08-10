@@ -11,5 +11,6 @@
 @interface Bed : NSObject
 @property (copy,nonatomic) NSString *bedNumber ;
 @property (copy,nonatomic) NSString *ward;
+@property (copy,nonatomic) NSNumber *bedID;
 
 @end

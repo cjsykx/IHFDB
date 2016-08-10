@@ -9,5 +9,9 @@
 #import "Bed.h"
 
 @implementation Bed
++(NSString *)customPrimarykey{
+    
+    return @"bedID";
+}
 
 @end

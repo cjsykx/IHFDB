@@ -24,7 +24,10 @@
 
 // dirty !
 
-/** set dirty */
+/** 
+ set dirty
+ 
+ */
 - (void)setDirty:(NSInteger)dirty;
 
 /** get dirty */
@@ -47,14 +50,18 @@
 
 /**
  * Return custom primary key set by user 
-   It will be use for judge if the data base exist the same data , so that not to insert ,instead of update!
+ 
+ @ It will be use for judge if the data base exist the same data , so that not to insert ,instead of update!
+ @ Warning : It will be a BUG if you custom primary key type is INT , if is INT , you'd better use NSNumer!
+ 
  */
 + (NSString * _Nullable)customPrimarykey;
 
-
+//TODO
 /**
  *  Return custom primary key value
- *  Can process the value to fit the data base value !
+
+ @ Can process the value to fit the data base value !
  */
 - (id _Nullable)customPrimarykeyValue;
 

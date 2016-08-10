@@ -434,7 +434,8 @@
         Bed *bed = [[Bed alloc] init];
         bed.bedNumber = @"+1";
         bed.ward = @"L1";
-        
+        bed.bedID = @(i);
+
         patient.bed = bed;
         
         [patients addObject:patient];

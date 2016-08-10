@@ -48,5 +48,17 @@
 
 + (instancetype)predicateWithOrderBy:(NSString *)orderBy Format:(NSString *)name, ...NS_FORMAT_FUNCTION(1,3);
 
+/** 
+ Append and predicate format 
+ @ Main use and_predicate.predicateFormat
+ */
+- (void)appendAnd_Predicate:(IHFPredicate *)and_predicate;
+
+/**
+ Append or predicate format
+ @ Main use and_predicate.predicateFormat
+ */
+
+- (void)appendOr_Predicate:(IHFPredicate *)or_predicate;
 
 @end

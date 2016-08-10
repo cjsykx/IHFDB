@@ -94,5 +94,16 @@
     return predicate;
 }
 
+#pragma mark - append AND and OR predicate
+-(void)appendAnd_Predicate:(IHFPredicate *)and_predicate{
+    
+    self.predicateFormat = [NSString stringWithFormat:@"%@ AND %@",self.predicateFormat,and_predicate.predicateFormat];
+}
+
+-(void)appendOr_Predicate:(IHFPredicate *)or_predicate{
+    
+    self.predicateFormat = [NSString stringWithFormat:@"%@ OR %@",self.predicateFormat,or_predicate.predicateFormat];
+}
+
 
 @end
