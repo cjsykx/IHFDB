@@ -15,6 +15,7 @@
 #import "DrugType.h"
 #import "TypeCatagoty.h"
 #import "MJExtension.h"
+#import "IHFDataBaseExecute.h"
 @interface ViewController ()
 
 @end
@@ -25,14 +26,14 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
     
-    [self createTable];
-    [self insertManyModelToDataBase];
-    [self deleteDirtyData];
+//    [self createTable];
+//    [self insertManyModelToDataBase];
+//    [self deleteDirtyData];
     
 //    [self selectByCustomIdFromDataBase];
 //    [self selectFromDataBase];
     
-//    [self convertTo];
+    [self convertTo];
 //    [self deletePatient];
 //    [self mapperTest];
     
@@ -162,10 +163,10 @@
 
 -(void)deletePatient{
     
-    NSDate *beginDate = [NSDate date];
-    IHFPredicate *predicate = [[IHFPredicate alloc] initWithFormat:@"age < %d",100];
-    [Patient deleteWithPredicate:predicate];
-    NSLog(@"cost time ＝ %f",[[NSDate date] timeIntervalSince1970] - [beginDate timeIntervalSince1970]);
+//    NSDate *beginDate = [NSDate date];
+//    IHFPredicate *predicate = [[IHFPredicate alloc] initWithFormat:@"age < %d",100];
+//    [Patient deleteWithPredicate:predicate];
+//    NSLog(@"cost time ＝ %f",[[NSDate date] timeIntervalSince1970] - [beginDate timeIntervalSince1970]);
 
 }
 
@@ -192,7 +193,7 @@
         [array1 addObject:dict];
     }
     
-    NSArray *patients = [Patient modelArrayBeConvertFromDictionaryArray:array1];
+    NSArray *patients = [Patient modelArrayFromDictionaryArray:array1];
     
 //    for (Patient *patient in patients) {
 //        NSLog(@"name = %@",patient.name);
@@ -201,7 +202,7 @@
 //        NSLog(@"number = %@",patient.mapperNumber1);
 //    }
     
-    NSArray *dicts = [patients dictionaryArrayBeConvertedFromModelArray];
+    NSArray *dicts = [patients dictionaryArrayFromModelArray];
 
     NSLog(@"dicts = %@",dicts);
 }
@@ -340,7 +341,7 @@
     
         NSDate *beginDate = [NSDate date];
         NSLog(@"begin model -> dict");
-        NSArray *dicts = [patients dictionaryArrayBeConvertedFromModelArray];
+        NSArray *dicts = [patients dictionaryArrayFromModelArray];
         NSLog(@"cost time for model -> dict ＝ %f",[[NSDate date] timeIntervalSince1970] - [beginDate timeIntervalSince1970]);
     
         NSDate *beginDateMJ = [NSDate date];
@@ -350,12 +351,12 @@
     
         NSDate *beginDate1 = [NSDate date];
         NSLog(@"begin dict -> model");
-        NSArray *models = [Patient modelArrayBeConvertFromDictionaryArray:dicts];
+        NSArray *models = [Patient modelArrayFromDictionaryArray:dictsMJ];
         NSLog(@"cost time for dict -> model ＝ %f",[[NSDate date] timeIntervalSince1970] - [beginDate1 timeIntervalSince1970]);
     
         NSDate *beginDate1MJ = [NSDate date];
         NSLog(@"begin dict -> model");
-        NSArray *modelsMJ = [Patient mj_objectArrayWithKeyValuesArray:dicts];
+        NSArray *modelsMJ = [Patient mj_objectArrayWithKeyValuesArray:dictsMJ];
         NSLog(@"cost time for MJ dict -> model ＝ %f",[[NSDate date] timeIntervalSince1970] - [beginDate1MJ timeIntervalSince1970]);
     
     

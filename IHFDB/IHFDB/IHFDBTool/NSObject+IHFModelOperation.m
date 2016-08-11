@@ -11,16 +11,22 @@
 #import <UIKit/UIKit.h>
 
 static NSMutableDictionary *_allowedPropertyNamesDict;
+static NSMutableDictionary *_TypeOfArrayPropertiesDict;
+static NSMutableDictionary *_TypeOfModelPropertiesDict;
+
 
 @implementation NSObject (IHFModelOperation)
 
 + (void)load{
     _allowedPropertyNamesDict = [NSMutableDictionary dictionary];
+    _TypeOfArrayPropertiesDict = [NSMutableDictionary dictionary];
+    _TypeOfModelPropertiesDict = [NSMutableDictionary dictionary];
 }
 
 - (void)setProperties:(id)properties forKey:(NSString *)key{
     [_allowedPropertyNamesDict setValue:properties forKey:key];
 }
+
 
 + (NSArray*)getAllPropertyName{
     NSMutableArray* nameArray = [NSMutableArray array];
@@ -266,12 +272,12 @@ static NSMutableDictionary *_allowedPropertyNamesDict;
     return NSSelectorFromString(propertyName);
 }
 
--(instancetype)getValueWithProperty:(IHFProperty *)property{
+-(instancetype)valueWithProperty:(IHFProperty *)property{
     SEL getSel = property.getSel;
-    return [self getValueWithGetSel:getSel];
+    return [self valueWithGetSel:getSel];
 }
 
--(instancetype)getValueWithGetSel:(SEL)getSel{
+-(instancetype)valueWithGetSel:(SEL)getSel{
     if ([self respondsToSelector:getSel]) {
         //获取类和方法签名
         NSMethodSignature* signature = [self methodSignatureForSelector:getSel];
@@ -305,51 +311,15 @@ static NSMutableDictionary *_allowedPropertyNamesDict;
 }
 
 // Perform getter method
-- (instancetype)getValueWithPropertName:(NSString *)propertyName{
+- (instancetype)valueWithPropertName:(NSString *)propertyName{
     
     SEL getSel = [self createGetSelectorWith:propertyName];
-    return [self getValueWithGetSel:getSel];
+    return [self valueWithGetSel:getSel];
 }
 
-//执行get方法
-- (id)getResultWithPropertName:(NSString*)propertyName{
-    
-    SEL getSel = [self createGetSelectorWith:propertyName];
-    if ([self respondsToSelector:getSel]) {
-        //获取类和方法签名
-        NSMethodSignature* signature = [self methodSignatureForSelector:getSel];
-        const char * returnType = [signature methodReturnType];
-        //获取调用对象
-        NSInvocation* invocation = [NSInvocation invocationWithMethodSignature:signature];
-        [invocation setTarget:self];
-        [invocation setSelector:getSel];
-        [invocation invoke];
-        if (!memcmp(returnType, "@", 1)) {
-            NSObject *__unsafe_unretained returnValue = nil;
-            [invocation getReturnValue:&returnValue];
-            return returnValue;
-        }else if (!memcmp(returnType, "i", 1)||!memcmp(returnType, "q", 1)||!memcmp(returnType, "Q", 1)||!memcmp(returnType, "B", 1)){
-            int returnValue = 0;
-            [invocation getReturnValue:&returnValue];
-            return [NSNumber numberWithInt:returnValue];
-        }else if(!memcmp(returnType, "f", 1)){
-            float returnValue = 0.0;
-            [invocation getReturnValue:&returnValue];
-            NSString* floatStr = [NSString stringWithFormat:@"%.3f",returnValue];
-            return [NSDecimalNumber decimalNumberWithString:floatStr];
-            return [NSNumber numberWithFloat:[floatStr floatValue]];
-        }else if (!memcmp(returnType, "d", 1)) {
-            double retureVaule = 0.0;
-            [invocation getReturnValue:&retureVaule];
-            return [NSNumber numberWithDouble:retureVaule];
-        }
-        
-    }
-    return nil;
-}
 
-- (NSString*)getTypeNameWith:(NSString*)propertyName{
-    NSString* typeStr = [[self getAllPropertyNameAndType]valueForKey:propertyName];
+- (NSString *)typeNameWith:(NSString *)propertyName{
+    NSString* typeStr = [[self getAllPropertyNameAndType] valueForKey:propertyName];
     
     if ([typeStr isEqualToString:@"i"]) {
         return @"INTEGER";
@@ -397,25 +367,15 @@ static NSMutableDictionary *_allowedPropertyNamesDict;
         return @"TEXT";
 }
 
-- (NSDictionary *)getDictionary{
-    NSArray *nameArray = [self getAllPropertyName];
-    NSMutableDictionary *dict = [NSMutableDictionary dictionary];
-    for (NSString *propertyName in nameArray) {
-        id value = [self getResultWithPropertName:propertyName];
-        [dict setValue:value forKey:propertyName];
-    }
-    return dict;
-}
-
-- (NSDictionary *)dictionaryBeConvertedFromModel{
+- (NSDictionary *)dictionaryFromModel{
     
-    NSArray *dicts = [[NSArray arrayWithObject:self] dictionaryArrayBeConvertedFromModelArray];
+    NSArray *dicts = [[NSArray arrayWithObject:self] dictionaryArrayFromModelArray];
     
     if (![dicts count]) return nil;
     return [dicts firstObject];
 }
 
-- (NSArray<NSDictionary *> *)dictionaryArrayBeConvertedFromModelArray{
+- (NSArray<NSDictionary *> *)dictionaryArrayFromModelArray{
     
     if (![self isKindOfClass:[NSArray class]]) return nil;
     
@@ -428,7 +388,7 @@ static NSMutableDictionary *_allowedPropertyNamesDict;
         
         [theClass enumeratePropertiesUsingBlock:^(IHFProperty *property, NSUInteger idx, BOOL *stop) {
             
-            id value = [model getValueWithPropertName:property.propertyName];
+            id value = [model valueWithPropertName:property.propertyName];
             if(!value || value == [NSNull null]) return ;
             
             IHFPropertyType propertyType = property.type;
@@ -439,12 +399,12 @@ static NSMutableDictionary *_allowedPropertyNamesDict;
                 
                 if (property.objectClass) {
                     if([value isKindOfClass:[NSArray class]] && [value count]){
-                        value = [value dictionaryArrayBeConvertedFromModelArray];
+                        value = [value dictionaryArrayFromModelArray];
                     }
                 }
             }else if (propertyType == IHFPropertyTypeModel){ // deal with model
-                value = [value dictionaryBeConvertedFromModel];
-                [dict setValue:[value dictionaryBeConvertedFromModel] forKey:property.propertyName];
+                value = [value dictionaryFromModel];
+                [dict setValue:[value dictionaryFromModel] forKey:property.propertyName];
             }
             // Key change to mapper
             NSString *key = property.propertyName;
@@ -458,19 +418,19 @@ static NSMutableDictionary *_allowedPropertyNamesDict;
     return modelArray;
 }
 
-+ (NSArray<NSDictionary *> *)dictionaryArrayWithConvertedFromModelArray:(NSArray *)modelArray{
-    return [modelArray dictionaryArrayBeConvertedFromModelArray];
++ (NSArray<NSDictionary *> *)dictionaryArrayFromModelArray:(NSArray *)modelArray{
+    return [modelArray dictionaryArrayFromModelArray];
 }
 
-+ (instancetype)modelBeConvertFromDictionary:(NSDictionary *)dict{
++ (instancetype)modelFromDictionary:(NSDictionary *)dict{
     
     if (!dict) return nil;
-    NSArray *models = [self modelArrayBeConvertFromDictionaryArray:[NSArray arrayWithObject:dict]];
+    NSArray *models = [self modelArrayFromDictionaryArray:[NSArray arrayWithObject:dict]];
     if (![models count]) return nil;
     return [models firstObject];
 }
 
-+ (NSArray <id> *)modelArrayBeConvertFromDictionaryArray:(NSArray<NSDictionary *> *)dictArray{
++ (NSArray <id> *)modelArrayFromDictionaryArray:(NSArray<NSDictionary *> *)dictArray{
     
     __weak typeof(self) weakSelf = self;
     __block NSMutableArray *models = [NSMutableArray array];
@@ -495,12 +455,12 @@ static NSMutableDictionary *_allowedPropertyNamesDict;
                 if (property.objectClass) {
                                         
                     if([value isKindOfClass:[NSArray class]]){
-                        [model setValue:[property.objectClass modelArrayBeConvertFromDictionaryArray:value] forProperty:property];
+                        [model setValue:[property.objectClass modelArrayFromDictionaryArray:value] forProperty:property];
                     }
                 }
             }else if (propertyType == IHFPropertyTypeModel){ // Deal with model
                 
-                [model setValue:[property.objectClass modelBeConvertFromDictionary:value] forProperty:property];
+                [model setValue:[property.objectClass modelFromDictionary:value] forProperty:property];
             }else{
                 [model setValue:value forProperty:property];
             }
@@ -578,5 +538,44 @@ static id objectType(NSString *typeString){
         idx++;
     }
 }
+
++ (NSArray <IHFProperty *>*)propertiesForTypeOfArray{
+    
+    NSMutableArray *properties = [_TypeOfArrayPropertiesDict objectForKey:NSStringFromClass(self)];
+    
+    if(!properties){
+
+        properties = [NSMutableArray array];
+        [self enumeratePropertiesUsingBlock:^(IHFProperty *property, NSUInteger idx, BOOL *stop) {
+            
+            if(property.type == IHFPropertyTypeArray){
+                [properties addObject:property];
+            }
+        }];
+        
+        [_TypeOfArrayPropertiesDict setObject:properties forKey:NSStringFromClass(self)];
+    }
+    return properties;
+}
+
++ (NSArray <IHFProperty *>*)propertiesForTypeOfModel{
+    
+    NSMutableArray *properties = [_TypeOfModelPropertiesDict objectForKey:NSStringFromClass(self)];
+    
+    if(!properties){
+        
+        properties = [NSMutableArray array];
+        [self enumeratePropertiesUsingBlock:^(IHFProperty *property, NSUInteger idx, BOOL *stop) {
+            
+            if(property.type == IHFPropertyTypeModel){
+                [properties addObject:property];
+            }
+        }];
+        
+        [_TypeOfModelPropertiesDict setObject:properties forKey:NSStringFromClass(self)];
+    }
+    return properties;
+}
+
 
 @end

@@ -15,22 +15,24 @@
 ///  *********** Model Model convert to Dict ****************
 
 /** Model convert to dict */
-- (NSDictionary *)dictionaryBeConvertedFromModel;
+- (NSDictionary *)dictionaryFromModel;
 
 /** Model Array convert to dict Array */
-- (NSArray <NSDictionary *> *)dictionaryArrayBeConvertedFromModelArray;
-+ (NSArray <NSDictionary *> *)dictionaryArrayWithConvertedFromModelArray:(NSArray *)modelArray;
+- (NSArray <NSDictionary *> *)dictionaryArrayFromModelArray;
++ (NSArray <NSDictionary *> *)dictionaryArrayFromModelArray:(NSArray *)modelArray;
 
 
 ///  ***********  Dict convert to Model ****************
 
 /** Dict convert to Model */
-+ (instancetype)modelBeConvertFromDictionary:(NSDictionary *)dict;
++ (instancetype)modelFromDictionary:(NSDictionary *)dict;
 
 /** Dict Array convert to Model Array*/
 
-+ (NSArray <id> *)modelArrayBeConvertFromDictionaryArray:(NSArray <NSDictionary *> *)dict;
++ (NSArray <id> *)modelArrayFromDictionaryArray:(NSArray <NSDictionary *> *)dict;
 
+
+///  ***********  ******************* ****************
 
 /** return all property name */
 
@@ -42,7 +44,6 @@
 + (NSDictionary *)getAllPropertyNameAndType;
 - (NSDictionary *)getAllPropertyNameAndType;
 
-- (NSString *)getTypeNameWith:(NSString *)propertyName;
 
 /** return type name in sqlite with the type  */
 
@@ -67,7 +68,17 @@ typedef void (^IHFPropertiesEnumeration)(IHFProperty *property,NSUInteger idx, B
 
 // Get model value
 /** Get value with property name */
-- (instancetype)getValueWithPropertName:(NSString *)propertyName;
-- (instancetype)getValueWithProperty:(IHFProperty *)property;
+- (instancetype)valueWithPropertName:(NSString *)propertyName;
+- (instancetype)valueWithProperty:(IHFProperty *)property;
+
+/**
+ Get a Class All properties which type is array
+ */
++ (NSArray <IHFProperty *>*)propertiesForTypeOfArray;
+
+/**
+ Get a Class All properties names which type is array
+ */
++ (NSArray <IHFProperty *>*)propertiesForTypeOfModel;
 
 @end

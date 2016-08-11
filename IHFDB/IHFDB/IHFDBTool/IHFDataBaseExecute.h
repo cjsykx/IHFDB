@@ -29,7 +29,7 @@ static NSString *_dirtyKey = @"IHFDB_Dirty";
 - (instancetype)initWithSqliteName:(NSString *)SqliteName;
 
 typedef void(^IHFDBCompleteBlock)(BOOL success);
-typedef void(^IHFDBUpdateCompleteBlock)(BOOL success,IHFRelationTable *relationTable,FMDatabase *db , BOOL *rollback);
+typedef void(^IHFDBUpdateCompleteBlock)(BOOL success,NSArray < IHFRelationTable *> *relationTables,FMDatabase *db , BOOL *rollback);
 
 // Create
 
@@ -69,17 +69,15 @@ typedef void(^IHFDBUpdateCompleteBlock)(BOOL success,IHFRelationTable *relationT
 
 
 // Sql statement by user
-- (NSArray<id<IHFDBObejctDataSource>> *)executeQueryWithClass:(Class)newClass sqlStatement:(NSString *)sqlStatement inDataBase:(FMDatabase *)db;
+// TODO:
+//- (NSArray<id<IHFDBObejctDataSource>> *)executeQueryWithClass:(Class)newClass sqlStatement:(NSString *)sqlStatement inDataBase:(FMDatabase *)db;
 
 - (BOOL)executeUpdateWithClass:(Class)newClass sqlStatement:(NSString *)sqlStatement completeBlock:(IHFDBCompleteBlock)completion;
 
 - (BOOL)executeUpdateWithClass:(Class)newClass sqlStatements:(NSArray <NSString *>*)sqlStatements completeBlock:(IHFDBCompleteBlock)completion useTransaction:(BOOL)useTransaction;
 
-
-// For insert to execute update
-//- (BOOL)executeUpdateWithModels:(NSArray<IHFRelationTable *> *)newModels useTransaction:(BOOL)useTransaction inTableName:(NSString *)tableName inDataBase:(FMDatabase *)db updateCompletion:(IHFDBUpdateCompleteBlock)updateCompletion;
-
 /** judge is exist the table */
 
 - (BOOL)isTableExistWithTableName:(NSString *)tableName inDatabase:(FMDatabase *)db;
+
 @end
