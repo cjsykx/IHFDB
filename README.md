@@ -172,9 +172,6 @@ return @"patientID";
 ```
 > 可以设置字典映射,和设置子项的类等信息
 
-有问题可以尽管issues , 也可以投到我的163邮箱 cjsykx@163.com.
-
-
 --------------------------- 也可以通过简书 http://www.jianshu.com/p/1f6e56ed76de 也看看说明。
 有问题的话assues我163邮箱：cjsykx@163.com. 谢谢！
 
