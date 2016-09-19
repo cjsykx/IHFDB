@@ -21,10 +21,6 @@
 // -------------------------创建表 -------------------
 
 1.[Patient createTable] ; 就可以为Patient创建一张表名为Patient的表
-2.> 建议在病人多的情况下，调用如下
-[Patient saveModelArray:PatientArray completeBlock:^(BOOL success) {
-NSLog(@"因为这是使用事务,增加插入速度"); 
-}];
 
 如果想为Patient的关系类如例子中的Drugs建表，需要在Patient.m中声明.
 （不需要再调用[Drug createTable],为子类建表） 
