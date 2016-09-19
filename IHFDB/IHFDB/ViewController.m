@@ -16,24 +16,60 @@
 #import "TypeCatagoty.h"
 #import "MJExtension.h"
 #import "IHFDataBaseExecute.h"
-@interface ViewController ()
+#import "IHFAlertController.h"
+#import "MessageUI/MessageUI.h"
+@interface ViewController ()<MFMailComposeViewControllerDelegate>
 
 @end
 
 @implementation ViewController
 
+- (void)beyongOfArray:(NSArray *)arr{
+    
+    NSLog(@"222");
+    NSArray *array = [NSArray arrayWithObject:@"there is only one object in this arary app will crash and throw an exception!"];
+    NSLog(@"%@", [array objectAtIndex:1]); // Index 1 beyond 0 - 0
+    NSLog(@"222222");
+}
+
+
+- (void)buttonClick:(UIButton *)sender {
+    [self beyongOfArray:nil];
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
+//    [self beyongOfArray:nil];
+
     
-//    [self createTable];
-//    [self insertManyModelToDataBase];
-//    [self deleteDirtyData];
+    UIButton *button = [[UIButton alloc] init];
+    button.frame = CGRectMake(50, 50, 50, 50);
+    [button addTarget:self action:@selector(buttonClick:) forControlEvents:UIControlEventTouchUpInside];
+    button.backgroundColor = [UIColor redColor];
+    [self.view addSubview:button];
     
+//    [self convertTo];
+//    [self performSelector:@selector(beyongOfArray:) withObject:nil afterDelay:0.5];
+//    
+//    CFRunLoopRef currentLoop = CFRunLoopGetCurrent();
+//    
+//    [self beyongOfArray:nil];
+//    CFRunLoopRun();
+//    NSLog(@"1111");
+
+//    if ([MFMailComposeViewController canSendMail]) { // 用户已设置邮件账户
+//        [self sendEmailAction]; // 调用发送邮件的代码
+//    }
+    
+//    UIButton *button = [[UIButton alloc] initWithFrame:CGRectMake(10, 10, 200, 100)];
+//    [button addTarget:self action:@selector(didDo:) forControlEvents:UIControlEventTouchUpInside];
+//    button.backgroundColor = [UIColor redColor];
+//    [self.view addSubview:button];
 //    [self selectByCustomIdFromDataBase];
 //    [self selectFromDataBase];
     
-    [self convertTo];
+//    [self convertTo];
 //    [self deletePatient];
 //    [self mapperTest];
     
@@ -156,10 +192,26 @@
 }
 
 
+- (void)mailComposeController:(MFMailComposeViewController *)controller didFinishWithResult:(MFMailComposeResult)result error:(NSError *)error{
+    
+    [controller dismissViewControllerAnimated:YES completion:^{
+        
+    }];
+}
+
+
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
 }
+
+- (void)didDo:(UIButton *)sender{
+    
+    [self createTable];
+    [self insertManyModelToDataBase];
+    [self deleteDirtyData];
+}
+
 
 -(void)deletePatient{
     
@@ -300,6 +352,8 @@
             
         }
         
+        NSLog(@"names = %@",[patient dictWithIgnoredPropertyNames]);
+        
         DrugType *type = [[DrugType alloc] init];
         type.type = @"处方药";
         type.doctorType = @"主治";
@@ -435,7 +489,7 @@
         Bed *bed = [[Bed alloc] init];
         bed.bedNumber = @"+1";
         bed.ward = @"L1";
-        bed.bedID = @(i);
+        bed.bedID = @(1);
 
         patient.bed = bed;
         

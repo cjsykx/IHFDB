@@ -17,18 +17,18 @@ static NSMutableDictionary *_TypeOfModelPropertiesDict;
 
 @implementation NSObject (IHFModelOperation)
 
-+ (void)load{
++ (void)load {
     _allowedPropertyNamesDict = [NSMutableDictionary dictionary];
     _TypeOfArrayPropertiesDict = [NSMutableDictionary dictionary];
     _TypeOfModelPropertiesDict = [NSMutableDictionary dictionary];
 }
 
-- (void)setProperties:(id)properties forKey:(NSString *)key{
+- (void)setProperties:(id)properties forKey:(NSString *)key {
     [_allowedPropertyNamesDict setValue:properties forKey:key];
 }
 
 
-+ (NSArray*)getAllPropertyName{
++ (NSArray*)getAllPropertyName {
     NSMutableArray* nameArray = [NSMutableArray array];
     unsigned int count = 0;
     objc_property_t *property_t = class_copyPropertyList(self, &count);
@@ -41,7 +41,7 @@ static NSMutableDictionary *_TypeOfModelPropertiesDict;
     return nameArray;
 }
 
-- (IHFProperty *)propertyWithName:(NSString *)propertyame{
+- (IHFProperty *)propertyWithName:(NSString *)propertyame {
     
     __block IHFProperty *theProperty;
     [[self class] enumeratePropertiesUsingBlock:^(IHFProperty *property, NSUInteger idx, BOOL *stop) {
@@ -53,7 +53,7 @@ static NSMutableDictionary *_TypeOfModelPropertiesDict;
     return theProperty;
 }
 
-- (NSArray*)getAllPropertyName{
+- (NSArray*)getAllPropertyName {
     NSMutableArray* nameArray = [NSMutableArray array];
     unsigned int count = 0;
     objc_property_t *property_t = class_copyPropertyList([self class], &count);
@@ -66,7 +66,7 @@ static NSMutableDictionary *_TypeOfModelPropertiesDict;
     return nameArray;
 }
 
-+ (NSDictionary*)getAllPropertyNameAndType{
++ (NSDictionary*)getAllPropertyNameAndType {
     NSMutableDictionary* dic = [NSMutableDictionary dictionary];
     unsigned int count = 0;
     objc_property_t* property_t = class_copyPropertyList(self, &count);
@@ -80,7 +80,7 @@ static NSMutableDictionary *_TypeOfModelPropertiesDict;
     return dic;
 }
 
--(void)setValue:(id)aValue forProperty:(IHFProperty *)property{
+-(void)setValue:(id)aValue forProperty:(IHFProperty *)property {
     
     SEL setSel = property.setSel;
     
@@ -89,60 +89,60 @@ static NSMutableDictionary *_TypeOfModelPropertiesDict;
         IMP imp = property.imp;
 
         switch (property.type) {
-            case IHFPropertyTypeArray:{
+            case IHFPropertyTypeArray: {
                 //Fetch the model contained in the array , to select the relation table
                 
                 if(![aValue isKindOfClass:[NSArray class]]) return;
                 void (*func) (id,SEL,NSArray*) = (void*)imp;
                 func(self,setSel,(NSArray *)aValue);
-            }break;
-            case IHFPropertyTypeModel:{
+            } break;
+            case IHFPropertyTypeModel: {
                 //Fetch the model contained in the array , to select the relation table
                 void (*func) (id,SEL,id) = (void*)imp;
                 func(self,setSel,aValue);
-            }break;
-            case IHFPropertyTypeDate:{
+            } break;
+            case IHFPropertyTypeDate: {
                 void (*func) (id,SEL,NSDate*) = (void*)imp;
                 func(self,setSel,(NSDate *)aValue);
-            }break;
+            } break;
             case IHFPropertyTypeInt  :
-            case IHFPropertyTypeBOOL :{
+            case IHFPropertyTypeBOOL : {
                 if ([aValue isKindOfClass:[NSNumber class]]) {
                     int value = [((NSNumber *)aValue) intValue];
                     void (*func) (id,SEL,int) = (void *)imp;
                     func(self,setSel,value);
                 }
-            }break;
-            case IHFPropertyTypeLong :{
+            } break;
+            case IHFPropertyTypeLong : {
                 long value = [((NSNumber*)aValue) longValue];
                 void (*func) (id,SEL,long) = (void*)imp;
                 func(self,setSel,value);
-            }break;
-            case IHFPropertyTypeDouble :{
+            } break;
+            case IHFPropertyTypeDouble : {
                 double value = [((NSNumber *)aValue) doubleValue];
                 void (*func) (id,SEL,double) = (void*)imp;
                 func(self,setSel,value);
-            }break;
-            case IHFPropertyTypeFloat :{
+            } break;
+            case IHFPropertyTypeFloat : {
                 float value = [((NSNumber *)aValue) floatValue];
                 void (*func) (id,SEL,float) = (void*)imp;
                 func(self,setSel,value);
-            }break;
+            } break;
             case IHFPropertyTypeData :
-            case IHFPropertyTypeImage :{
+            case IHFPropertyTypeImage : {
                 NSData* value = (NSData *)aValue;
                 void (*func) (id,SEL,NSData*) = (void*)imp;
                 func(self,setSel,value);
-            }break;
-            case IHFPropertyTypeString :{
+            } break;
+            case IHFPropertyTypeString : {
                 void (*func) (id,SEL,NSString *) = (void *)imp;
                 func(self,setSel,(NSString *)aValue);
-            }break;
-            case IHFPropertyTypeNumber :{
+            } break;
+            case IHFPropertyTypeNumber : {
                 NSNumber *value;
                 if ([aValue isKindOfClass:[NSNumber class]]) {
                     value = (NSNumber *)aValue;
-                }else if([aValue isKindOfClass:[NSString class]]){
+                } else if([aValue isKindOfClass:[NSString class]]){
                     
                     NSNumberFormatter *format = [[NSNumberFormatter alloc] init];
                     value = [format numberFromString:(NSString *)aValue];
@@ -150,90 +150,81 @@ static NSMutableDictionary *_TypeOfModelPropertiesDict;
                 
                 void (*func) (id,SEL,NSNumber*) = (void*)imp;
                 func(self,setSel,value);
-            }break;
+            } break;
                 
-            default:{
-                
+            default: {
                 void (*func) (id,SEL,id) = (void*)imp;
                 func(self,setSel,aValue);
-            }break;
+            } break;
         }
     }
 }
 
-- (void)setValue:(NSObject *)aValue propertyName:(NSString *)name propertyType:(NSString *)type{
+- (void)setValue:(NSObject *)aValue propertyName:(NSString *)name propertyType:(NSString *)type {
     SEL setSel = [self createSetSEL:name];
     if ([self respondsToSelector:setSel]) {
         if ([type isEqualToString:@"NSDate"]) {
-            
             IMP imp = [self methodForSelector:setSel];
             void (*func) (id,SEL,NSDate*) = (void*)imp;
             func(self,setSel,(NSDate *)aValue);
-            
-        }else if ([type isEqualToString:@"i"]||[type isEqualToString:@"B"]){
+        } else if ([type isEqualToString:@"i"]||[type isEqualToString:@"B"]) {
             if ([aValue isKindOfClass:[NSNumber class]]) {
                 int value = [((NSNumber *)aValue) intValue];
                 IMP imp = [self methodForSelector:setSel];
                 void (*func) (id,SEL,int) = (void *)imp;
                 func(self,setSel,value);
             }
-        }else if ([type isEqualToString:@"d"]&&[aValue isKindOfClass:[NSNumber class]]) {
+        } else if ([type isEqualToString:@"d"]&&[aValue isKindOfClass:[NSNumber class]]) {
             double value = [((NSNumber *)aValue) doubleValue];
             IMP imp = [self methodForSelector:setSel];
             void (*func) (id,SEL,double) = (void*)imp;
             func(self,setSel,value);
             
-        }else if ([type isEqualToString:@"f"] && [aValue isKindOfClass:[NSNumber class]]) {
+        } else if ([type isEqualToString:@"f"] && [aValue isKindOfClass:[NSNumber class]]) {
             float value = [((NSNumber *)aValue) floatValue];
             IMP imp = [self methodForSelector:setSel];
             void (*func) (id,SEL,float) = (void*)imp;
             func(self,setSel,value);
             
-        }else if ([type isEqualToString:@"q"]&&[aValue isKindOfClass:[NSNumber class]]) {
+        } else if ([type isEqualToString:@"q"]&&[aValue isKindOfClass:[NSNumber class]]) {
             long value = [((NSNumber*)aValue) longValue];
             IMP imp = [self methodForSelector:setSel];
             void (*func) (id,SEL,long) = (void*)imp;
             func(self,setSel,value);
-        }else if ([type isEqualToString:@"NSData"]) {
+        } else if ([type isEqualToString:@"NSData"]) {
             NSData* value = (NSData *)aValue;
             IMP imp = [self methodForSelector:setSel];
             void (*func) (id,SEL,NSData*) = (void*)imp;
             func(self,setSel,value);
-            
-        }else if ([type isEqualToString:@"UIImage"]) {
+        } else if ([type isEqualToString:@"UIImage"]) {
             UIImage* value = [UIImage imageWithData:(NSData*)aValue];
             IMP imp = [self methodForSelector:setSel];
             void (*func) (id,SEL,UIImage*) = (void*)imp;
             func(self,setSel,value);
-            
-        }else if ([type isEqualToString:@"NSNumber"]) {
-            
+        } else if ([type isEqualToString:@"NSNumber"]) {
             NSNumber *value;
             if ([aValue isKindOfClass:[NSNumber class]]) {
                 value = (NSNumber *)aValue;
-            }else if([aValue isKindOfClass:[NSString class]]){
-                
+            }else if([aValue isKindOfClass:[NSString class]]) {
                 NSNumberFormatter *format = [[NSNumberFormatter alloc] init];
                 value = [format numberFromString:(NSString *)aValue];
             }
-
             IMP imp = [self methodForSelector:setSel];
             void (*func) (id,SEL,NSNumber*) = (void*)imp;
             func(self,setSel,value);
-        }
-        else if ([type isEqualToString:@"NSArray"]){
+        } else if ([type isEqualToString:@"NSArray"]) {
             
             if(![aValue isKindOfClass:[NSArray class]]) return;
             IMP imp = [self methodForSelector:setSel];
             void (*func) (id,SEL,NSArray*) = (void*)imp;
             func(self,setSel,(NSArray *)aValue);
-        }else if ([type isEqualToString:@"NSDictionary"]) {
+        } else if ([type isEqualToString:@"NSDictionary"]) {
             NSError* error;
             NSData* data = [(NSString*)aValue dataUsingEncoding:NSUTF8StringEncoding];
             NSDictionary* dic;
             if (!data) {
                 dic = nil;
-            }else
+            } else
                 dic = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:&error];
             IMP imp = [self methodForSelector:setSel];
             void (*func) (id,SEL,NSDictionary*) = (void*)imp;
@@ -246,7 +237,7 @@ static NSMutableDictionary *_TypeOfModelPropertiesDict;
     }
 }
 
-- (NSDictionary *)getAllPropertyNameAndType{
+- (NSDictionary *)getAllPropertyNameAndType {
     NSMutableDictionary* dic = [NSMutableDictionary dictionary];
     unsigned int count = 0;
     objc_property_t* property_t = class_copyPropertyList([self class], &count);
@@ -261,23 +252,23 @@ static NSMutableDictionary *_TypeOfModelPropertiesDict;
 }
 
 //创建get方法
-- (SEL)createGetSelectorWith:(NSString*)propertyName{
+- (SEL)createGetSelectorWith:(NSString*)propertyName {
     return NSSelectorFromString(propertyName);
 }
 //创建set方法
-- (SEL)createSetSEL:(NSString*)propertyName{
+- (SEL)createSetSEL:(NSString*)propertyName {
     NSString* firstString = [propertyName substringToIndex:1].uppercaseString;
     propertyName = [propertyName stringByReplacingCharactersInRange:NSMakeRange(0, 1) withString:firstString];
     propertyName = [NSString stringWithFormat:@"set%@:",propertyName];
     return NSSelectorFromString(propertyName);
 }
 
--(instancetype)valueWithProperty:(IHFProperty *)property{
+-(instancetype)valueWithProperty:(IHFProperty *)property {
     SEL getSel = property.getSel;
     return [self valueWithGetSel:getSel];
 }
 
--(instancetype)valueWithGetSel:(SEL)getSel{
+-(instancetype)valueWithGetSel:(SEL)getSel {
     if ([self respondsToSelector:getSel]) {
         //获取类和方法签名
         NSMethodSignature* signature = [self methodSignatureForSelector:getSel];
@@ -291,11 +282,11 @@ static NSMutableDictionary *_TypeOfModelPropertiesDict;
             NSObject *__unsafe_unretained returnValue = nil;
             [invocation getReturnValue:&returnValue];
             return returnValue;
-        }else if (!memcmp(returnType, "i", 1)||!memcmp(returnType, "q", 1)||!memcmp(returnType, "Q", 1)||!memcmp(returnType, "B", 1)){
+        } else if (!memcmp(returnType, "i", 1)||!memcmp(returnType, "q", 1)||!memcmp(returnType, "Q", 1)||!memcmp(returnType, "B", 1)) {
             int returnValue = 0;
             [invocation getReturnValue:&returnValue];
             return [NSNumber numberWithInt:returnValue];
-        }else if(!memcmp(returnType, "f", 1)){
+        } else if(!memcmp(returnType, "f", 1)) {
             float returnValue = 0.0;
             [invocation getReturnValue:&returnValue];
             NSString* floatStr = [NSString stringWithFormat:@"%.3f",returnValue];
@@ -311,31 +302,31 @@ static NSMutableDictionary *_TypeOfModelPropertiesDict;
 }
 
 // Perform getter method
-- (instancetype)valueWithPropertName:(NSString *)propertyName{
+- (instancetype)valueWithPropertName:(NSString *)propertyName {
     
     SEL getSel = [self createGetSelectorWith:propertyName];
     return [self valueWithGetSel:getSel];
 }
 
 
-- (NSString *)typeNameWith:(NSString *)propertyName{
+- (NSString *)typeNameWith:(NSString *)propertyName {
     NSString* typeStr = [[self getAllPropertyNameAndType] valueForKey:propertyName];
     
     if ([typeStr isEqualToString:@"i"]) {
         return @"INTEGER";
-    }else if ([typeStr isEqualToString:@"f"]) {
+    } else if ([typeStr isEqualToString:@"f"]) {
         return @"FLOAT";
-    }else if ([typeStr isEqualToString:@"B"]) {
+    } else if ([typeStr isEqualToString:@"B"]) {
         return @"BOOL";
-    }else if ([typeStr isEqualToString:@"d"]) {
+    } else if ([typeStr isEqualToString:@"d"]) {
         return @"DOUBLE";
-    }else if ([typeStr isEqualToString:@"q"]) {
+    } else if ([typeStr isEqualToString:@"q"]) {
         return @"LONG";
-    }else if ([typeStr isEqualToString:@"NSData"]||[typeStr isEqualToString:@"UIImage"]) {
+    } else if ([typeStr isEqualToString:@"NSData"] || [typeStr isEqualToString:@"UIImage"]) {
         return @"BLOB";
-    }else if ([typeStr isEqualToString:@"NSNumber"]){
+    } else if ([typeStr isEqualToString:@"NSNumber"]) {
         return @"NSNumber";
-    }else if ([typeStr isEqualToString:@"NSDate"]){
+    } else if ([typeStr isEqualToString:@"NSDate"] ){
         return @"NSDate";
     } else
         return @"TEXT";
@@ -345,29 +336,27 @@ static NSMutableDictionary *_TypeOfModelPropertiesDict;
     
     if ([TypeName isEqualToString:@"i"]) {
         return @"INTEGER";
-    }else if ([TypeName isEqualToString:@"f"]) {
+    } else if ([TypeName isEqualToString:@"f"]) {
         return @"REAL";
-    }else if ([TypeName isEqualToString:@"B"]) {
+    } else if ([TypeName isEqualToString:@"B"]) {
         return @"INTEGER";
-    }else if ([TypeName isEqualToString:@"d"]) {
+    } else if ([TypeName isEqualToString:@"d"]) {
         return @"REAL";
-    }else if ([TypeName isEqualToString:@"q"]) {
+    } else if ([TypeName isEqualToString:@"q"]) {
         return @"INTEGER";
-    }else if ([TypeName isEqualToString:@"NSData"] || [TypeName isEqualToString:@"UIImage"]) {
+    } else if ([TypeName isEqualToString:@"NSData"] || [TypeName isEqualToString:@"UIImage"]) {
         return @"BLOB";
-    }else if ([TypeName isEqualToString:@"NSNumber"]){
+    } else if ([TypeName isEqualToString:@"NSNumber"]){
         return @"REAL";
-    }
-    else if ([TypeName isEqualToString:@"NSArray"]){
+    } else if ([TypeName isEqualToString:@"NSArray"]){
         return @"";
-    }
-    else if ([TypeName isEqualToString:@"NSDate"]){
+    } else if ([TypeName isEqualToString:@"NSDate"]){
         return @"DATETIME";
-    }else
+    } else
         return @"TEXT";
 }
 
-- (NSDictionary *)dictionaryFromModel{
+- (NSDictionary *)dictionaryFromModel {
     
     NSArray *dicts = [[NSArray arrayWithObject:self] dictionaryArrayFromModelArray];
     
@@ -375,7 +364,7 @@ static NSMutableDictionary *_TypeOfModelPropertiesDict;
     return [dicts firstObject];
 }
 
-- (NSArray<NSDictionary *> *)dictionaryArrayFromModelArray{
+- (NSArray<NSDictionary *> *)dictionaryArrayFromModelArray {
     
     if (![self isKindOfClass:[NSArray class]]) return nil;
     
@@ -398,11 +387,11 @@ static NSMutableDictionary *_TypeOfModelPropertiesDict;
                 // Fetch the model contained in the array , to create table
                 
                 if (property.objectClass) {
-                    if([value isKindOfClass:[NSArray class]] && [value count]){
+                    if([value isKindOfClass:[NSArray class]] && [value count]) {
                         value = [value dictionaryArrayFromModelArray];
                     }
                 }
-            }else if (propertyType == IHFPropertyTypeModel){ // deal with model
+            }else if (propertyType == IHFPropertyTypeModel) { // deal with model
                 value = [value dictionaryFromModel];
                 [dict setValue:[value dictionaryFromModel] forKey:property.propertyName];
             }
@@ -418,11 +407,23 @@ static NSMutableDictionary *_TypeOfModelPropertiesDict;
     return modelArray;
 }
 
-+ (NSArray<NSDictionary *> *)dictionaryArrayFromModelArray:(NSArray *)modelArray{
++ (NSArray<NSDictionary *> *)dictionaryArrayFromModelArray:(NSArray *)modelArray {
     return [modelArray dictionaryArrayFromModelArray];
 }
 
-+ (instancetype)modelFromDictionary:(NSDictionary *)dict{
++ (instancetype)modelFromJsonString:(NSString *)jsonString {
+    if(!jsonString) return nil;
+    id object = [NSJSONSerialization JSONObjectWithData:[((NSString *)jsonString) dataUsingEncoding:NSUTF8StringEncoding] options:kNilOptions error:nil];
+    return [self modelFromDictionary:object];
+}
+
++ (instancetype)modelFromJsonData:(NSData *)jsonData {
+    if(!jsonData) return nil;
+    id object = [NSJSONSerialization JSONObjectWithData:(NSData *)jsonData options:kNilOptions error:nil];
+    return [self modelFromDictionary:object];
+}
+
++ (instancetype)modelFromDictionary:(NSDictionary *)dict {
     
     if (!dict) return nil;
     NSArray *models = [self modelArrayFromDictionaryArray:[NSArray arrayWithObject:dict]];
@@ -430,7 +431,7 @@ static NSMutableDictionary *_TypeOfModelPropertiesDict;
     return [models firstObject];
 }
 
-+ (NSArray <id> *)modelArrayFromDictionaryArray:(NSArray<NSDictionary *> *)dictArray{
++ (NSArray <id> *)modelArrayFromDictionaryArray:(NSArray<NSDictionary *> *)dictArray {
     
     __weak typeof(self) weakSelf = self;
     __block NSMutableArray *models = [NSMutableArray array];
@@ -442,10 +443,10 @@ static NSMutableDictionary *_TypeOfModelPropertiesDict;
         [weakSelf enumeratePropertiesUsingBlock:^(IHFProperty *property, NSUInteger idx, BOOL *stop) {
             
             NSString *key = property.propertyName;
-            if(property.propertyNameMapped) key = property.propertyNameMapped; // change to mapper
+            if (property.propertyNameMapped) key = property.propertyNameMapped; // change to mapper
             
             id value = [dict objectForKey:key];
-            if(!value || value == [NSNull null]) return ;
+            if (!value || value == [NSNull null]) return ;
             IHFPropertyType propertyType = property.type;
 
             if (propertyType == IHFPropertyTypeArray) { // Deal with array
@@ -454,14 +455,13 @@ static NSMutableDictionary *_TypeOfModelPropertiesDict;
                 
                 if (property.objectClass) {
                                         
-                    if([value isKindOfClass:[NSArray class]]){
+                    if ([value isKindOfClass:[NSArray class]]) {
                         [model setValue:[property.objectClass modelArrayFromDictionaryArray:value] forProperty:property];
                     }
                 }
-            }else if (propertyType == IHFPropertyTypeModel){ // Deal with model
-                
+            } else if (propertyType == IHFPropertyTypeModel) { // Deal with model
                 [model setValue:[property.objectClass modelFromDictionary:value] forProperty:property];
-            }else{
+            } else {
                 [model setValue:value forProperty:property];
             }
         }];
@@ -472,24 +472,24 @@ static NSMutableDictionary *_TypeOfModelPropertiesDict;
     return models;
 }
 
-static id objectType(NSString *typeString){
+static id objectType(NSString *typeString) {
     if ([typeString containsString:@"@"]) {
         NSArray* strArray = [typeString componentsSeparatedByString:@"\""];
         if (strArray.count >= 1) {
             return strArray[1];
             
-        }else
+        } else
             return nil;
-    }else
+    } else
         return [typeString substringWithRange:NSMakeRange(1, 1)];
 }
 
-+ (NSArray *)propertys{
++ (NSArray *)propertys {
     
     // Fetch the cache properties !
     NSMutableArray *allowProperties = [_allowedPropertyNamesDict objectForKey:NSStringFromClass(self)];
     
-    if(!allowProperties){
+    if(!allowProperties) {
         allowProperties = [NSMutableArray array];
         
         unsigned int count = 0;
@@ -523,7 +523,7 @@ static id objectType(NSString *typeString){
     return allowProperties;
 }
 
-+ (void)enumeratePropertiesUsingBlock:(IHFPropertiesEnumeration)enumeration{
++ (void)enumeratePropertiesUsingBlock:(IHFPropertiesEnumeration)enumeration {
     
     if (!enumeration) return;
     
@@ -539,16 +539,15 @@ static id objectType(NSString *typeString){
     }
 }
 
-+ (NSArray <IHFProperty *>*)propertiesForTypeOfArray{
++ (NSArray <IHFProperty *>*)propertiesForTypeOfArray {
     
     NSMutableArray *properties = [_TypeOfArrayPropertiesDict objectForKey:NSStringFromClass(self)];
     
-    if(!properties){
-
+    if (!properties) {
         properties = [NSMutableArray array];
         [self enumeratePropertiesUsingBlock:^(IHFProperty *property, NSUInteger idx, BOOL *stop) {
             
-            if(property.type == IHFPropertyTypeArray){
+            if (property.type == IHFPropertyTypeArray) {
                 [properties addObject:property];
             }
         }];
@@ -558,16 +557,16 @@ static id objectType(NSString *typeString){
     return properties;
 }
 
-+ (NSArray <IHFProperty *>*)propertiesForTypeOfModel{
++ (NSArray <IHFProperty *>*)propertiesForTypeOfModel {
     
     NSMutableArray *properties = [_TypeOfModelPropertiesDict objectForKey:NSStringFromClass(self)];
     
-    if(!properties){
+    if(!properties) {
         
         properties = [NSMutableArray array];
         [self enumeratePropertiesUsingBlock:^(IHFProperty *property, NSUInteger idx, BOOL *stop) {
             
-            if(property.type == IHFPropertyTypeModel){
+            if(property.type == IHFPropertyTypeModel) {
                 [properties addObject:property];
             }
         }];
@@ -577,5 +576,21 @@ static id objectType(NSString *typeString){
     return properties;
 }
 
+- (NSDictionary *)dictWithIgnoredPropertyNames {
+    
+    NSArray *ignoresPropertyNames;
+    __block NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
+    if ([[self class] respondsToSelector:@selector(propertyNamesForIgnore)]) {
+        ignoresPropertyNames = [[self class] propertyNamesForIgnore];
+    }
+    
+    [ignoresPropertyNames enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        
+        if ([obj isKindOfClass:[NSString class]]) {
+            [dict setObject:[self valueWithPropertName:obj] forKey:obj];
+        }
+    }];
+    return dict;
+}
 
 @end

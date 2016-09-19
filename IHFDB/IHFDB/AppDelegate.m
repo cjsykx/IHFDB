@@ -7,7 +7,8 @@
 //
 
 #import "AppDelegate.h"
-
+#import "IHFUncaughtExceptionHandler.h"
+#import "ViewController.h"
 @interface AppDelegate ()
 
 @end
@@ -17,6 +18,25 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
+    
+    
+    
+
+    
+    self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+    
+    ViewController *loginVC = [[ViewController alloc] init];
+    
+    // Set up bar
+    
+    
+    //    self.window.rootViewController
+    self.window.backgroundColor = [UIColor whiteColor];
+    [_window setRootViewController:loginVC];
+    [_window makeKeyAndVisible];
+
+    InstallUncaughtExceptionHandler();
+
     return YES;
 }
 

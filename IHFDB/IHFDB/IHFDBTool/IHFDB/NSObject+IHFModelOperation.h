@@ -12,40 +12,64 @@
 
 @interface NSObject (IHFModelOperation)<IHFDBObejctDataSource>
 
-///  *********** Model Model convert to Dict ****************
+//*************** Model Model convert to Dict ****************
 
-/** Model convert to dict */
+/**
+ Model convert to dict
+ */
 - (NSDictionary *)dictionaryFromModel;
 
-/** Model Array convert to dict Array */
+/**
+ Model Array convert to dict Array
+ */
 - (NSArray <NSDictionary *> *)dictionaryArrayFromModelArray;
 + (NSArray <NSDictionary *> *)dictionaryArrayFromModelArray:(NSArray *)modelArray;
 
 
 ///  ***********  Dict convert to Model ****************
 
-/** Dict convert to Model */
+/**
+ Dict convert to Model
+ */
 + (instancetype)modelFromDictionary:(NSDictionary *)dict;
 
-/** Dict Array convert to Model Array*/
+/**
+ Dict Array convert to Model Array
+ */
 
 + (NSArray <id> *)modelArrayFromDictionaryArray:(NSArray <NSDictionary *> *)dict;
+
+/**
+ JsonString convert to Model
+ */
++ (instancetype)modelFromJsonString:(NSString *)jsonString;
+
+/**
+ JsonData convert to Model
+ */
++ (instancetype)modelFromJsonData:(NSData *)jsonData;
+
+/**
+ Return a dictionary : key is Ignored property names , and value is the ignoredKey_Value.
+ */
+
+- (NSDictionary *)dictWithIgnoredPropertyNames;
 
 
 ///  ***********  ******************* ****************
 
-/** return all property name */
+/** Return all property name */
 
 + (NSArray *)getAllPropertyName;
 - (NSArray *)getAllPropertyName;
 
-/** return all property name and type */
+/** Return all property name and type */
 
 + (NSDictionary *)getAllPropertyNameAndType;
 - (NSDictionary *)getAllPropertyNameAndType;
 
 
-/** return type name in sqlite with the type  */
+/** Return type name in sqlite with the type  */
 
 - (NSString *)sqlTypeNameWithTypeName:(NSString *)TypeName;
 

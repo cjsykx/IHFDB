@@ -9,7 +9,7 @@
 #import "IHFPredicate.h"
 
 @implementation IHFPredicate
-- (instancetype)initWithString:(NSString*)string{
+- (instancetype)initWithString:(NSString*)string {
     self = [super init];
     if (self) {
         _predicateFormat = string;
@@ -17,7 +17,7 @@
     return self;
 }
 
-- (instancetype)initWithString:(NSString *)string OrderBy:(NSString *)orderBy{
+- (instancetype)initWithString:(NSString *)string OrderBy:(NSString *)orderBy {
     self = [super init];
     if (self) {
         _predicateFormat = string;
@@ -26,18 +26,18 @@
     return self;
 }
 
-+ (instancetype)predicateWithString:(NSString *)string{
++ (instancetype)predicateWithString:(NSString *)string {
     IHFPredicate * predicate  = [[self alloc] initWithString:string];
     return predicate;
 }
 
-+ (instancetype)predicateWithString:(NSString *)string OrderBy:(NSString *)sortString{
++ (instancetype)predicateWithString:(NSString *)string OrderBy:(NSString *)sortString {
     
     IHFPredicate *predicate = [[IHFPredicate alloc] initWithString:string OrderBy:sortString];
     return predicate;
 }
 
-- (instancetype)initWithFormat:(NSString *)name, ...{
+- (instancetype)initWithFormat:(NSString *)name, ... {
     self = [super init];
     if (self) {
 
@@ -52,7 +52,7 @@
     return self;
 }
 
-- (instancetype)initWithOrderBy:(NSString *)orderBy Format:(NSString *)name, ...{
+- (instancetype)initWithOrderBy:(NSString *)orderBy Format:(NSString *)name, ... {
     self = [super init];
     if (self) {
         _orderBy = orderBy;
@@ -68,7 +68,7 @@
     return self;
 }
 
-+ (instancetype)predicateWithFormat:(NSString *)name, ...{
++ (instancetype)predicateWithFormat:(NSString *)name, ... {
     IHFPredicate * predicate = [[IHFPredicate alloc] init];
     
     // add '' for %@
@@ -95,12 +95,12 @@
 }
 
 #pragma mark - append AND and OR predicate
--(void)appendAnd_Predicate:(IHFPredicate *)and_predicate{
+-(void)appendAnd_Predicate:(IHFPredicate *)and_predicate {
     
     self.predicateFormat = [NSString stringWithFormat:@"%@ AND %@",self.predicateFormat,and_predicate.predicateFormat];
 }
 
--(void)appendOr_Predicate:(IHFPredicate *)or_predicate{
+-(void)appendOr_Predicate:(IHFPredicate *)or_predicate {
     
     self.predicateFormat = [NSString stringWithFormat:@"%@ OR %@",self.predicateFormat,or_predicate.predicateFormat];
 }

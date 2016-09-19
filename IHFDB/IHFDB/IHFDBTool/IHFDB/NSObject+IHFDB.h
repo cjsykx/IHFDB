@@ -11,7 +11,7 @@
 #import <Foundation/Foundation.h>
 #import "IHFPredicate.h"
 #import "IHFDBObjectDataSource.h"
-#import "IHFDB.h"
+#import "IHFDataBaseExecute.h"
 @interface NSObject (IHFDB)
 
 typedef void(^IHFDBCompleteBlock)(BOOL success);

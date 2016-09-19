@@ -10,7 +10,7 @@
 #import "IHFDBObjectDataSource.h"
 @implementation IHFProperty
 
-- (IHFPropertyType)typeConvertFormString:(NSString *)aString{
+- (IHFPropertyType)typeConvertFormString:(NSString *)aString {
     
     IHFPropertyType type = IHFPropertyTypeModel; // Model type
     
@@ -18,42 +18,42 @@
     
     if ([aString isEqualToString:@"NSString"] || [aString isEqualToString:@"NSMutableString"]) {
         type = IHFPropertyTypeString;
-    }else if ([aString isEqualToString:@"NSNumber"]) {
+    } else if ([aString isEqualToString:@"NSNumber"]) {
         type = IHFPropertyTypeNumber;
-    }else if ([aString isEqualToString:@"NSDate"]) {
+    } else if ([aString isEqualToString:@"NSDate"]) {
         type = IHFPropertyTypeDate;
-    }else if ([aString isEqualToString:@"NSArray"] || [aString isEqualToString:@"NSMutableArray"]) {
+    } else if ([aString isEqualToString:@"NSArray"] || [aString isEqualToString:@"NSMutableArray"]) {
         type = IHFPropertyTypeArray;
-    }else if ([aString isEqualToString:@"NSURL"]) {
+    } else if ([aString isEqualToString:@"NSURL"]) {
         type = IHFPropertyTypeURL;
-    }else if ([aString isEqualToString:@"NSValue"]) {
+    } else if ([aString isEqualToString:@"NSValue"]) {
         type = IHFPropertyTypeValue;
-    }else if ([aString isEqualToString:@"NSError"]) {
+    } else if ([aString isEqualToString:@"NSError"]) {
         type = IHFPropertyTypeError;
-    }else if ([aString isEqualToString:@"NSDictionary"] || [aString isEqualToString:@"NSMutableDictionary"]) {
+    } else if ([aString isEqualToString:@"NSDictionary"] || [aString isEqualToString:@"NSMutableDictionary"]) {
         type = IHFPropertyTypeDictionary;
-    }else if ([aString isEqualToString:@"NSAttributedString"]) {
+    } else if ([aString isEqualToString:@"NSAttributedString"]) {
         type = IHFPropertyTypeAttributedString;
-    }else if ([aString isEqualToString:@"B"]) {
+    } else if ([aString isEqualToString:@"B"]) {
         type = IHFPropertyTypeBOOL;
-    }else if ([aString isEqualToString:@"f"]) {
+    } else if ([aString isEqualToString:@"f"]) {
         type = IHFPropertyTypeFloat;
-    }else if ([aString isEqualToString:@"q"]) {
+    } else if ([aString isEqualToString:@"q"]) {
         type = IHFPropertyTypeLong;
-    }else if ([aString isEqualToString:@"UIImage"]) {
+    } else if ([aString isEqualToString:@"UIImage"]) {
         type = IHFPropertyTypeImage;
-    }else if ([aString isEqualToString:@"d"]) {
+    } else if ([aString isEqualToString:@"d"]) {
         type = IHFPropertyTypeDouble;
-    }else if ([aString isEqualToString:@"i"]) {
+    } else if ([aString isEqualToString:@"i"]) {
         type = IHFPropertyTypeInt;
-    }else if ([aString isEqualToString:@"NSData"] || [aString isEqualToString:@"NSMutableData"]) {
+    } else if ([aString isEqualToString:@"NSData"] || [aString isEqualToString:@"NSMutableData"]) {
         type = IHFPropertyTypeData;
     }
 
     return type;
 }
 
-- (NSNumber *)typeOfFundation{
+- (NSNumber *)typeOfFundation {
     
     if (!_typeOfFundation) {
         return ([self.fundationTypes containsObject:@(self.type)]) ? @(YES) : @(NO);
@@ -61,13 +61,13 @@
     return _typeOfFundation;
 }
 
-- (BOOL)isTypeOfBasicData{
+- (BOOL)isTypeOfBasicData {
     
     if ([self.basicDataTypes containsObject:@(self.type)]) return YES;
     return NO;
 }
 
-- (NSSet *)fundationTypes{
+- (NSSet *)fundationTypes {
     if (_fundationTypes == nil) {
         _fundationTypes = [NSSet setWithObjects:
                              @(IHFPropertyTypeNumber),
@@ -83,7 +83,7 @@
     return _fundationTypes;
 }
 
-- (NSSet *)basicDataTypes{
+- (NSSet *)basicDataTypes {
 
     if (_fundationTypes == nil) {
         _fundationTypes = [NSSet setWithObjects:
@@ -97,7 +97,7 @@
     return _fundationTypes;
 }
 
-- (instancetype)initWithName:(NSString *)name typeString:(NSString *)typeString srcClass:(__unsafe_unretained Class)srcClass{
+- (instancetype)initWithName:(NSString *)name typeString:(NSString *)typeString srcClass:(__unsafe_unretained Class)srcClass {
     
     self = [super init];
     if (self) {
@@ -111,12 +111,18 @@
         _srcClass = srcClass;
         _getSel = [self createGetSELWithPropertyName:name];
         
-        if(_type == IHFPropertyTypeArray){
+        if(_type == IHFPropertyTypeArray) {
             
             if ([srcClass respondsToSelector:@selector(relationshipDictForClassInArray)]) {
-                _objectClass = [[srcClass relationshipDictForClassInArray] objectForKey:name];
+                id object = [[srcClass relationshipDictForClassInArray] objectForKey:name];
+                
+                if ([object isKindOfClass:[NSString class]]) {
+                    _objectClass = NSClassFromString(object);
+                } else {
+                    _objectClass = [[srcClass relationshipDictForClassInArray] objectForKey:name];
+                }
             }
-        }else if (_type == IHFPropertyTypeModel){
+        }else if (_type == IHFPropertyTypeModel) {
             _objectClass = NSClassFromString(typeString);
         }
 
@@ -129,12 +135,12 @@
     return self;
 }
 
-+ (instancetype)propertyWithName:(NSString *)name typeString:(NSString *)typeString srcClass:(__unsafe_unretained Class)srcClass{
++ (instancetype)propertyWithName:(NSString *)name typeString:(NSString *)typeString srcClass:(__unsafe_unretained Class)srcClass {
     return [[self alloc] initWithName:name typeString:typeString srcClass:srcClass];
 }
 
 // create Setter method
-- (SEL)createSetSELWithPropertyName:(NSString *)propertyName{
+- (SEL)createSetSELWithPropertyName:(NSString *)propertyName {
     NSString* firstString = [propertyName substringToIndex:1].uppercaseString;
     propertyName = [propertyName stringByReplacingCharactersInRange:NSMakeRange(0, 1) withString:firstString];
     propertyName = [NSString stringWithFormat:@"set%@:",propertyName];
@@ -142,7 +148,7 @@
 }
 
 // create Getter method
-- (SEL)createGetSELWithPropertyName:(NSString*)propertyName{
+- (SEL)createGetSELWithPropertyName:(NSString*)propertyName {
     return NSSelectorFromString(propertyName);
 }
 

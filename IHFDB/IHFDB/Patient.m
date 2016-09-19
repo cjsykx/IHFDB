@@ -28,4 +28,10 @@
              };
 }
 
+
++ (NSArray *)propertyNamesForIgnore{
+    return @[@"age",@"idCard"];
+}
+
+
 @end

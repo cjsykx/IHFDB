@@ -22,11 +22,11 @@
     return self;
 }
 
-+ (instancetype)relationTableWithSourceObject:(id)sourceObject destinationObject:(id)destinationObject relationName:(NSString *)relationName relation:(IHFRelation)relation{
++ (instancetype)relationTableWithSourceObject:(id)sourceObject destinationObject:(id)destinationObject relationName:(NSString *)relationName relation:(IHFRelation)relation {
     return [[self alloc] initWithSourceObject:sourceObject destinationObject:destinationObject relationName:relationName relation:relation];
 }
 
-- (NSString *)tableName{
+- (NSString *)tableName {
     
     if (self.sourceObject && self.relationName) {
         
@@ -35,27 +35,27 @@
     return nil;
 }
 
-+ (NSArray *)propertyNamesForIgnore{
++ (NSArray *)propertyNamesForIgnore {
     return @[@"sourceObject",@"destinationObject",@"relationName",@"relation"];
 }
 
 // create
-- (void)createInDataBase:(FMDatabase *)db{
+- (void)createInDataBase:(FMDatabase *)db {
     [self createInDataBase:db completeBlock:nil];
 }
 
-- (void)createInDataBase:(FMDatabase *)db completeBlock:(IHFDBCompleteBlock)completion{
+- (void)createInDataBase:(FMDatabase *)db completeBlock:(IHFDBCompleteBlock)completion {
     [[self class] createTableWithName:[self tableName] inDataBase:db CompleteBlock:completion];
 }
 
-- (void)saveInDataBase:(FMDatabase *)db completeBlock:(IHFDBCompleteBlock)completion{
+- (void)saveInDataBase:(FMDatabase *)db completeBlock:(IHFDBCompleteBlock)completion {
     [self saveWithTableName:[self tableName] inDataBase:db completeBlock:completion];
 }
-- (void)saveInDataBase:(FMDatabase *)db{
+- (void)saveInDataBase:(FMDatabase *)db {
     [self saveInDataBase:db completeBlock:nil];
 }
 
-+ (void)saveModelArray:(NSArray *)modelArray inDataBase:(FMDatabase *)db completeBlock:(IHFDBCompleteBlock)completion{
++ (void)saveModelArray:(NSArray *)modelArray inDataBase:(FMDatabase *)db completeBlock:(IHFDBCompleteBlock)completion {
     
     if (![modelArray count]) return;
     
@@ -65,12 +65,12 @@
     [self saveModelArray:modelArray inTableName:[relationTable tableName] inDataBase:db completeBlock:completion];
 }
 
-+ (void)saveModelArray:(NSArray *)modelArray inDataBase:(FMDatabase *)db{
++ (void)saveModelArray:(NSArray *)modelArray inDataBase:(FMDatabase *)db {
     [self saveModelArray:modelArray inDataBase:db completeBlock:nil];
 }
 
 // Fetch the relation models
-- (NSArray *)selectRelationsInDataBase:(FMDatabase *)db{
+- (NSArray *)selectRelationsInDataBase:(FMDatabase *)db {
     
     __block NSMutableArray *selectArray = [NSMutableArray array];
     __weak typeof(self) weakSelf = self;
@@ -84,7 +84,7 @@
         if ([relationModels count]) { // If have count , because predicate is ObjectID , so there is only one object!
             [selectArray addObject:[relationModels lastObject]];
         }
-    }else if(self.relation == IHFRelationOneToMany){
+    } else if(self.relation == IHFRelationOneToMany) {
     
         // Fetch the Object ID in relation table
         IHFPredicate *predicate = [[IHFPredicate alloc] initWithFormat:@"sourceObjectID = %ld",(long)self.sourceObjectID];
@@ -109,7 +109,7 @@
     return selectArray;
 }
 
-- (void)deleteInDataBase:(FMDatabase *)db completeBlock:(IHFDBCompleteBlock)completion{
+- (void)deleteInDataBase:(FMDatabase *)db completeBlock:(IHFDBCompleteBlock)completion {
     
     IHFPredicate *predicate = [[IHFPredicate alloc] initWithFormat:@"sourceObjectID = %ld",(long)self.sourceObjectID];
     
