@@ -223,7 +223,10 @@ const NSInteger UncaughtExceptionHandlerReportAddressCount = 5;
 
 //    NSLog(@"111");
 //    [self updateUI:exception];
+    NSLog(@"isExecuting = %d",[NSThread mainThread].isExecuting);
+    [[NSThread mainThread] cancel];
 
+//    [self performSelectorOnMainThread:@selector(endThread) withObject:nil waitUntilDone:NO];
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
         // 处理耗时操作的代码块...
         //通知主线程刷新
@@ -261,16 +264,10 @@ const NSInteger UncaughtExceptionHandlerReportAddressCount = 5;
         }];
 
         IHFAlertAction *contineAction = [IHFAlertAction actionForStyleOfDefaultWithTitle:@"继续" handler:^(UIAlertAction *action) {
-//            NSException *childEx = exception.exception;
-//            kill(getpid(), [[[childEx userInfo] objectForKey:UncaughtExceptionHandlerSignalKey] intValue]);
-            
-//            NSSetUncaughtExceptionHandler(&HandleException);
-//            signal(SIGABRT, SignalHandler);
-//            signal(SIGILL, SignalHandler);
-//            signal(SIGSEGV, SignalHandler);
-//            signal(SIGFPE, SignalHandler);
-//            signal(SIGBUS, SignalHandler);
-//            signal(SIGPIPE, SignalHandler);
+
+            [[NSThread mainThread] start];
+            UninstallUncaughtExceptionHandler();
+            InstallUncaughtExceptionHandler();
 
         }];
 

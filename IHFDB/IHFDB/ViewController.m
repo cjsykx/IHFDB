@@ -43,13 +43,13 @@
 //    [self beyongOfArray:nil];
 
     
-    UIButton *button = [[UIButton alloc] init];
-    button.frame = CGRectMake(50, 50, 50, 50);
-    [button addTarget:self action:@selector(buttonClick:) forControlEvents:UIControlEventTouchUpInside];
-    button.backgroundColor = [UIColor redColor];
-    [self.view addSubview:button];
+//    UIButton *button = [[UIButton alloc] init];
+//    button.frame = CGRectMake(50, 50, 50, 50);
+//    [button addTarget:self action:@selector(buttonClick:) forControlEvents:UIControlEventTouchUpInside];
+//    button.backgroundColor = [UIColor redColor];
+//    [self.view addSubview:button];
     
-//    [self convertTo];
+    [self convertTo];
 //    [self performSelector:@selector(beyongOfArray:) withObject:nil afterDelay:0.5];
 //    
 //    CFRunLoopRef currentLoop = CFRunLoopGetCurrent();
@@ -333,6 +333,7 @@
         patient.idCard = @(30.5);
         patient.height = 100.89;
         patient.patientID = [NSString stringWithFormat:@"%d",i];
+        patient.test = @"333";
         
         Drug *drug = [[Drug alloc] init];
         drug.drugID = @(1);
@@ -351,9 +352,7 @@
             drug1.drugID = @(3);
             
         }
-        
-        NSLog(@"names = %@",[patient dictWithIgnoredPropertyNames]);
-        
+                
         DrugType *type = [[DrugType alloc] init];
         type.type = @"处方药";
         type.doctorType = @"主治";
@@ -386,6 +385,7 @@
         Bed *bed = [[Bed alloc] init];
         bed.bedNumber = @"+1";
         bed.ward = @"L1";
+        bed.bedID = @(2);
         
         patient.bed = bed;
         
@@ -405,12 +405,12 @@
     
         NSDate *beginDate1 = [NSDate date];
         NSLog(@"begin dict -> model");
-        NSArray *models = [Patient modelArrayFromDictionaryArray:dictsMJ];
+        NSArray *models = [Patient modelArrayFromDictionaryArray:dicts];
         NSLog(@"cost time for dict -> model ＝ %f",[[NSDate date] timeIntervalSince1970] - [beginDate1 timeIntervalSince1970]);
     
         NSDate *beginDate1MJ = [NSDate date];
         NSLog(@"begin dict -> model");
-        NSArray *modelsMJ = [Patient mj_objectArrayWithKeyValuesArray:dictsMJ];
+        NSArray *modelsMJ = [Patient mj_objectArrayWithKeyValuesArray:dicts];
         NSLog(@"cost time for MJ dict -> model ＝ %f",[[NSDate date] timeIntervalSince1970] - [beginDate1MJ timeIntervalSince1970]);
     
     
@@ -450,11 +450,9 @@
         if(i % 2 == 0){
             drug1.name = @"后悔药";
             drug1.drugID = @(2);
-
         }else{
             drug1.name = @"消炎药";
             drug1.drugID = @(3);
-
         }
         
         DrugType *type = [[DrugType alloc] init];
@@ -511,8 +509,11 @@
     if ([patients count]) {
         
         for (Patient *patient in patients) {
-            NSLog(@"%@",patient.name);
-            
+            NSLog(@"name = %@",patient.name);
+            NSLog(@"test = %@",patient.test);
+            NSLog(@"age = %d",patient.age);
+
+
             for (Drug *durg in patient.drugs) {
                 NSLog(@"durgName = %@",durg.name);
                 
@@ -527,7 +528,8 @@
             
             NSLog(@"age = %d",patient.age);
             NSLog(@"bedNumber  = %@",patient.bed.bedNumber);
-            
+            NSLog(@"bedID  = %@",patient.bed.bedID);
+
             NSLog(@"recordDate = %@",patient.recordDate);
             NSLog(@"11--%@",patient.idCard);
             NSLog(@"class--%@",[patient.idCard class]);
@@ -541,13 +543,13 @@
 
 }
 
-- (void)selectByCustomIdFromDataBase{
+- (void)selectByCustomIdFromDataBase {
     
     NSArray *patients = [Patient selectWithCostomPrimaryKeyValue:@"10"];
     [self printPatients:patients];
 }
 
-- (void)selectFromDataBase{
+- (void)selectFromDataBase {
     
 //    NSString *createIndex = @"CREATE unique INDEX if not exists age_index on Patient (age);";
 //    [Patient executeUpdateWithSqlStatement:createIndex];

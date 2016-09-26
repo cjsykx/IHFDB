@@ -10,12 +10,12 @@
 #import "IHFDBObjectDataSource.h"
 @implementation IHFProperty
 
+// TODO: NSSet may equal to NSArray ,
 - (IHFPropertyType)typeConvertFormString:(NSString *)aString {
     
+    // If not equal to , it will be a model type !
     IHFPropertyType type = IHFPropertyTypeModel; // Model type
-    
-    // TODO: NSSet may equal to NSArray ,
-    
+
     if ([aString isEqualToString:@"NSString"] || [aString isEqualToString:@"NSMutableString"]) {
         type = IHFPropertyTypeString;
     } else if ([aString isEqualToString:@"NSNumber"]) {
@@ -34,20 +34,32 @@
         type = IHFPropertyTypeDictionary;
     } else if ([aString isEqualToString:@"NSAttributedString"]) {
         type = IHFPropertyTypeAttributedString;
-    } else if ([aString isEqualToString:@"B"]) {
+    } else if ([aString isEqualToString:@"c"] || [aString isEqualToString:@"C"] || [aString isEqualToString:@"b"]) {
         type = IHFPropertyTypeBOOL;
     } else if ([aString isEqualToString:@"f"]) {
         type = IHFPropertyTypeFloat;
-    } else if ([aString isEqualToString:@"q"]) {
+    } else if ([aString isEqualToString:@"l"]) {
         type = IHFPropertyTypeLong;
+    } else if ([aString isEqualToString:@"L"]) {
+        type = IHFPropertyTypeUnsignedLong;
     } else if ([aString isEqualToString:@"UIImage"]) {
         type = IHFPropertyTypeImage;
     } else if ([aString isEqualToString:@"d"]) {
         type = IHFPropertyTypeDouble;
     } else if ([aString isEqualToString:@"i"]) {
         type = IHFPropertyTypeInt;
+    } else if ([aString isEqualToString:@"I"]) {
+        type = IHFPropertyTypeUInteger;
     } else if ([aString isEqualToString:@"NSData"] || [aString isEqualToString:@"NSMutableData"]) {
         type = IHFPropertyTypeData;
+    } else if ([aString isEqualToString:@"@"]) { // The type such as id , block ...
+        type = IHFPropertyTypeId;
+    } else if ([aString isEqualToString:@"s"]) {
+        type = IHFPropertyTypeShort;
+    } else if ([aString isEqualToString:@"q"]) {
+        type = IHFPropertyTypeLongLong;
+    } else if ([aString isEqualToString:@"Q"]) {
+        type = IHFPropertyTypeUnsignedLongLong;
     }
 
     return type;
@@ -103,6 +115,7 @@
     if (self) {
         _propertyName = name;
         _typeString = typeString;
+        
         _type = [self typeConvertFormString:_typeString];
         
         _setSel = [self createSetSELWithPropertyName:name];
@@ -116,6 +129,7 @@
             if ([srcClass respondsToSelector:@selector(relationshipDictForClassInArray)]) {
                 id object = [[srcClass relationshipDictForClassInArray] objectForKey:name];
                 
+                // according to user returns the relation dict !
                 if ([object isKindOfClass:[NSString class]]) {
                     _objectClass = NSClassFromString(object);
                 } else {

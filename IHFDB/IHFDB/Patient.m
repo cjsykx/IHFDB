@@ -30,7 +30,7 @@
 
 
 + (NSArray *)propertyNamesForIgnore{
-    return @[@"age",@"idCard"];
+    return @[@"idCard"];
 }
 
 

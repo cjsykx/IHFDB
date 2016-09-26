@@ -11,10 +11,10 @@
 
 typedef NS_OPTIONS(NSUInteger, IHFPropertyType) {
 
-    IHFPropertyTypeModel               = 0x00,
-    IHFPropertyTypeBOOL                = 0x01,
+    IHFPropertyTypeModel               = 0x00, // Default , It not predicate!
+    IHFPropertyTypeBOOL                = 0x01, // int 8,  c
     IHFPropertyTypeNumber              = 0x02,
-    IHFPropertyTypeInt                 = 0x03,
+    IHFPropertyTypeInt                 = 0x03, // integer , i , int 32
     IHFPropertyTypeArray               = 0x04,
     IHFPropertyTypeString              = 0x06,
     IHFPropertyTypeId                  = 0x07,
@@ -24,11 +24,16 @@ typedef NS_OPTIONS(NSUInteger, IHFPropertyType) {
     IHFPropertyTypeValue               = 0x0B,
     IHFPropertyTypeAttributedString    = 0x0C,
     IHFPropertyTypeDictionary          = 0x0D,
-    IHFPropertyTypeFloat               = 0x0F,
-    IHFPropertyTypeDouble              = 0x10,
-    IHFPropertyTypeLong                = 0x11,
-    IHFPropertyTypeImage               = 0x12, // UIImage
-    IHFPropertyTypeDate                = 0x13, // NSDate
+    IHFPropertyTypeFloat               = 0x0F, // f
+    IHFPropertyTypeDouble              = 0x10, // d
+    IHFPropertyTypeLong                = 0x11, // l ,int 64
+    IHFPropertyTypeUnsignedLong        = 0x12, // L
+    IHFPropertyTypeImage               = 0x13, // UIImage
+    IHFPropertyTypeDate                = 0x14, // NSDate
+    IHFPropertyTypeUInteger            = 0x15, // I
+    IHFPropertyTypeLongLong            = 0x16, // q
+    IHFPropertyTypeUnsignedLongLong    = 0x17, // Q
+    IHFPropertyTypeShort               = 0x18, // int 16, s
     IHFPropertyTypeAny                       ,
 
 };
