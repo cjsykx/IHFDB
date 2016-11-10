@@ -8,10 +8,10 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
-#import "Bed.h"
 #import "Drug.h"
 #import "IHFDB.h"
-@interface Patient : NSObject
+#import "Person.h"
+@interface Patient : Person
 
 typedef void(^IHFDBCompleteBlock)(BOOL success);
 
@@ -37,12 +37,10 @@ typedef void(^IHFDBCompleteBlock)(BOOL success);
 @property (copy,nonatomic) NSString * name ;
 @property (strong,nonatomic) NSMutableArray <Drug *>* drugs ;
 
-@property (assign,nonatomic) NSUInteger  age ;
 @property (assign,nonatomic) CGFloat  height ;
 
 @property (strong,nonatomic) NSDate * recordDate ;
 
-@property (strong,nonatomic) NSNumber * idCard ;
 @property (strong,nonatomic) Bed *bed;
 
 @property (strong,nonatomic) NSString * patientID ;

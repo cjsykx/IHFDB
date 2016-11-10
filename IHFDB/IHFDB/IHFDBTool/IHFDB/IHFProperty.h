@@ -62,9 +62,9 @@ typedef NS_OPTIONS(NSUInteger, IHFPropertyType) {
 
 @property (nonatomic, assign,readonly) Class srcClass; /**< Source Class*/
 
-@property (nonatomic, assign) NSNumber *typeOfFundation; /**< If the type from fundation , Object type ! such as 'NSString' */
+@property (nonatomic, strong) NSNumber *typeOfFundation; /**< If the type from fundation , Object type ! such as 'NSString' , 'NSObject'*/
 
-@property (nonatomic, assign,readonly,getter=isTypeOfBasicData) BOOL typeOfBasicData; /**< Basic data types , not object,such as int ,bool */
+@property (nonatomic, assign, readonly, getter=isTypeOfBasicData) BOOL typeOfBasicData; /**< Basic data types , not object,such as int ,bool */
 
 - (IHFPropertyType)typeConvertFormString:(NSString *)aString;
 

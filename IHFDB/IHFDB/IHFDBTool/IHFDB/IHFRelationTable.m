@@ -101,7 +101,9 @@
             // run loop!
             NSArray *relationModels = [[weakSelf.destinationObject class] selectWithPredicate:predicate inTableName:nil inDataBase:db];
             if ([relationModels count]) { // If have count , because predicate is ObjectID , so there is only one object!
-                [selectArray addObject:[relationModels lastObject]];
+                NSObject *object = [relationModels lastObject];
+                [object setParentObject:table.sourceObject];
+                [selectArray addObject:object];
             }
         }];
     }

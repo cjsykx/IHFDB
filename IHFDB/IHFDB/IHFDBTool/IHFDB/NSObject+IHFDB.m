@@ -8,8 +8,9 @@
 
 #import "NSObject+IHFDB.h"
 
-const NSString *IHFDBPrimaryKey_ObjectIDKey                = @"objectIDKey";
-const NSString *IHFDB_DirtyKey                             = @"dirtyKey";
+static const NSString *IHFDBPrimaryKey_ObjectIDKey                = @"objectIDKey";
+static const NSString *IHFDB_DirtyKey                             = @"dirtyKey";
+static const NSString *IHFDB_ParentObjectKey                            = @"ParentObejctKey";
 
 
 @implementation NSObject (IHFDB)

@@ -490,7 +490,7 @@ static NSMutableDictionary *_propertyNameDict;
         [keyStr appendFormat:@"%@,",property.propertyName];
             
         // According to property type , if is from fundation , then add '' to become text！
-        NSString *format = [property.typeOfFundation boolValue] ? @"'%@',"  : @"%@,";
+        NSString *format = [property.typeOfFundation boolValue]? @"'%@',"  : @"%@,";
         
         [value appendFormat:format,[newModel valueWithProperty:property]];
     }];
@@ -562,7 +562,7 @@ static NSMutableDictionary *_propertyNameDict;
         [value appendFormat:@"%@ = ",property.propertyName];
         
         // According to property type , if is from fundation , then add '' to become text！
-        NSString *format = [property.typeOfFundation boolValue] ? @"'%@',"  : @"%@,";
+        NSString *format = [property.typeOfFundation boolValue]? @"'%@',"  : @"%@,";
         [value appendFormat:format,[newModel valueWithProperty:property]];
     }];
     
@@ -593,7 +593,7 @@ static NSMutableDictionary *_propertyNameDict;
         [value appendFormat:@"%@ = ",property.propertyName];
         
         // According to property type , if is from fundation , then add '' to become text！
-        NSString *format = [property.typeOfFundation boolValue] ? @"'%@',"  : @"%@,";
+        NSString *format = [property.typeOfFundation boolValue]? @"'%@',"  : @"%@,";
         
         [value appendFormat:format,[newModel valueWithProperty:property]];
     }];
@@ -777,7 +777,7 @@ static NSMutableDictionary *_propertyNameDict;
     if (db) {
         FMResultSet *rs = [db executeQuery:selectSql];
         return [self countWithresultSet:rs];
-    }else {
+    } else {
         __weak typeof(self) weakSelf = self;
         __block NSInteger count;
         [_queue inDatabase:^(FMDatabase *db) {
@@ -809,7 +809,7 @@ static NSMutableDictionary *_propertyNameDict;
                 //Fetch the model contained in the array , to select the relation table
                 if (recursive) {
 
-                    if (property.objectClass)  {
+                    if (property.objectClass) {
 
                         IHFRelationTable *table = [[IHFRelationTable alloc] initWithSourceObject:model destinationObject:[[property.objectClass alloc] init] relationName:property.propertyName relation:IHFRelationOneToMany];
                         table.sourceObjectID = model.objectID;
@@ -818,7 +818,8 @@ static NSMutableDictionary *_propertyNameDict;
                         func(model,setSel,(NSArray *)models);
                     }
                 }
-            } break;
+            }
+                break;
             case IHFPropertyTypeModel: {
                 //Fetch the model contained in the array , to select the relation table
                 if (recursive) {
@@ -838,7 +839,8 @@ static NSMutableDictionary *_propertyNameDict;
                         }
                     }
                 }
-            } break;
+            }
+                break;
             case IHFPropertyTypeDate: {
                 NSString *dateString = [rs stringForColumn:key];
                 if (dateString && [dateString length] >= 19) {
@@ -847,40 +849,48 @@ static NSMutableDictionary *_propertyNameDict;
                     void (*func) (id,SEL,NSDate*) = (void*)imp;
                     func(model,setSel,(NSDate *)[[self convertDateString:dateStr] dateByAddingTimeInterval:8 * 60 * 60]);
                 }
-            } break;
+            }
+                break;
             case IHFPropertyTypeInt  :
             case IHFPropertyTypeBOOL : {
                 void (*func) (id,SEL,int) = (void *)imp;
                 func(model,setSel,[rs intForColumn:key]);
-            } break;
+            }
+                break;
             case IHFPropertyTypeLong : {
                 void (*func) (id,SEL,long) = (void *)imp;
                 func(model,setSel,[rs intForColumn:key]);
-            } break;
+            }
+                break;
             case IHFPropertyTypeDouble : {
                 void (*func) (id,SEL,double) = (void *)imp;
                 func(model,setSel,[rs doubleForColumn:key]);
-            } break;
+            }
+                break;
             case IHFPropertyTypeFloat : {
                 void (*func) (id,SEL,float) = (void *)imp;
                 func(model,setSel,[rs doubleForColumn:key]);
-            } break;
+            }
+                break;
             case IHFPropertyTypeData :
             case IHFPropertyTypeImage : {
                 void (*func) (id,SEL,NSData *) = (void *)imp;
                 func(model,setSel,[rs dataForColumn:key]);
-            } break;
+            }
+                break;
             case IHFPropertyTypeString : {
                 void (*func) (id,SEL,NSString *) = (void *)imp;
                 func(model,setSel,[rs stringForColumn:key]);
-            } break;
+            }
+                break;
             case IHFPropertyTypeNumber : {
                 NSNumberFormatter *format = [[NSNumberFormatter alloc] init];
                 NSNumber *value = [format numberFromString:(NSString *)[rs stringForColumn:key]];
     
                 void (*func) (id,SEL,NSNumber*) = (void*)imp;
                 func(model,setSel,value);
-            } break;
+            }
+                break;
                 
             default:
                 break;

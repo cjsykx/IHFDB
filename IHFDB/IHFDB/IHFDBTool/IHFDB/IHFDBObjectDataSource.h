@@ -13,29 +13,13 @@
 @protocol IHFDBObejctDataSource <NSObject>
 
 @optional
-
-// ObjectID is primary key in sqlite !
-
-/** set objectID */
-- (void)setObjectID:(NSInteger)objectID;
-
-/** get objectID ,witch is primary key in sqlite */
-- (NSInteger)objectID;
-
-// dirty !
-
-/** 
- set dirty
- 
+//----------------------------------------------------------------------------------
+//************************  Sqlite and (model with dict) All set
+//----------------------------------------------------------------------------------
+/**
+ Return the relationships which the class in array
+ the relationships is one-To-Many
  */
-- (void)setDirty:(NSInteger)dirty;
-
-/** get dirty */
-- (NSInteger)dirty;
-
-/** Return the relationships which the class in array
- the relationships is one-To-Many */
-
 + (NSDictionary * _Nullable)relationshipDictForClassInArray;
 
 ///////////
@@ -46,6 +30,40 @@
 /** Return the property names which tou want to map */
 + (NSDictionary * _Nullable)propertyNameDictForMapper;
 
+
+//----------------------------------------------------------------------------------
+//************************  Sqlite set
+//----------------------------------------------------------------------------------
+// ObjectID is primary key in sqlite !
+
+/** set objectID */
+- (void)setObjectID:(NSInteger)objectID;
+
+/** get objectID ,witch is primary key in sqlite */
+- (NSInteger)objectID;
+
+// dirty data!
+
+/** 
+ set dirty
+ */
+- (void)setDirty:(NSInteger)dirty;
+
+/** get dirty */
+- (NSInteger)dirty;
+
+// ParentObject
+
+/**
+ set parent object ..
+ */
+- (void)setParentObject:(NSObject * _Nullable)parentObejct;
+
+/** 
+ Get parent obejct if the model have 
+ */
+- (instancetype _Nullable)parentObject;
+
 //TODO : May the custom primary key is array!
 
 /**
@@ -53,7 +71,6 @@
  
  @ It will be use for judge if the data base exist the same data , so that not to insert ,instead of update!
  @ Warning : It will be a BUG if you custom primary key type is INT , if is INT , you'd better use NSNumer!
- 
  */
 + (NSString * _Nullable)customPrimarykey;
 

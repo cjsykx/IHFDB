@@ -11,87 +11,86 @@
 #import <UIKit/UIKit.h>
 
 static NSMutableDictionary *_allowedPropertyNamesDict;
+static NSMutableDictionary *_ignoredPropertyNamesDict;
+static NSMutableDictionary *_mappedPropertyNamesDict;
+static NSMutableDictionary *_relationPropertyNamesDict;
+
 static NSMutableDictionary *_TypeOfArrayPropertiesDict;
 static NSMutableDictionary *_TypeOfModelPropertiesDict;
+
+static NSSet *IHFfoundationClasses;
 
 
 @implementation NSObject (IHFModelOperation)
 
 + (void)load {
-    _allowedPropertyNamesDict = [NSMutableDictionary dictionary];
-    _TypeOfArrayPropertiesDict = [NSMutableDictionary dictionary];
-    _TypeOfModelPropertiesDict = [NSMutableDictionary dictionary];
+    _allowedPropertyNamesDict  =  [NSMutableDictionary dictionary];
+    _TypeOfArrayPropertiesDict =  [NSMutableDictionary dictionary];
+    _TypeOfModelPropertiesDict =  [NSMutableDictionary dictionary];
+    _ignoredPropertyNamesDict  =  [NSMutableDictionary dictionary];
+    _mappedPropertyNamesDict   =  [NSMutableDictionary dictionary];
+    _relationPropertyNamesDict =  [NSMutableDictionary dictionary];
 }
 
 - (void)setProperties:(id)properties forKey:(NSString *)key {
     [_allowedPropertyNamesDict setValue:properties forKey:key];
 }
 
-
 #pragma mark - run time get property
-+ (NSArray*)getAllPropertyName {
-    NSMutableArray* nameArray = [NSMutableArray array];
-    unsigned int count = 0;
-    objc_property_t *property_t = class_copyPropertyList(self, &count);
-    for (int i=0; i<count; i++) {
-        objc_property_t propert = property_t[i];
-        const char * propertyName = property_getName(propert);
-        [nameArray addObject:[NSString stringWithUTF8String:propertyName]];
-    }
-    free(property_t);
+
+- (NSArray *)getAllPropertyName {
+    return [[self class] getAllPropertyName];
+}
+
++ (NSArray *)getAllPropertyName {
+    __block NSMutableArray* nameArray = [NSMutableArray array];
+    [self enumerateAllClassesUsingBlock:^(__unsafe_unretained Class c, BOOL *stop) {
+        unsigned int count = 0;
+        objc_property_t *property_t = class_copyPropertyList(c, &count);
+        for (int i = 0; i<count; i++) {
+            objc_property_t propert = property_t[i];
+            const char * propertyName = property_getName(propert);
+            [nameArray addObject:[NSString stringWithUTF8String:propertyName]];
+        }
+        free(property_t);
+    }];
     return nameArray;
 }
 
 - (IHFProperty *)propertyWithName:(NSString *)propertyame {
     
     __block IHFProperty *theProperty;
-    [[self class] enumeratePropertiesUsingBlock:^(IHFProperty *property, NSUInteger idx, BOOL *stop) {
-        if ([property.propertyName isEqualToString:propertyame]) {
-            theProperty = property;
-        }
+    
+    [[self class] enumerateAllClassesUsingBlock:^(__unsafe_unretained Class c, BOOL *stop) {
+        [c enumeratePropertiesUsingBlock:^(IHFProperty *property, NSUInteger idx, BOOL *stop) {
+            if ([property.propertyName isEqualToString:propertyame]) {
+                theProperty = property;
+                *stop = YES;
+            }
+        }];
     }];
     return theProperty;
 }
 
-- (NSArray*)getAllPropertyName {
-    NSMutableArray* nameArray = [NSMutableArray array];
-    unsigned int count = 0;
-    objc_property_t *property_t = class_copyPropertyList([self class], &count);
-    for (int i=0; i<count; i++) {
-        objc_property_t propert = property_t[i];
-        const char * propertyName = property_getName(propert);
-        [nameArray addObject:[NSString stringWithUTF8String:propertyName]];
-    }
-    free(property_t);
-    return nameArray;
-}
-
 + (NSDictionary*)getAllPropertyNameAndType {
-    NSMutableDictionary* dic = [NSMutableDictionary dictionary];
-    unsigned int count = 0;
-    objc_property_t* property_t = class_copyPropertyList(self, &count);
-    for (int i=0; i<count; i++) {
-        objc_property_t propert = property_t[i];
-        NSString* propertyName = [NSString stringWithUTF8String:property_getName(propert)];
-        NSString* propertyType = [NSString stringWithUTF8String:property_getAttributes(propert)];
-        [dic setValue:objectType(propertyType) forKey:propertyName];
-    }
-    free(property_t);
+    __block NSMutableDictionary *dic = [NSMutableDictionary dictionary];
+    
+    [[self class] enumerateAllClassesUsingBlock:^(__unsafe_unretained Class c, BOOL *stop) {
+        unsigned int count = 0;
+        objc_property_t *property_t = class_copyPropertyList(c, &count);
+        for (int i = 0; i < count; i++) {
+            objc_property_t propert = property_t[i];
+            NSString *propertyName = [NSString stringWithUTF8String:property_getName(propert)];
+            NSString *propertyType = [NSString stringWithUTF8String:property_getAttributes(propert)];
+            [dic setValue:objectType(propertyType) forKey:propertyName];
+        }
+        free(property_t);
+    }];
     return dic;
 }
 
 - (NSDictionary *)getAllPropertyNameAndType {
-    NSMutableDictionary* dic = [NSMutableDictionary dictionary];
-    unsigned int count = 0;
-    objc_property_t* property_t = class_copyPropertyList([self class], &count);
-    for (int i=0; i<count; i++) {
-        objc_property_t propert = property_t[i];
-        NSString* propertyName = [NSString stringWithUTF8String:property_getName(propert)];
-        NSString* propertyType = [NSString stringWithUTF8String:property_getAttributes(propert)];
-        [dic setValue:objectType(propertyType) forKey:propertyName];
-    }
-    free(property_t);
-    return dic;
+   return [[self class] getAllPropertyNameAndType];
 }
 
 #pragma mark - set method
@@ -542,39 +541,37 @@ static id objectType(NSString *typeString) {
 }
 
 #pragma mark - eumer property
-+ (NSArray *)propertys {
-    
++ (NSArray<IHFProperty *> *)allowedPropertyNames {
     // Fetch the cache properties !
     NSMutableArray *allowProperties = [_allowedPropertyNamesDict objectForKey:NSStringFromClass(self)];
     
-    if(!allowProperties) {
+    if (!allowProperties) {
         allowProperties = [NSMutableArray array];
         
-        unsigned int count = 0;
-        objc_property_t *property_t = class_copyPropertyList(self, &count);
-        
+        // Ignore properties
         NSMutableArray *ignores = [NSMutableArray arrayWithObjects:@"hash",@"superclass", @"description",@"debugDescription",nil];
-        if ([self respondsToSelector:@selector(propertyNamesForIgnore)]) {
-            [ignores addObjectsFromArray:[self propertyNamesForIgnore]];
-        }
-
-        for (int i = 0; i < count; i++) {
-            objc_property_t property = property_t[i];
-            NSString *propertyName = [NSString stringWithUTF8String:property_getName(property)];
-            
-            if (![ignores containsObject:propertyName]) {
+        [ignores addObjectsFromArray:[self ignoredPropertyNames]];
+        
+        [self enumerateAllClassesUsingBlock:^(__unsafe_unretained Class c,BOOL *stop) {
+            unsigned int count = 0;
+            objc_property_t *property_t = class_copyPropertyList(c, &count);
+            for (int i = 0; i < count; i++) {
+                objc_property_t property = property_t[i];
+                NSString *propertyName = [NSString stringWithUTF8String:property_getName(property)];
                 
-                // Get type
-                NSString *propertyType = [NSString stringWithUTF8String:property_getAttributes(property)];
-
-                IHFProperty *theProperty = [[IHFProperty alloc] initWithName:propertyName typeString:objectType(propertyType) srcClass:self];
-                [allowProperties addObject:theProperty];
+                if (![ignores containsObject:propertyName]) {
+                    
+                    // Get type
+                    NSString *propertyType = [NSString stringWithUTF8String:property_getAttributes(property)];
+                    
+                    IHFProperty *theProperty = [[IHFProperty alloc] initWithName:propertyName typeString:objectType(propertyType) srcClass:self];
+                    [allowProperties addObject:theProperty];
+                }
             }
-        }
-        free(property_t);
+            free(property_t);
+        }];
         [self setProperties:allowProperties forKey:NSStringFromClass(self)];
     }
-
     return allowProperties;
 }
 
@@ -583,7 +580,7 @@ static id objectType(NSString *typeString) {
     if (!enumeration) return;
     
     // Get the all
-    NSArray *properties = [self propertys];
+    NSArray *properties = [self allowedPropertyNames];
 
     BOOL stop = NO;
     int idx = 0;
@@ -600,14 +597,14 @@ static id objectType(NSString *typeString) {
     
     if (!properties) {
         properties = [NSMutableArray array];
-        [self enumeratePropertiesUsingBlock:^(IHFProperty *property, NSUInteger idx, BOOL *stop) {
-            
-            if (property.type == IHFPropertyTypeArray) {
-                [properties addObject:property];
-            }
+        [self enumerateAllClassesUsingBlock:^(__unsafe_unretained Class c, BOOL *stop) {
+            [c enumeratePropertiesUsingBlock:^(IHFProperty *property, NSUInteger idx, BOOL *stop) {
+                if (property.type == IHFPropertyTypeArray) {
+                    [properties addObject:property];
+                }
+            }];
+            [_TypeOfArrayPropertiesDict setObject:properties forKey:NSStringFromClass(self)];
         }];
-        
-        [_TypeOfArrayPropertiesDict setObject:properties forKey:NSStringFromClass(self)];
     }
     return properties;
 }
@@ -617,36 +614,123 @@ static id objectType(NSString *typeString) {
     NSMutableArray *properties = [_TypeOfModelPropertiesDict objectForKey:NSStringFromClass(self)];
     
     if(!properties) {
-        
         properties = [NSMutableArray array];
-        [self enumeratePropertiesUsingBlock:^(IHFProperty *property, NSUInteger idx, BOOL *stop) {
-            
-            if(property.type == IHFPropertyTypeModel) {
-                [properties addObject:property];
-            }
+        [self enumerateAllClassesUsingBlock:^(__unsafe_unretained Class c, BOOL *stop) {
+            [c enumeratePropertiesUsingBlock:^(IHFProperty *property, NSUInteger idx, BOOL *stop) {
+                if (property.type == IHFPropertyTypeModel) {
+                    [properties addObject:property];
+                }
+            }];
+            [_TypeOfModelPropertiesDict setObject:properties forKey:NSStringFromClass(self)];
         }];
-        
-        [_TypeOfModelPropertiesDict setObject:properties forKey:NSStringFromClass(self)];
     }
     return properties;
 }
 
+
++ (void)enumerateAllClassesUsingBlock:(IHFClassesEnumeration)enumeration {
+    if (enumeration == nil) return;
+    BOOL stop = NO;
+    
+    Class c = self;
+    
+    while (c && !stop) {
+        enumeration(c, &stop);
+        c = class_getSuperclass(c);
+        if ([self isClassFromFoundation:c]) break;
+    }
+}
+
++ (NSSet *)foundationClasses {
+    if (IHFfoundationClasses == nil) {
+        // 集合中没有NSObject，因为几乎所有的类都是继承自NSObject，具体是不是NSObject需要特殊判断
+        IHFfoundationClasses = [NSSet setWithObjects:
+                              [NSURL class],
+                              [NSDate class],
+                              [NSValue class],
+                              [NSData class],
+                              [NSError class],
+                              [NSArray class],
+                              [NSDictionary class],
+                              [NSString class],
+                              [NSAttributedString class], nil];
+    }
+    return IHFfoundationClasses;
+}
+
++ (BOOL)isClassFromFoundation:(Class)aClass {
+    if (aClass == [NSObject class]) return YES;
+    
+    __block BOOL result = NO;
+    [[self foundationClasses] enumerateObjectsUsingBlock:^(Class foundationClass, BOOL *stop) {
+        if ([aClass isSubclassOfClass:foundationClass]) {
+            result = YES;
+            *stop = YES;
+        }
+    }];
+    return result;
+}
+
+#pragma mark - ignore property names
+
 - (NSDictionary *)dictWithIgnoredPropertyNames {
     
-    NSArray *ignoresPropertyNames;
-    __block NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
+    NSArray *ignoresPropertyNames = [[self class] ignoredPropertyNames];
     __weak typeof(self) weakSelf = self;
-    if ([[self class] respondsToSelector:@selector(propertyNamesForIgnore)]) {
-        ignoresPropertyNames = [[self class] propertyNamesForIgnore];
-    }
-    
-    [ignoresPropertyNames enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+    __block NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
+    [ignoresPropertyNames enumerateObjectsUsingBlock:^(id _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         
         if ([obj isKindOfClass:[NSString class]]) {
             [dict setObject:[weakSelf valueWithPropertName:obj] forKey:obj];
         }
     }];
     return dict;
+}
+
++ (NSArray *)ignoredPropertyNames {
+    NSMutableArray *ignoresPropertyNames = [_ignoredPropertyNamesDict objectForKey:NSStringFromClass(self)];
+    if (!ignoresPropertyNames) {
+        ignoresPropertyNames = [NSMutableArray array];
+        [self enumerateAllClassesUsingBlock:^(__unsafe_unretained Class c, BOOL *stop) {
+            if ([c respondsToSelector:@selector(propertyNamesForIgnore)]) {
+                [ignoresPropertyNames addObjectsFromArray:[c propertyNamesForIgnore]];
+            }
+        }];
+        [_ignoredPropertyNamesDict setObject:ignoresPropertyNames forKey:NSStringFromClass(self)];
+    }
+    return ignoresPropertyNames;
+}
+
+#pragma mark - mapper property
+
++ (NSArray<NSDictionary *> *)mappedPropertyNameDicts {
+    NSMutableArray *mappedPropertyNames = [_mappedPropertyNamesDict objectForKey:NSStringFromClass(self)];
+    if (!mappedPropertyNames) {
+        mappedPropertyNames = [NSMutableArray array];
+        [self enumerateAllClassesUsingBlock:^(__unsafe_unretained Class c, BOOL *stop) {
+            if ([c respondsToSelector:@selector(propertyNameDictForMapper)]) {
+                [mappedPropertyNames addObject:[c propertyNameDictForMapper]];
+            }
+        }];
+        [_mappedPropertyNamesDict setObject:mappedPropertyNames forKey:NSStringFromClass(self)];
+    }
+    return mappedPropertyNames;
+}
+
+#pragma mark - relation
+
++ (NSArray <NSDictionary *>*)relationPropertyNameDicts {
+    NSMutableArray *relationPropertyNames = [_relationPropertyNamesDict objectForKey:NSStringFromClass(self)];
+    if (!relationPropertyNames) {
+        relationPropertyNames = [NSMutableArray array];
+        [self enumerateAllClassesUsingBlock:^(__unsafe_unretained Class c, BOOL *stop) {
+            if ([c respondsToSelector:@selector(relationshipDictForClassInArray)]) {
+                [relationPropertyNames addObject:[c relationshipDictForClassInArray]];
+            }
+        }];
+        [_relationPropertyNamesDict setObject:relationPropertyNames forKey:NSStringFromClass(self)];
+    }
+    return relationPropertyNames;
 }
 
 @end

@@ -8,6 +8,7 @@
 
 #import "IHFProperty.h"
 #import "IHFDBObjectDataSource.h"
+#import "NSObject+IHFModelOperation.h"
 @implementation IHFProperty
 
 // TODO: NSSet may equal to NSArray ,
@@ -115,36 +116,37 @@
     if (self) {
         _propertyName = name;
         _typeString = typeString;
-        
         _type = [self typeConvertFormString:_typeString];
-        
         _setSel = [self createSetSELWithPropertyName:name];
         _imp = [[[srcClass alloc] init] methodForSelector:_setSel];
-
         _srcClass = srcClass;
         _getSel = [self createGetSELWithPropertyName:name];
         
-        if(_type == IHFPropertyTypeArray) {
-            
-            if ([srcClass respondsToSelector:@selector(relationshipDictForClassInArray)]) {
-                id object = [[srcClass relationshipDictForClassInArray] objectForKey:name];
-                
-                // according to user returns the relation dict !
-                if ([object isKindOfClass:[NSString class]]) {
-                    _objectClass = NSClassFromString(object);
-                } else {
-                    _objectClass = [[srcClass relationshipDictForClassInArray] objectForKey:name];
-                }
+        if (_type == IHFPropertyTypeArray) {
+            if ([[srcClass relationPropertyNameDicts] count]) {
+                [[srcClass relationPropertyNameDicts] enumerateObjectsUsingBlock:^(NSDictionary * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                    id object = [obj objectForKey:name];
+                    if (object) {
+                        // according to user returns the relation dict !
+                        if ([object isKindOfClass:[NSString class]]) {
+                            _objectClass = NSClassFromString(object);
+                        } else {
+                            _objectClass = [[srcClass relationshipDictForClassInArray] objectForKey:name];
+                        }
+                        *stop = YES; // Let child first
+                    }
+                }];
             }
-        }else if (_type == IHFPropertyTypeModel) {
+        } else if (_type == IHFPropertyTypeModel) {
             _objectClass = NSClassFromString(typeString);
         }
-
-        // Set Map
-        if ([srcClass respondsToSelector:@selector(propertyNameDictForMapper)]) {
-            _propertyNameMapped = [[srcClass propertyNameDictForMapper] objectForKey:name];
+        
+        if ([[srcClass mappedPropertyNameDicts] count]) {
+            [[srcClass mappedPropertyNameDicts] enumerateObjectsUsingBlock:^(NSDictionary * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                _propertyNameMapped = [obj objectForKey:name];
+                if (_propertyNameMapped) *stop = YES; // Let child first
+            }];
         }
-
     }
     return self;
 }
@@ -165,6 +167,5 @@
 - (SEL)createGetSELWithPropertyName:(NSString*)propertyName {
     return NSSelectorFromString(propertyName);
 }
-
 
 @end

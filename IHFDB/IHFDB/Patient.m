@@ -24,13 +24,12 @@
 + (NSDictionary *)propertyNameDictForMapper{
     return @{ @"mapperStr1" : @"mapperStr",
               @"mapperNumber1" :@"mapperNumber",
-             
              };
 }
 
 
 + (NSArray *)propertyNamesForIgnore{
-    return @[@"idCard"];
+    return @[@"idCard",@"height"];
 }
 
 

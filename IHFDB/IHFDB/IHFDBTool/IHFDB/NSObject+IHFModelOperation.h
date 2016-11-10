@@ -12,7 +12,9 @@
 
 @interface NSObject (IHFModelOperation)<IHFDBObejctDataSource>
 
+//-----------------------------------------------------------------------------
 //*************** Model Model convert to Dict ****************
+//-----------------------------------------------------------------------------
 
 /**
  Model convert to dict
@@ -25,8 +27,9 @@
 - (NSArray <NSDictionary *> *)dictionaryArrayFromModelArray;
 + (NSArray <NSDictionary *> *)dictionaryArrayFromModelArray:(NSArray *)modelArray;
 
-
+//-----------------------------------------------------------------------------
 ///  ***********  Dict convert to Model ****************
+//-----------------------------------------------------------------------------
 
 /**
  Dict convert to Model
@@ -49,15 +52,9 @@
  */
 + (instancetype)modelFromJsonData:(NSData *)jsonData;
 
-/**
- Return a dictionary : key is Ignored property names , and value is the ignoredKey_Value.
- */
-
-- (NSDictionary *)dictWithIgnoredPropertyNames;
-
-
-///  ***********  ******************* ****************
-
+//-----------------------------------------------------------------------------
+///  ************* Run time to property and Class ****************
+//-----------------------------------------------------------------------------
 /** Return all property name */
 
 + (NSArray *)getAllPropertyName;
@@ -68,10 +65,30 @@
 + (NSDictionary *)getAllPropertyNameAndType;
 - (NSDictionary *)getAllPropertyNameAndType;
 
+/**
+ Returns the class and super class ignore property names
+ */
++ (NSArray *)ignoredPropertyNames ;
 
-/** Return type name in sqlite with the type  */
+/**
+ Return a dictionary : key is Ignored property names , and value is the ignoredKey_Value.
+ */
+- (NSDictionary *)dictWithIgnoredPropertyNames;
 
-- (NSString *)sqlTypeNameWithTypeName:(NSString *)TypeName;
+/**
+ Returns the class and super class allowed (NOT Ignore) property names
+ */
++ (NSArray <IHFProperty *>*)allowedPropertyNames;
+
+/**
+ Returns array contain the class and super class map key-value
+ */
++ (NSArray <NSDictionary *>*)mappedPropertyNameDicts;
+
+/**
+ Returns array contain the class and super class relation key-value (Class in array)
+ */
++ (NSArray <NSDictionary *>*)relationPropertyNameDicts;
 
 // Block
 typedef void (^IHFPropertiesEnumeration)(IHFProperty *property,NSUInteger idx, BOOL *stop);
@@ -80,20 +97,13 @@ typedef void (^IHFPropertiesEnumeration)(IHFProperty *property,NSUInteger idx, B
 
 + (void)enumeratePropertiesUsingBlock:(IHFPropertiesEnumeration)enumeration;
 
-// Create setter method
-- (SEL)createSetSEL:(NSString *)propertyName;
+/** Enumerate the model's class and super class  block */
+typedef void (^IHFClassesEnumeration)(Class c, BOOL *stop);
 
-/** Fetch the property with the its name */
-- (IHFProperty *)propertyWithName:(NSString *)propertyame;
-
-// set model
--(void)setValue:(id)aValue forProperty:(IHFProperty *)property;
-- (void)setValue:(NSObject *)value propertyName:(NSString *)name propertyType:(NSString *)type;
-
-// Get model value
-/** Get value with property name */
-- (instancetype)valueWithPropertName:(NSString *)propertyName;
-- (instancetype)valueWithProperty:(IHFProperty *)property;
+/**
+ Enumerate the model's class and super class block
+ */
++ (void)enumerateAllClassesUsingBlock:(IHFClassesEnumeration)enumeration;
 
 /**
  Get a Class All properties which type is array
@@ -104,5 +114,41 @@ typedef void (^IHFPropertiesEnumeration)(IHFProperty *property,NSUInteger idx, B
  Get a Class All properties names which type is array
  */
 + (NSArray <IHFProperty *>*)propertiesForTypeOfModel;
+
+
+//-----------------------------------------------------------------------------
+///  ************* property Value getter and setter ****************
+//-----------------------------------------------------------------------------
+
+// Create setter method
+- (SEL)createSetSEL:(NSString *)propertyName;
+
+/** Fetch the property with the its name */
+- (IHFProperty *)propertyWithName:(NSString *)propertyame;
+
+// set model value
+-(void)setValue:(id)aValue forProperty:(IHFProperty *)property;
+- (void)setValue:(NSObject *)value propertyName:(NSString *)name propertyType:(NSString *)type;
+
+/**
+ Get value with property name
+ */
+- (instancetype)valueWithPropertName:(NSString *)propertyName;
+
+/**
+ Get value with property name
+ */
+
+- (instancetype)valueWithProperty:(IHFProperty *)property;
+
+/**
+ Returns if the class is from fundation , such as NSObject , NSString ...
+
+ @return : If yes , is from fundation ,
+ */
++ (BOOL)isClassFromFoundation:(Class)aClass;
+
+/** Return type name in sqlite with the type  */
+- (NSString *)sqlTypeNameWithTypeName:(NSString *)TypeName;
 
 @end

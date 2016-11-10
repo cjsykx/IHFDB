@@ -39,6 +39,7 @@
 		BCFA09AA1D192206007B5338 /* NSObject+MJKeyValue.m in Sources */ = {isa = PBXBuildFile; fileRef = BCFA099D1D192205007B5338 /* NSObject+MJKeyValue.m */; };
 		BCFA09AB1D192206007B5338 /* NSObject+MJProperty.m in Sources */ = {isa = PBXBuildFile; fileRef = BCFA099F1D192205007B5338 /* NSObject+MJProperty.m */; };
 		BCFA09AC1D192206007B5338 /* NSString+MJExtension.m in Sources */ = {isa = PBXBuildFile; fileRef = BCFA09A11D192205007B5338 /* NSString+MJExtension.m */; };
+		D3A41DBF1DD401FD00263AD4 /* Person.m in Sources */ = {isa = PBXBuildFile; fileRef = D3A41DBE1DD401FD00263AD4 /* Person.m */; };
 		D3BE3CB61D7025D2003734A9 /* IHFAlertAction.m in Sources */ = {isa = PBXBuildFile; fileRef = D3BE3CA11D7025D2003734A9 /* IHFAlertAction.m */; };
 		D3BE3CB71D7025D2003734A9 /* IHFAlertController.m in Sources */ = {isa = PBXBuildFile; fileRef = D3BE3CA31D7025D2003734A9 /* IHFAlertController.m */; };
 		D3BE3CB81D7025D2003734A9 /* IHFDataBaseExecute.m in Sources */ = {isa = PBXBuildFile; fileRef = D3BE3CA61D7025D2003734A9 /* IHFDataBaseExecute.m */; };
@@ -134,6 +135,8 @@
 		BCFA099F1D192205007B5338 /* NSObject+MJProperty.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSObject+MJProperty.m"; sourceTree = "<group>"; };
 		BCFA09A01D192205007B5338 /* NSString+MJExtension.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+MJExtension.h"; sourceTree = "<group>"; };
 		BCFA09A11D192205007B5338 /* NSString+MJExtension.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+MJExtension.m"; sourceTree = "<group>"; };
+		D3A41DBD1DD401FD00263AD4 /* Person.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Person.h; sourceTree = "<group>"; };
+		D3A41DBE1DD401FD00263AD4 /* Person.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Person.m; sourceTree = "<group>"; };
 		D3BE3CA01D7025D2003734A9 /* IHFAlertAction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IHFAlertAction.h; sourceTree = "<group>"; };
 		D3BE3CA11D7025D2003734A9 /* IHFAlertAction.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IHFAlertAction.m; sourceTree = "<group>"; };
 		D3BE3CA21D7025D2003734A9 /* IHFAlertController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IHFAlertController.h; sourceTree = "<group>"; };
@@ -232,6 +235,8 @@
 			children = (
 				BCFA07EF1D082789007B5338 /* fmdb */,
 				BCFA07BA1D0826A9007B5338 /* main.m */,
+				D3A41DBD1DD401FD00263AD4 /* Person.h */,
+				D3A41DBE1DD401FD00263AD4 /* Person.m */,
 				BCFA080D1D082EB5007B5338 /* Patient.h */,
 				BCFA080E1D082EB5007B5338 /* Patient.m */,
 				BCFA08161D114843007B5338 /* DateTool.h */,
@@ -525,6 +530,7 @@
 				BCFA080F1D082EB5007B5338 /* Patient.m in Sources */,
 				BCFA09A81D192206007B5338 /* NSObject+MJClass.m in Sources */,
 				BCFA09A91D192206007B5338 /* NSObject+MJCoding.m in Sources */,
+				D3A41DBF1DD401FD00263AD4 /* Person.m in Sources */,
 				D3BE3CBA1D7025D2003734A9 /* IHFProperty.m in Sources */,
 				BCFA07C71D0826A9007B5338 /* IHFDB.xcdatamodeld in Sources */,
 				D3BE3CBC1D7025D2003734A9 /* NSObject+IHFDB.m in Sources */,

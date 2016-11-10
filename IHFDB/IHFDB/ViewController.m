@@ -48,7 +48,6 @@
 //    [button addTarget:self action:@selector(buttonClick:) forControlEvents:UIControlEventTouchUpInside];
 //    button.backgroundColor = [UIColor redColor];
 //    [self.view addSubview:button];
-    
     [self convertTo];
 //    [self performSelector:@selector(beyongOfArray:) withObject:nil afterDelay:0.5];
 //    
@@ -187,10 +186,7 @@
 //    [patient1 updateWithPredicate:predicate completeBlock:^(BOOL success) {
 //        NSLog(@"success = %d",success);
 //    }];
-
-
 }
-
 
 - (void)mailComposeController:(MFMailComposeViewController *)controller didFinishWithResult:(MFMailComposeResult)result error:(NSError *)error{
     
@@ -316,25 +312,26 @@
 
 }
 
-- (void)convertTo{
+- (void)convertTo {
     
     NSMutableArray *patients = [NSMutableArray array];
     
     for (int i = 0; i < 5000; i++) {
         
         //        if(i % 2 != 0 || i % 3 != 0)  continue;
-        
+    
         NSMutableArray *array1 = [NSMutableArray array];
         
         Patient *patient = [[Patient alloc] init];
         patient.name = [NSString stringWithFormat:@"%@%d",@"张飞",i];
-        patient.age = i;
+        patient.age = 5100- i;
         patient.recordDate = [NSDate date];
-        patient.idCard = @(30.5);
+        patient.idCard = @(1);
         patient.height = 100.89;
         patient.patientID = [NSString stringWithFormat:@"%d",i];
         patient.test = @"333";
         
+        [self printPropertys:patient];
         Drug *drug = [[Drug alloc] init];
         drug.drugID = @(1);
         drug.name = @"感冒药";
@@ -438,7 +435,6 @@
         patient.idCard = @(30.5);
         patient.height = 100.89;
         patient.patientID = [NSString stringWithFormat:@"%d",i];
-        
         Drug *drug = [[Drug alloc] init];
         drug.drugID = @(1);
         drug.name = @"感冒药";
@@ -512,6 +508,7 @@
             NSLog(@"name = %@",patient.name);
             NSLog(@"test = %@",patient.test);
             NSLog(@"age = %d",patient.age);
+            NSLog(@"idCard = %@",patient.idCard);
 
 
             for (Drug *durg in patient.drugs) {
@@ -599,5 +596,18 @@
 
 }
 
+- (void)printPropertys:(Patient *)patient {
+    NSLog(@"111 - %@",patient.getAllPropertyName);
+    NSLog(@"ignore = %@",[patient dictWithIgnoredPropertyNames]);
+    NSLog(@"array = %@",[[patient class] propertiesForTypeOfArray]);
+    NSLog(@"model = %@",[[patient class] propertiesForTypeOfModel]);
+    NSLog(@"allow = %@",[[patient class] allowedPropertyNames]);
+    NSLog(@"map = %@",[[patient class] mappedPropertyNameDicts]);
+    NSLog(@"relation = %@",[[patient class] relationPropertyNameDicts]);
+
+    [[patient class] enumeratePropertiesUsingBlock:^(IHFProperty *property, NSUInteger idx, BOOL *stop) {
+        NSLog(@"%@",property.propertyName);
+    }];
+}
 
 @end
