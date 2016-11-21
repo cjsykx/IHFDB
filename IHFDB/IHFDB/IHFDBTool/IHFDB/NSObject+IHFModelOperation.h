@@ -19,13 +19,13 @@
 /**
  Model convert to dict
  */
-- (NSDictionary *)dictionaryFromModel;
+- (NSMutableDictionary *)dictionaryFromModel;
 
 /**
  Model Array convert to dict Array
  */
-- (NSArray <NSDictionary *> *)dictionaryArrayFromModelArray;
-+ (NSArray <NSDictionary *> *)dictionaryArrayFromModelArray:(NSArray *)modelArray;
+- (NSArray <NSMutableDictionary *> *)dictionaryArrayFromModelArray;
++ (NSArray <NSMutableDictionary *> *)dictionaryArrayFromModelArray:(NSArray *)modelArray;
 
 //-----------------------------------------------------------------------------
 ///  ***********  Dict convert to Model ****************
@@ -40,17 +40,17 @@
  Dict Array convert to Model Array
  */
 
-+ (NSArray <id> *)modelArrayFromDictionaryArray:(NSArray <NSDictionary *> *)dict;
++ (NSArray <id> *)modelArrayFromDictionaryArray:(NSArray <NSDictionary *> *)dictArray;
 
 /**
  JsonString convert to Model
  */
-+ (instancetype)modelFromJsonString:(NSString *)jsonString;
++ (instancetype)modelFromJSONString:(NSString *)jSONString;
 
 /**
  JsonData convert to Model
  */
-+ (instancetype)modelFromJsonData:(NSData *)jsonData;
++ (instancetype)modelFromJSONData:(NSData *)jSONData;
 
 //-----------------------------------------------------------------------------
 ///  ************* Run time to property and Class ****************
@@ -89,6 +89,11 @@
  Returns array contain the class and super class relation key-value (Class in array)
  */
 + (NSArray <NSDictionary *>*)relationPropertyNameDicts;
+
+/**
+ Returns the class or super class custom primary keys
+ */
++ (NSArray <NSString *>*)customPrimaryKeyLists ;
 
 // Block
 typedef void (^IHFPropertiesEnumeration)(IHFProperty *property,NSUInteger idx, BOOL *stop);
@@ -143,7 +148,7 @@ typedef void (^IHFClassesEnumeration)(Class c, BOOL *stop);
 
 /**
  Returns if the class is from fundation , such as NSObject , NSString ...
-
+ 
  @return : If yes , is from fundation ,
  */
 + (BOOL)isClassFromFoundation:(Class)aClass;

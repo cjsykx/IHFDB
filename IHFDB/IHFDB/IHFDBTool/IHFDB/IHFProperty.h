@@ -10,7 +10,7 @@
 #import <objc/runtime.h>
 
 typedef NS_OPTIONS(NSUInteger, IHFPropertyType) {
-
+    
     IHFPropertyTypeModel               = 0x00, // Default , It not predicate!
     IHFPropertyTypeBOOL                = 0x01, // int 8,  c
     IHFPropertyTypeNumber              = 0x02,
@@ -23,7 +23,8 @@ typedef NS_OPTIONS(NSUInteger, IHFPropertyType) {
     IHFPropertyTypeError               = 0x0A,
     IHFPropertyTypeValue               = 0x0B,
     IHFPropertyTypeAttributedString    = 0x0C,
-    IHFPropertyTypeDictionary          = 0x0D,
+    IHFPropertyTypeDictionaryI         = 0x0D,
+    IHFPropertyTypeDictionaryM         = 0x0E,
     IHFPropertyTypeFloat               = 0x0F, // f
     IHFPropertyTypeDouble              = 0x10, // d
     IHFPropertyTypeLong                = 0x11, // l ,int 64
@@ -34,8 +35,9 @@ typedef NS_OPTIONS(NSUInteger, IHFPropertyType) {
     IHFPropertyTypeLongLong            = 0x16, // q
     IHFPropertyTypeUnsignedLongLong    = 0x17, // Q
     IHFPropertyTypeShort               = 0x18, // int 16, s
+    IHFPropertyTypeClass               = 0x19, // int 16, s
     IHFPropertyTypeAny                       ,
-
+    
 };
 
 @interface IHFProperty : NSObject
@@ -54,9 +56,7 @@ typedef NS_OPTIONS(NSUInteger, IHFPropertyType) {
 
 @property (nonatomic, assign,readonly) SEL setSel; /**< Setter method  */
 @property (nonatomic, assign,readonly) IMP imp;   /**< Method From SetSel */
-
 @property (nonatomic, assign,readonly) SEL getSel; /**< get method  */
-
 
 @property (nonatomic, assign) Class objectClass; /**< CLASS is contain in the Array OR the class is the relation class*/
 

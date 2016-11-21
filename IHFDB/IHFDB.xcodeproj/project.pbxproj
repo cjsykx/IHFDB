@@ -39,6 +39,10 @@
 		BCFA09AA1D192206007B5338 /* NSObject+MJKeyValue.m in Sources */ = {isa = PBXBuildFile; fileRef = BCFA099D1D192205007B5338 /* NSObject+MJKeyValue.m */; };
 		BCFA09AB1D192206007B5338 /* NSObject+MJProperty.m in Sources */ = {isa = PBXBuildFile; fileRef = BCFA099F1D192205007B5338 /* NSObject+MJProperty.m */; };
 		BCFA09AC1D192206007B5338 /* NSString+MJExtension.m in Sources */ = {isa = PBXBuildFile; fileRef = BCFA09A11D192205007B5338 /* NSString+MJExtension.m */; };
+		D3403A221DDEA6690075C1AE /* JSONKit.m in Sources */ = {isa = PBXBuildFile; fileRef = D3403A211DDEA6690075C1AE /* JSONKit.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		D3403A2A1DDEDB210075C1AE /* NSArray+IHF.m in Sources */ = {isa = PBXBuildFile; fileRef = D3403A251DDEDB210075C1AE /* NSArray+IHF.m */; };
+		D3403A2B1DDEDB210075C1AE /* NSDictionary+IHF.m in Sources */ = {isa = PBXBuildFile; fileRef = D3403A271DDEDB210075C1AE /* NSDictionary+IHF.m */; };
+		D3403A2C1DDEDB210075C1AE /* NSString+IHF.m in Sources */ = {isa = PBXBuildFile; fileRef = D3403A291DDEDB210075C1AE /* NSString+IHF.m */; };
 		D3A41DBF1DD401FD00263AD4 /* Person.m in Sources */ = {isa = PBXBuildFile; fileRef = D3A41DBE1DD401FD00263AD4 /* Person.m */; };
 		D3BE3CB61D7025D2003734A9 /* IHFAlertAction.m in Sources */ = {isa = PBXBuildFile; fileRef = D3BE3CA11D7025D2003734A9 /* IHFAlertAction.m */; };
 		D3BE3CB71D7025D2003734A9 /* IHFAlertController.m in Sources */ = {isa = PBXBuildFile; fileRef = D3BE3CA31D7025D2003734A9 /* IHFAlertController.m */; };
@@ -135,6 +139,14 @@
 		BCFA099F1D192205007B5338 /* NSObject+MJProperty.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSObject+MJProperty.m"; sourceTree = "<group>"; };
 		BCFA09A01D192205007B5338 /* NSString+MJExtension.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+MJExtension.h"; sourceTree = "<group>"; };
 		BCFA09A11D192205007B5338 /* NSString+MJExtension.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+MJExtension.m"; sourceTree = "<group>"; };
+		D3403A201DDEA6690075C1AE /* JSONKit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JSONKit.h; sourceTree = "<group>"; };
+		D3403A211DDEA6690075C1AE /* JSONKit.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JSONKit.m; sourceTree = "<group>"; };
+		D3403A241DDEDB210075C1AE /* NSArray+IHF.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSArray+IHF.h"; sourceTree = "<group>"; };
+		D3403A251DDEDB210075C1AE /* NSArray+IHF.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSArray+IHF.m"; sourceTree = "<group>"; };
+		D3403A261DDEDB210075C1AE /* NSDictionary+IHF.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSDictionary+IHF.h"; sourceTree = "<group>"; };
+		D3403A271DDEDB210075C1AE /* NSDictionary+IHF.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSDictionary+IHF.m"; sourceTree = "<group>"; };
+		D3403A281DDEDB210075C1AE /* NSString+IHF.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+IHF.h"; sourceTree = "<group>"; };
+		D3403A291DDEDB210075C1AE /* NSString+IHF.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+IHF.m"; sourceTree = "<group>"; };
 		D3A41DBD1DD401FD00263AD4 /* Person.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Person.h; sourceTree = "<group>"; };
 		D3A41DBE1DD401FD00263AD4 /* Person.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Person.m; sourceTree = "<group>"; };
 		D3BE3CA01D7025D2003734A9 /* IHFAlertAction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IHFAlertAction.h; sourceTree = "<group>"; };
@@ -222,6 +234,8 @@
 				BCFA07C01D0826A9007B5338 /* ViewController.m */,
 				BCFA07C21D0826A9007B5338 /* Main.storyboard */,
 				BCFA07C81D0826A9007B5338 /* Assets.xcassets */,
+				D3403A201DDEA6690075C1AE /* JSONKit.h */,
+				D3403A211DDEA6690075C1AE /* JSONKit.m */,
 				BCFA07CA1D0826A9007B5338 /* LaunchScreen.storyboard */,
 				BCFA07CD1D0826A9007B5338 /* Info.plist */,
 				BCFA07C51D0826A9007B5338 /* IHFDB.xcdatamodeld */,
@@ -233,6 +247,7 @@
 		BCFA07B91D0826A9007B5338 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				D3403A231DDEDB210075C1AE /* Catogorys */,
 				BCFA07EF1D082789007B5338 /* fmdb */,
 				BCFA07BA1D0826A9007B5338 /* main.m */,
 				D3A41DBD1DD401FD00263AD4 /* Person.h */,
@@ -317,6 +332,19 @@
 				BCFA09A11D192205007B5338 /* NSString+MJExtension.m */,
 			);
 			path = MJExtension;
+			sourceTree = "<group>";
+		};
+		D3403A231DDEDB210075C1AE /* Catogorys */ = {
+			isa = PBXGroup;
+			children = (
+				D3403A241DDEDB210075C1AE /* NSArray+IHF.h */,
+				D3403A251DDEDB210075C1AE /* NSArray+IHF.m */,
+				D3403A261DDEDB210075C1AE /* NSDictionary+IHF.h */,
+				D3403A271DDEDB210075C1AE /* NSDictionary+IHF.m */,
+				D3403A281DDEDB210075C1AE /* NSString+IHF.h */,
+				D3403A291DDEDB210075C1AE /* NSString+IHF.m */,
+			);
+			path = Catogorys;
 			sourceTree = "<group>";
 		};
 		D3BE3C9E1D7025D2003734A9 /* IHFDBTool */ = {
@@ -515,10 +543,12 @@
 				D3BE3CB91D7025D2003734A9 /* IHFPredicate.m in Sources */,
 				D3BE3CBB1D7025D2003734A9 /* IHFRelationTable.m in Sources */,
 				BCFA07BB1D0826A9007B5338 /* main.m in Sources */,
+				D3403A2A1DDEDB210075C1AE /* NSArray+IHF.m in Sources */,
 				BCFA07FB1D082789007B5338 /* FMDatabase.m in Sources */,
 				BCFA07FD1D082789007B5338 /* FMDatabasePool.m in Sources */,
 				BCFA09A51D192206007B5338 /* MJPropertyKey.m in Sources */,
 				BCFA09A21D192206007B5338 /* MJExtensionConst.m in Sources */,
+				D3403A221DDEA6690075C1AE /* JSONKit.m in Sources */,
 				BCFA09AB1D192206007B5338 /* NSObject+MJProperty.m in Sources */,
 				D3BE3CBD1D7025D2003734A9 /* NSObject+IHFModelOperation.m in Sources */,
 				BCFA07FF1D082789007B5338 /* FMResultSet.m in Sources */,
@@ -536,9 +566,11 @@
 				D3BE3CBC1D7025D2003734A9 /* NSObject+IHFDB.m in Sources */,
 				BCFA07FC1D082789007B5338 /* FMDatabaseAdditions.m in Sources */,
 				BCFA09A71D192206007B5338 /* NSObject+IHFKeyValue.m in Sources */,
+				D3403A2C1DDEDB210075C1AE /* NSString+IHF.m in Sources */,
 				D3BE3CBE1D7025D2003734A9 /* IHFUncaughtExceptionHandler.m in Sources */,
 				D3BE3CB81D7025D2003734A9 /* IHFDataBaseExecute.m in Sources */,
 				BCFA09A31D192206007B5338 /* MJFoundation.m in Sources */,
+				D3403A2B1DDEDB210075C1AE /* NSDictionary+IHF.m in Sources */,
 				BC0017CC1D1BCA2700253EC2 /* Drug.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

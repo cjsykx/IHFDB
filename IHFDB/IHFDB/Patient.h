@@ -49,5 +49,9 @@ typedef void(^IHFDBCompleteBlock)(BOOL success);
 @property (strong,nonatomic) NSString * mapperNumber1 ;
 
 @property (strong,nonatomic) id test ;
+@property (strong,nonatomic) NSDictionary * dict ;
+@property (strong,nonatomic) NSMutableDictionary * dictM ;
+
+@property (assign,nonatomic) NSRange range ;
 
 @end

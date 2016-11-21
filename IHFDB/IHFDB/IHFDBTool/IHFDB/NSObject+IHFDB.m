@@ -8,9 +8,9 @@
 
 #import "NSObject+IHFDB.h"
 
-static const NSString *IHFDBPrimaryKey_ObjectIDKey                = @"objectIDKey";
-static const NSString *IHFDB_DirtyKey                             = @"dirtyKey";
-static const NSString *IHFDB_ParentObjectKey                            = @"ParentObejctKey";
+static const NSString *IHFDBPrimaryKey_ObjectIDKey                = @"objectIDKey_";
+static const NSString *IHFDB_DirtyKey                             = @"dirtyKey_";
+static const NSString *IHFDB_ParentObjectKey                            = @"ParentObejctKey_";
 
 
 @implementation NSObject (IHFDB)
@@ -93,34 +93,30 @@ static const NSString *IHFDB_ParentObjectKey                            = @"Pare
 
 #pragma mark - Select by custom primary key
 
-+ (NSArray *)selectWithCostomPrimaryKeyValue:(id)value  {
-    return [self selectWithCostomPrimaryKeyValue:value isRecursive:YES];
++ (NSArray *)selectWithCustomPrimaryKeyValue:(id)value  {
+    return [self selectWithCustomPrimaryKeyValue:value isRecursive:YES];
 }
 
-+ (NSArray *)selectWithCostomPrimaryKeyValue:(id)value isRecursive:(BOOL)recursive {
-    return [self selectWithCostomPrimaryKeyValue:value inTableName:nil inDataBase:nil isRecursive:recursive];
++ (NSArray *)selectWithCustomPrimaryKeyValue:(id)value isRecursive:(BOOL)recursive {
+    return [self selectWithCustomPrimaryKeyValue:value inTableName:nil inDataBase:nil isRecursive:recursive];
 }
 
-+ (NSArray *)selectWithCostomPrimaryKeyValue:(id)value inTableName:(NSString *)tableName inDataBase:(FMDatabase *)db {
-    return [self selectWithCostomPrimaryKeyValue:value inTableName:tableName inDataBase:db isRecursive:YES];
++ (NSArray *)selectWithCustomPrimaryKeyValue:(id)value inTableName:(NSString *)tableName inDataBase:(FMDatabase *)db {
+    return [self selectWithCustomPrimaryKeyValue:value inTableName:tableName inDataBase:db isRecursive:YES];
 }
 
-+ (NSArray *)selectWithCostomPrimaryKeyValue:(id)value inTableName:(NSString *)tableName inDataBase:(FMDatabase *)db isRecursive:(BOOL)recursive {
++ (NSArray *)selectWithCustomPrimaryKeyValue:(id)value inTableName:(NSString *)tableName inDataBase:(FMDatabase *)db isRecursive:(BOOL)recursive {
     
-    if ([self respondsToSelector:@selector(customPrimarykey)])  { // Have custom primary key
-        
-        // If have the custom key , it judge the DB if have existed the data , if exist ,update , otherwise insert!
-        
-        NSString *customPrimarykey = [self customPrimarykey];
-        NSAssert(customPrimarykey, @"costom primary key can not be nil");
-        
-        if (customPrimarykey) {
-            NSString *predicateStr = [NSString stringWithFormat:@"%@ = '%@'",customPrimarykey,value];
-            IHFPredicate *predicate = [IHFPredicate predicateWithString:predicateStr];
-            return [self selectWithPredicate:predicate inTableName:tableName inDataBase:db isRecursive:recursive];
-        }
+    NSArray *primaryKeys = [self customPrimaryKeyLists];
+    if ([primaryKeys count]) {
+        NSString *customPrimarykey = [primaryKeys firstObject];
+        NSString *predicateStr = [NSString stringWithFormat:@"%@ = '%@'",customPrimarykey,value];
+        IHFPredicate *predicate = [IHFPredicate predicateWithString:predicateStr];
+        return [self selectWithPredicate:predicate inTableName:tableName inDataBase:db isRecursive:recursive];
+    } else {
+        NSAssert(YES == YES, @"you not set the primary key for this class");
+        return nil;
     }
-    return nil;
 }
 
 - (NSArray *)selectRelationModelWithPropertyName:(NSString *)propertyName {
@@ -306,13 +302,11 @@ static const NSString *IHFDB_ParentObjectKey                            = @"Pare
 #pragma mark -  protocol method
 
 - (void)setObjectID:(NSInteger)objectID {
-    
     objc_setAssociatedObject(self, &IHFDBPrimaryKey_ObjectIDKey, @(objectID), OBJC_ASSOCIATION_COPY_NONATOMIC);
 }
 
 - (NSInteger)objectID {
     id objectID = objc_getAssociatedObject(self, &IHFDBPrimaryKey_ObjectIDKey);
-    
     if ([objectID isKindOfClass:[NSNumber class]]) {
         return [objectID integerValue];
     }
@@ -320,7 +314,6 @@ static const NSString *IHFDB_ParentObjectKey                            = @"Pare
 }
 
 - (void)setDirty:(NSInteger)dirty {
-    
     objc_setAssociatedObject(self, &IHFDB_DirtyKey, @(dirty), OBJC_ASSOCIATION_COPY_NONATOMIC);
 }
 
@@ -333,6 +326,19 @@ static const NSString *IHFDB_ParentObjectKey                            = @"Pare
     return 0;
 }
 
+- (void)setParentObject:(NSObject *)parentObejct {
+    objc_setAssociatedObject(self, &IHFDB_ParentObjectKey, parentObejct, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
 
+- (instancetype)parentObject {
+    return objc_getAssociatedObject(self, &IHFDB_ParentObjectKey);
+}
+
+- (id)customPrimarykeyValue {
+    NSArray *primaryKeys = [[self class] customPrimaryKeyLists];
+    if (![primaryKeys count]) return nil;
+    NSString *Key = [primaryKeys firstObject];
+    return [self valueWithPropertName:Key];
+}
 
 @end

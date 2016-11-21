@@ -42,13 +42,14 @@
     // Do any additional setup after loading the view, typically from a nib.
 //    [self beyongOfArray:nil];
 
+//    [self insertOneModelToDataBase];
     
 //    UIButton *button = [[UIButton alloc] init];
 //    button.frame = CGRectMake(50, 50, 50, 50);
 //    [button addTarget:self action:@selector(buttonClick:) forControlEvents:UIControlEventTouchUpInside];
 //    button.backgroundColor = [UIColor redColor];
 //    [self.view addSubview:button];
-    [self convertTo];
+//    [self convertTo];
 //    [self performSelector:@selector(beyongOfArray:) withObject:nil afterDelay:0.5];
 //    
 //    CFRunLoopRef currentLoop = CFRunLoopGetCurrent();
@@ -68,7 +69,7 @@
 //    [self selectByCustomIdFromDataBase];
 //    [self selectFromDataBase];
     
-//    [self convertTo];
+    [self convertTo];
 //    [self deletePatient];
 //    [self mapperTest];
     
@@ -265,6 +266,9 @@
     patient.recordDate = [NSDate date];
     patient.idCard = @(30.5);
     patient.height = 90.89;
+    patient.test = @1;
+    patient.aclass = [Person class];
+    patient.patientID = @"zhangfei";
 
     Drug *drug = [[Drug alloc] init];
     drug.name = @"感冒药";
@@ -304,19 +308,26 @@
     Bed *bed = [[Bed alloc] init];
     bed.bedNumber = @"+1";
     bed.ward = @"L1";
-    
+        
     patient.bed = bed;
+    patient.dict = @{
+                     @"patient" : @"guanyu",
+                     @"arry1" : [Drug dictionaryArrayFromModelArray:array1],               };
+    
+    patient.dictM = [NSMutableDictionary dictionaryWithObject:patient.dict forKey:@"key"];
 
+    [Patient createTable];
     // If you want to insert the patient
     [patient save];
 
+    [self printPatients:[Patient selectAll]];
 }
 
 - (void)convertTo {
     
     NSMutableArray *patients = [NSMutableArray array];
     
-    for (int i = 0; i < 5000; i++) {
+    for (int i = 0; i < 1; i++) {
         
         //        if(i % 2 != 0 || i % 3 != 0)  continue;
     
@@ -324,7 +335,7 @@
         
         Patient *patient = [[Patient alloc] init];
         patient.name = [NSString stringWithFormat:@"%@%d",@"张飞",i];
-        patient.age = 5100- i;
+        patient.age = 5100 - i;
         patient.recordDate = [NSDate date];
         patient.idCard = @(1);
         patient.height = 100.89;
@@ -505,15 +516,27 @@
     if ([patients count]) {
         
         for (Patient *patient in patients) {
+            NSLog(@"primary key = %@",[patient customPrimarykeyValue]);
             NSLog(@"name = %@",patient.name);
+            
+            NSLog(@"Aclass = %@",patient.aclass);
+
             NSLog(@"test = %@",patient.test);
+            NSLog(@"testclass = %@",[patient.test class]);
+
             NSLog(@"age = %d",patient.age);
             NSLog(@"idCard = %@",patient.idCard);
+            
+            NSLog(@"dict = %@",patient.dict);
+            NSLog(@"dict class = %@",[patient.dict class]);
+
+            NSLog(@"dictM = %@",patient.dictM);
+            NSLog(@"dictM class = %@",[patient.dictM class]);
 
 
             for (Drug *durg in patient.drugs) {
                 NSLog(@"durgName = %@",durg.name);
-                
+                NSLog(@"patient-ID = %d",durg.parentObject.objectID);
                 NSLog(@"durgtype name = %@",durg.drugType.type);
                 NSLog(@"durgtype catagoty = %@",durg.drugType.typeCatagoty.catagoty);
                 NSLog(@"durgtype - typeCatagoty - catagoty = %@",durg.drugType.typeCatagoty.typeCatagoty.catagoty);
@@ -526,6 +549,7 @@
             NSLog(@"age = %d",patient.age);
             NSLog(@"bedNumber  = %@",patient.bed.bedNumber);
             NSLog(@"bedID  = %@",patient.bed.bedID);
+            NSLog(@"bed.patient-ID = %d",patient.bed.parentObject.objectID);
 
             NSLog(@"recordDate = %@",patient.recordDate);
             NSLog(@"11--%@",patient.idCard);
@@ -542,7 +566,7 @@
 
 - (void)selectByCustomIdFromDataBase {
     
-    NSArray *patients = [Patient selectWithCostomPrimaryKeyValue:@"10"];
+    NSArray *patients = [Patient selectWithCustomPrimaryKeyValue:@"10"];
     [self printPatients:patients];
 }
 

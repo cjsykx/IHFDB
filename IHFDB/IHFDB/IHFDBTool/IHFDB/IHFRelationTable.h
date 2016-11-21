@@ -18,7 +18,6 @@ typedef NS_OPTIONS(NSUInteger, IHFRelation) {
     IHFRelationOneToOne                 = 0x00,
     IHFRelationOneToMany                = 0x01,
     IHFRelationNone                     = 0x02,
-
 };
 
 @interface IHFRelationTable : NSObject<IHFDBObejctDataSource>

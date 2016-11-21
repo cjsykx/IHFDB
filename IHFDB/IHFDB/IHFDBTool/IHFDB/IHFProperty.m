@@ -16,7 +16,7 @@
     
     // If not equal to , it will be a model type !
     IHFPropertyType type = IHFPropertyTypeModel; // Model type
-
+    
     if ([aString isEqualToString:@"NSString"] || [aString isEqualToString:@"NSMutableString"]) {
         type = IHFPropertyTypeString;
     } else if ([aString isEqualToString:@"NSNumber"]) {
@@ -31,8 +31,10 @@
         type = IHFPropertyTypeValue;
     } else if ([aString isEqualToString:@"NSError"]) {
         type = IHFPropertyTypeError;
-    } else if ([aString isEqualToString:@"NSDictionary"] || [aString isEqualToString:@"NSMutableDictionary"]) {
-        type = IHFPropertyTypeDictionary;
+    } else if ([aString isEqualToString:@"NSDictionary"]) {
+        type = IHFPropertyTypeDictionaryI;
+    } else if ([aString isEqualToString:@"NSMutableDictionary"]) {
+        type = IHFPropertyTypeDictionaryM;
     } else if ([aString isEqualToString:@"NSAttributedString"]) {
         type = IHFPropertyTypeAttributedString;
     } else if ([aString isEqualToString:@"c"] || [aString isEqualToString:@"C"] || [aString isEqualToString:@"b"]) {
@@ -61,8 +63,10 @@
         type = IHFPropertyTypeLongLong;
     } else if ([aString isEqualToString:@"Q"]) {
         type = IHFPropertyTypeUnsignedLongLong;
+    } else if ([aString isEqualToString:@"#"]) {
+        type = IHFPropertyTypeClass;
     }
-
+    
     return type;
 }
 
@@ -83,28 +87,33 @@
 - (NSSet *)fundationTypes {
     if (_fundationTypes == nil) {
         _fundationTypes = [NSSet setWithObjects:
-                             @(IHFPropertyTypeNumber),
-                             @(IHFPropertyTypeDate),
-                             @(IHFPropertyTypeData),
-                             @(IHFPropertyTypeError),
-                             @(IHFPropertyTypeDictionary),
-                             @(IHFPropertyTypeString),
-                             @(IHFPropertyTypeAttributedString),
-                             @(IHFPropertyTypeURL),
-                             @(IHFPropertyTypeValue),nil];
+                           @(IHFPropertyTypeNumber),
+                           @(IHFPropertyTypeDate),
+                           @(IHFPropertyTypeData),
+                           @(IHFPropertyTypeError),
+                           @(IHFPropertyTypeDictionaryI),
+                           @(IHFPropertyTypeDictionaryM),
+                           @(IHFPropertyTypeString),
+                           @(IHFPropertyTypeAttributedString),
+                           @(IHFPropertyTypeClass),
+                           @(IHFPropertyTypeURL),
+                           @(IHFPropertyTypeValue),nil];
     }
     return _fundationTypes;
 }
 
 - (NSSet *)basicDataTypes {
-
+    
     if (_fundationTypes == nil) {
         _fundationTypes = [NSSet setWithObjects:
                            @(IHFPropertyTypeInt),
                            @(IHFPropertyTypeBOOL),
                            @(IHFPropertyTypeDouble),
+                           @(IHFPropertyTypeUInteger),
+                           @(IHFPropertyTypeShort),
+                           @(IHFPropertyTypeLongLong),
+                           @(IHFPropertyTypeUnsignedLongLong),
                            @(IHFPropertyTypeFloat),
-                           @(IHFPropertyTypeDictionary),
                            @(IHFPropertyTypeLong),nil];
     }
     return _fundationTypes;
@@ -123,15 +132,16 @@
         _getSel = [self createGetSELWithPropertyName:name];
         
         if (_type == IHFPropertyTypeArray) {
-            if ([[srcClass relationPropertyNameDicts] count]) {
-                [[srcClass relationPropertyNameDicts] enumerateObjectsUsingBlock:^(NSDictionary * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            id relations = [srcClass relationPropertyNameDicts];
+            if ([relations count]) {
+                [relations enumerateObjectsUsingBlock:^(NSDictionary * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
                     id object = [obj objectForKey:name];
                     if (object) {
                         // according to user returns the relation dict !
                         if ([object isKindOfClass:[NSString class]]) {
                             _objectClass = NSClassFromString(object);
-                        } else {
-                            _objectClass = [[srcClass relationshipDictForClassInArray] objectForKey:name];
+                        } else if ([object isKindOfClass:[NSObject class]]) {
+                            _objectClass = object;
                         }
                         *stop = YES; // Let child first
                     }

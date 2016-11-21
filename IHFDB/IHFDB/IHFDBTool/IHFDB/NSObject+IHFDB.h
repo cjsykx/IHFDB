@@ -56,11 +56,11 @@ Table name is the class name
 
 /** select with custom primary key value , If you NOT set the Custom primary key for the model , it select will error */
 
-+ (NSArray *)selectWithCostomPrimaryKeyValue:(id)value ;
-+ (NSArray *)selectWithCostomPrimaryKeyValue:(id)value isRecursive:(BOOL)recursive;
-+ (NSArray *)selectWithCostomPrimaryKeyValue:(id)value inTableName:(NSString *)tableName inDataBase:(FMDatabase *)db;
++ (NSArray *)selectWithCustomPrimaryKeyValue:(id)value ;
++ (NSArray *)selectWithCustomPrimaryKeyValue:(id)value isRecursive:(BOOL)recursive;
++ (NSArray *)selectWithCustomPrimaryKeyValue:(id)value inTableName:(NSString *)tableName inDataBase:(FMDatabase *)db;
 
-+ (NSArray *)selectWithCostomPrimaryKeyValue:(id)value inTableName:(NSString *)tableName inDataBase:(FMDatabase *)db isRecursive:(BOOL)recursive;
++ (NSArray *)selectWithCustomPrimaryKeyValue:(id)value inTableName:(NSString *)tableName inDataBase:(FMDatabase *)db isRecursive:(BOOL)recursive;
 
 
 

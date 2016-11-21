@@ -7,6 +7,7 @@
 //
 
 #import "IHFDataBaseExecute.h"
+#import "NSDictionary+IHF.h"
 // Sqlite name
 static NSString *_kSqliteName = @"IHFDB.sqlite";
 
@@ -49,7 +50,6 @@ static NSMutableDictionary *_propertyNameDict;
     return shareDataBaseExecute;
 }
 
-
 #pragma mark - init the sqlite name
 - (instancetype)initWithSqliteName:(NSString *)SqliteName {
     self = [super init];
@@ -65,11 +65,9 @@ static NSMutableDictionary *_propertyNameDict;
 }
 
 - (void)setSqliteName:(NSString *)sqliteName {
-    
     _sqliteName = sqliteName;
     
     // create FMDatabaseQueue
-    
     NSString *dataBasePath = [[NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject] stringByAppendingPathComponent:_sqliteName];
     
     NSLog(@"dataBasePath = %@",dataBasePath);
@@ -77,7 +75,6 @@ static NSMutableDictionary *_propertyNameDict;
 }
 
 //  data base operation
-
 #pragma mark - create table
 // create
 - (BOOL)createTableWithClass:(Class)newClass customTableName:(NSString *)tableName inDataBase:(FMDatabase *)db completeBlock:(IHFDBCompleteBlock)completion {
@@ -101,7 +98,7 @@ static NSMutableDictionary *_propertyNameDict;
 }
 
 - (NSString *)createSqlStatementWithClass:(Class)newClass customTableName:(NSString *)tableName inDataBase:(FMDatabase *)db {
-    
+
     NSString *newTableName = NSStringFromClass(newClass);
     if (tableName) newTableName = tableName;
     
@@ -124,7 +121,6 @@ static NSMutableDictionary *_propertyNameDict;
             // Fetch the model contained in the array , to create table
             
             if (property.objectClass) {
-                
                 // create relation table
                 IHFRelationTable *relationTable = [[IHFRelationTable alloc] initWithSourceObject:[[newClass alloc] init] destinationObject:[[property.objectClass alloc] init] relationName:property.propertyName relation:IHFRelationOneToMany];
                 
@@ -136,12 +132,10 @@ static NSMutableDictionary *_propertyNameDict;
         } else if (property.type == IHFPropertyTypeModel) { // deal with model
             
             // For create One-To-One relation , add a colunm for proprety name!
-            // TODO:Custom primary be can be the colunm type!
-            
             NSString *colum = [NSString stringWithFormat:@"%@ interger,",property.propertyName];
             [createTableSql appendString:colum];
 
-            if ([property.typeString isEqualToString:newTableName]) return ; // Void the one=to- one relation class is self
+            if ([property.typeString isEqualToString:newTableName]) return ; // Void the one-to-one relation class is self
             
              [self createTableWithClass:property.objectClass customTableName:nil inDataBase:db completeBlock:nil];
         } else {
@@ -249,7 +243,6 @@ static NSMutableDictionary *_propertyNameDict;
             
             [self deleteRelationUseIn_SqlStatement:inSqlStatement forClass:srcClass inDataBase:db];
         }
-
     }
     
     [[srcClass propertiesForTypeOfArray] enumerateObjectsUsingBlock:^(IHFProperty * _Nonnull property, NSUInteger idx, BOOL * _Nonnull stop) {
@@ -343,7 +336,6 @@ static NSMutableDictionary *_propertyNameDict;
     if (db) {
         result = [self insertModels:newModels inTableName:tableName inDataBase:db rollback:rollBack updateCompletion:updateCompletion];
     } else {
-        
          [_queue inTransaction:^(FMDatabase *db, BOOL *rollback)  {
             result = [self insertModels:newModels inTableName:tableName inDataBase:db rollback:rollBack updateCompletion:updateCompletion];
         }];
@@ -365,35 +357,27 @@ static NSMutableDictionary *_propertyNameDict;
         NSInteger objectID = 0;
         
         if (destinationObject) {
-            
-            if ([[destinationObject class] respondsToSelector:@selector(customPrimarykey)]) { // Have custom primary key
+            // If have the custom key , it judge the DB if have existed the data , if exist ,update , otherwise insert!
+            NSArray *primaryKeys = [[destinationObject class] customPrimaryKeyLists];
+            if ([primaryKeys count]) {
+                NSString *customPrimarykey = [primaryKeys firstObject]; // Class prior than super
+                id value = [destinationObject valueWithPropertName:customPrimarykey];
+
+                NSString *predicateStr = [NSString stringWithFormat:@"%@ = '%@'",customPrimarykey,value];
+                predicate = [IHFPredicate predicateWithString:predicateStr];
                 
-                // If have the custom key , it judge the DB if have existed the data , if exist ,update , otherwise insert!
-
-                NSString *customPrimarykey = [[destinationObject class] customPrimarykey];
-                NSAssert(customPrimarykey, @"costom primary key can not be nil");
-
-                if(customPrimarykey) {
-                    
-                    id value = [destinationObject valueWithPropertName:customPrimarykey];
-                    
-                    // Warning:Custom primary key if use int , it will a BUG!
-                    NSString *predicateStr = [NSString stringWithFormat:@"%@ = '%@'",customPrimarykey,value];
-                    predicate = [IHFPredicate predicateWithString:predicateStr];
-                    
-                    NSString *selectedStatment = [self selectSystemColunmSqlStatementWithClass:[destinationObject class] predicate:predicate customTableName:tableName];
-                    
-                    FMResultSet *rs = [db executeQuery:selectedStatment];
-                    
-                    while (rs.next) {
-                        
-                        // Record Object id enough!
-                        objectID = [rs intForColumn:_primaryKey];
-                    }
-                    
-                    // If the objectID > 0 , mean it have exist in the data base
-                    isUpdate = objectID > 0 ? YES : NO;
+                NSString *selectedStatment = [self selectSystemColunmSqlStatementWithClass:[destinationObject class] predicate:predicate customTableName:tableName];
+                
+                FMResultSet *rs = [db executeQuery:selectedStatment];
+                
+                while (rs.next) {
+                    // Record Object id enough!
+                    objectID = [rs intForColumn:_primaryKey];
                 }
+                
+                // If the objectID > 0 , mean it have exist in the data base
+                isUpdate = objectID > 0 ? YES : NO;
+                
             } else {
                 // If NOT have the custom key , it only insert
                 isUpdate = NO;
@@ -461,7 +445,7 @@ static NSMutableDictionary *_propertyNameDict;
                 }
             }
             
-        }else { // Not success DO update or insert
+        } else { // Not success DO update or insert
             *rollback = YES;
             *stop = YES;
             result = NO;
@@ -473,7 +457,7 @@ static NSMutableDictionary *_propertyNameDict;
 }
 
 - (NSString *)insertStatementWithModel:(id)newModel inTableName:(NSString *)tableName {
-    
+
     NSString *insertTableName = NSStringFromClass([newModel class]);
     if (tableName) insertTableName = tableName;
     
@@ -486,13 +470,20 @@ static NSMutableDictionary *_propertyNameDict;
         
         if (property.type == IHFPropertyTypeArray) return ;
         if (property.type == IHFPropertyTypeModel) return ;
-
-        [keyStr appendFormat:@"%@,",property.propertyName];
-            
-        // According to property type , if is from fundation , then add '' to become text！
-        NSString *format = [property.typeOfFundation boolValue]? @"'%@',"  : @"%@,";
         
-        [value appendFormat:format,[newModel valueWithProperty:property]];
+        [keyStr appendFormat:@"%@,",property.propertyName];
+        id obj;
+        NSString *format = [property.typeOfFundation boolValue] ? @"'%@',"  : @"%@,";
+
+        if (property.type == IHFPropertyTypeDictionaryI || property.type == IHFPropertyTypeDictionaryM) {
+            obj = [[newModel valueWithProperty:property] jsonString]; // Change Json
+        } else if (property.type == IHFPropertyTypeClass) {
+            obj = NSStringFromClass([newModel valueWithProperty:property]);
+        } else {
+            // According to property type , if is from fundation , then add '' to become text！
+            obj = [newModel valueWithProperty:property];
+        }
+        [value appendFormat:format,obj];
     }];
     
     // if insert , the data is not dirty
@@ -509,10 +500,8 @@ static NSMutableDictionary *_propertyNameDict;
 - (void)updateModel:(id)newModel predicate:(IHFPredicate *)predicate customTableName:(NSString *)tableName inDataBase:(FMDatabase *)db isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion {
     
     if (db) {
-        
         [self executeForUpdateModel:newModel predicate:predicate customTableName:tableName inDataBase:db isCascade:cascade completeBlock:completion];
-    }else {
-        
+    } else {
         [_queue inTransaction:^(FMDatabase *db, BOOL *rollback) {
 
             [self executeForUpdateModel:newModel predicate:predicate customTableName:tableName inDataBase:db isCascade:cascade completeBlock:completion];
@@ -562,8 +551,18 @@ static NSMutableDictionary *_propertyNameDict;
         [value appendFormat:@"%@ = ",property.propertyName];
         
         // According to property type , if is from fundation , then add '' to become text！
-        NSString *format = [property.typeOfFundation boolValue]? @"'%@',"  : @"%@,";
-        [value appendFormat:format,[newModel valueWithProperty:property]];
+        NSString *format = [property.typeOfFundation boolValue] ? @"'%@',"  : @"%@,";
+        id obj;
+        
+        if (property.type == IHFPropertyTypeDictionaryI || property.type == IHFPropertyTypeDictionaryM) {
+            obj = [[newModel valueWithProperty:property] jsonString]; // Change Json
+        } else if (property.type == IHFPropertyTypeClass) {
+            obj = NSStringFromClass([newModel valueWithProperty:property]);
+        } else {
+            // According to property type , if is from fundation , then add '' to become text！
+            obj = [newModel valueWithProperty:property];
+        }
+        [value appendFormat:format,obj];
     }];
     
     [value appendFormat:@"%@ = %d",_dirtyKey,1];
@@ -574,11 +573,10 @@ static NSMutableDictionary *_propertyNameDict;
             [updateSql appendFormat:@" WHERE %@",predicate.predicateFormat];
         }
     }
-    
     return updateSql;
 }
 
-
+/** Not use
 - (void)updateModel:(id)newModel predicate:(IHFPredicate *)predicate completeBlock:(IHFDBCompleteBlock)completion {
     
     NSMutableString *updateSql = [NSMutableString stringWithFormat:@"%@ %@ SET ",_update,NSStringFromClass([newModel class])];
@@ -592,10 +590,41 @@ static NSMutableDictionary *_propertyNameDict;
         
         [value appendFormat:@"%@ = ",property.propertyName];
         
-        // According to property type , if is from fundation , then add '' to become text！
-        NSString *format = [property.typeOfFundation boolValue]? @"'%@',"  : @"%@,";
+        id obj;
+        NSString *format = [property.typeOfFundation boolValue] ? @"'%@',"  : @"%@,";
         
-        [value appendFormat:format,[newModel valueWithProperty:property]];
+        if (property.type == IHFPropertyTypeDictionaryI || property.type == IHFPropertyTypeDictionaryM) {
+            
+            if (property.isCustomPriamryKey) { // If is priamry key , to judge ..
+                if ([newModel respondsToSelector:@selector(customPrimarykeyValue)]) {
+                    obj = [newModel customPrimarykeyValue];
+                } else {
+                    NSDictionary *dict = [newModel valueWithProperty:property];
+                    if (dict) {
+                        obj = [dict JSONString];
+                    }
+                }
+            } else {
+                NSDictionary *dict = [newModel valueWithProperty:property];
+                if (dict) {
+                    obj = [dict JSONString];
+                }
+            }
+        } else {
+            // According to property type , if is from fundation , then add '' to become text！
+            
+            if (property.isCustomPriamryKey) { // If is priamry key , to judge ..
+                if ([newModel respondsToSelector:@selector(customPrimarykeyValue)]) {
+                    obj = [newModel customPrimarykeyValue];
+                } else {
+                    obj = [newModel valueWithProperty:property];
+                }
+            } else {
+                obj = [newModel valueWithProperty:property];
+            }
+        }
+        
+        [value appendFormat:format,obj];
     }];
     
     if ([value length]) {
@@ -610,6 +639,7 @@ static NSMutableDictionary *_propertyNameDict;
     
     [self executeUpdateWithClass:[newModel class] sqlStatement:updateSql completeBlock:completion];
 }
+*/
 
 #pragma mark - delete
 
@@ -631,7 +661,7 @@ static NSMutableDictionary *_propertyNameDict;
 
 - (void)deleteFromClass:(Class)newClass predicate:(IHFPredicate *)predicate customTableName:(NSString *)tableName inDataBase:(FMDatabase *)db isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion {
     
-    if (db)  {
+    if (db) {
         [self executeDeleteFromClass:newClass predicate:predicate customTableName:tableName inDataBase:db isCascade:cascade completeBlock:completion];
     } else {
         
@@ -707,7 +737,7 @@ static NSMutableDictionary *_propertyNameDict;
                         }
                     }];
                 }
-            }else if(property.type == IHFPropertyTypeModel) {
+            } else if(property.type == IHFPropertyTypeModel) {
                 
                 if (cascade) {
                     id value = [obj valueWithProperty:property];
@@ -752,8 +782,7 @@ static NSMutableDictionary *_propertyNameDict;
         [model setObjectID:[rs intForColumn:_primaryKey]];
         [model setDirty:[rs intForColumn:_dirtyKey]];
         
-        [[newClass class] enumeratePropertiesUsingBlock:^(IHFProperty *property, NSUInteger idx, BOOL *stop)  {
-            
+        [[newClass class] enumeratePropertiesUsingBlock:^(IHFProperty *property, NSUInteger idx, BOOL *stop) {
             [weakSelf setValueWithFMResult:rs forModel:model property:property isRecursive:recursive inDataBase:db];
         }];
         
@@ -795,7 +824,6 @@ static NSMutableDictionary *_propertyNameDict;
     return count;
 }
 
-
 - (void)setValueWithFMResult:(FMResultSet *)rs forModel:(NSObject <IHFDBObejctDataSource> *)model property:(IHFProperty *)property isRecursive:(BOOL)recursive inDataBase:(FMDatabase *)db {
     
     SEL setSel = property.setSel;
@@ -803,14 +831,11 @@ static NSMutableDictionary *_propertyNameDict;
         
         IMP imp = property.imp;
         NSString *key = property.propertyName;
-
         switch (property.type)  {
             case IHFPropertyTypeArray: {
                 //Fetch the model contained in the array , to select the relation table
                 if (recursive) {
-
-                    if (property.objectClass) {
-
+                    if (property.objectClass)  {
                         IHFRelationTable *table = [[IHFRelationTable alloc] initWithSourceObject:model destinationObject:[[property.objectClass alloc] init] relationName:property.propertyName relation:IHFRelationOneToMany];
                         table.sourceObjectID = model.objectID;
                         NSArray *models = [table selectRelationsInDataBase:db];
@@ -818,29 +843,22 @@ static NSMutableDictionary *_propertyNameDict;
                         func(model,setSel,(NSArray *)models);
                     }
                 }
-            }
-                break;
+            } break;
             case IHFPropertyTypeModel: {
                 //Fetch the model contained in the array , to select the relation table
                 if (recursive) {
-                    
                     int destinationObjectID = [rs intForColumn:property.propertyName];
                     if (destinationObjectID != 0) {
-                        
                         IHFRelationTable *table = [[IHFRelationTable alloc] initWithSourceObject:model destinationObject:[[property.objectClass alloc] init] relationName:property.propertyName relation:IHFRelationOneToOne];
-                        
                         table.destinationObjectID = destinationObjectID;
-
                         NSArray *models = [table selectRelationsInDataBase:db];
-                        
                         if ([models count]) {
                             void (*func) (id,SEL,id) = (void*)imp;
                             func(model,setSel,[models firstObject]);
                         }
                     }
                 }
-            }
-                break;
+            } break;
             case IHFPropertyTypeDate: {
                 NSString *dateString = [rs stringForColumn:key];
                 if (dateString && [dateString length] >= 19) {
@@ -849,50 +867,77 @@ static NSMutableDictionary *_propertyNameDict;
                     void (*func) (id,SEL,NSDate*) = (void*)imp;
                     func(model,setSel,(NSDate *)[[self convertDateString:dateStr] dateByAddingTimeInterval:8 * 60 * 60]);
                 }
-            }
-                break;
+            } break;
             case IHFPropertyTypeInt  :
+            case IHFPropertyTypeShort :
+            case IHFPropertyTypeUInteger :
             case IHFPropertyTypeBOOL : {
                 void (*func) (id,SEL,int) = (void *)imp;
                 func(model,setSel,[rs intForColumn:key]);
-            }
-                break;
-            case IHFPropertyTypeLong : {
+            } break;
+            case IHFPropertyTypeUnsignedLongLong : {
+                void (*func) (id,SEL,unsigned long long) = (void *)imp;
+                func(model,setSel,[rs unsignedLongLongIntForColumn:key]);
+                
+            } break;
+            case IHFPropertyTypeLongLong :{
+                void (*func) (id,SEL,long long) = (void *)imp;
+                func(model,setSel,[rs longLongIntForColumn:key]);
+            } break;
+            case IHFPropertyTypeLong :
+            case IHFPropertyTypeUnsignedLong : {
                 void (*func) (id,SEL,long) = (void *)imp;
-                func(model,setSel,[rs intForColumn:key]);
-            }
-                break;
+                func(model,setSel,[rs longForColumn:key]);
+            } break;
             case IHFPropertyTypeDouble : {
                 void (*func) (id,SEL,double) = (void *)imp;
                 func(model,setSel,[rs doubleForColumn:key]);
-            }
-                break;
+            } break;
             case IHFPropertyTypeFloat : {
                 void (*func) (id,SEL,float) = (void *)imp;
                 func(model,setSel,[rs doubleForColumn:key]);
-            }
-                break;
+            } break;
             case IHFPropertyTypeData :
             case IHFPropertyTypeImage : {
                 void (*func) (id,SEL,NSData *) = (void *)imp;
                 func(model,setSel,[rs dataForColumn:key]);
-            }
-                break;
+            } break;
             case IHFPropertyTypeString : {
                 void (*func) (id,SEL,NSString *) = (void *)imp;
+                if ([[rs stringForColumn:key] isEqualToString:@"(null)"]) return;
                 func(model,setSel,[rs stringForColumn:key]);
-            }
-                break;
+            } break;
             case IHFPropertyTypeNumber : {
                 NSNumberFormatter *format = [[NSNumberFormatter alloc] init];
-                NSNumber *value = [format numberFromString:(NSString *)[rs stringForColumn:key]];
-    
-                void (*func) (id,SEL,NSNumber*) = (void*)imp;
+                id obj = [rs stringForColumn:key];
+                if ([obj isEqualToString:@"(null)"]) return;
+                NSNumber *value = [format numberFromString:(NSString *)obj];
+                void (*func) (id,SEL,NSNumber *) = (void*)imp;
                 func(model,setSel,value);
-            }
-                break;
+            } break;
+            case IHFPropertyTypeDictionaryM : {
+                NSMutableDictionary *dictM = [NSMutableDictionary dictionaryWithJSONStirng:[rs stringForColumn:key]];
+                void (*func) (id,SEL,NSMutableDictionary *) = (void*)imp;
+                func(model,setSel,dictM);
+            } break;
+            case IHFPropertyTypeDictionaryI : {
+                NSDictionary *dict = [NSDictionary dictionaryWithJSONStirng:[rs stringForColumn:key]];
+                void (*func) (id,SEL,NSDictionary *) = (void*)imp;
+                func(model,setSel,dict);
+            } break;
+            case IHFPropertyTypeClass : {
                 
-            default:
+                NSString *obj = [rs stringForColumn:key];
+                if (obj) {
+                    void (*func) (id,SEL,Class) = (void*)imp;
+                    func(model,setSel,NSClassFromString(obj));
+                }
+            } break;
+            default: {
+                void (*func) (id,SEL,id) = (void*)imp;
+                id obj = [rs objectForColumnName:key];
+                func(model,setSel,obj);
+            }
                 break;
         }
     }
@@ -908,9 +953,7 @@ static NSMutableDictionary *_propertyNameDict;
         [_queue inTransaction:^(FMDatabase *db, BOOL *rollback) {
             
             [sqlStatements enumerateObjectsUsingBlock:^(NSString * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-                
                 BOOL success = [db executeUpdate:obj];
-                
                 if (!success)  {
                     if(completion) completion(success);
                     result = NO;
@@ -918,7 +961,6 @@ static NSMutableDictionary *_propertyNameDict;
                     *rollback = YES; // roll back
                 }
             }];
-            
             if (result) {
                 if(completion) completion(YES);
             }
@@ -926,7 +968,6 @@ static NSMutableDictionary *_propertyNameDict;
     } else {
         
         [_queue inDatabase:^(FMDatabase *db) {
-            
             [sqlStatements enumerateObjectsUsingBlock:^(NSString * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
                 
                 BOOL success = [db executeUpdate:obj];
@@ -937,13 +978,11 @@ static NSMutableDictionary *_propertyNameDict;
                     *stop = YES;
                 }
             }];
-            
             if (result) {
                 if(completion) completion(YES);
             }
         }];
     }
-    
     return result;
 }
 
@@ -963,7 +1002,6 @@ static NSMutableDictionary *_propertyNameDict;
     if (db) {
     
         FMResultSet *rs = [db executeQuery:selectedStatment];
-        
         NSMutableString *inSqlStatement = [NSMutableString string];
         
         while (rs.next) {
@@ -1028,7 +1066,7 @@ static NSMutableDictionary *_propertyNameDict;
     // Reset dirty data
     NSMutableString *resetDirtySqlStatement = [NSMutableString stringWithFormat:@"%@ %@ SET %@ = 0" ,_update,newTableName,_dirtyKey];
     
-    if(predicate) {
+    if (predicate) {
         if (predicate.predicateFormat) {
             [resetDirtySqlStatement appendFormat:@" WHERE %@",predicate.predicateFormat];
         }
@@ -1036,23 +1074,18 @@ static NSMutableDictionary *_propertyNameDict;
     return resetDirtySqlStatement;
 }
 
-
 #pragma mark -  support tool
 
-
 - (BOOL)isTableExistWithTableName:(NSString *)tableName inDatabase:(FMDatabase *)db {
-
     if (db) return [db tableExists:tableName];
 
     __block BOOL isExist ;
-
     [_queue inDatabase:^(FMDatabase *db) {
         isExist = [db tableExists:tableName];
     }];
     
     return isExist;
 }
-
 
 - (NSString *)convertDate:(NSDate *)date {
     NSDateFormatter *dateFormat = [[NSDateFormatter alloc]init];
