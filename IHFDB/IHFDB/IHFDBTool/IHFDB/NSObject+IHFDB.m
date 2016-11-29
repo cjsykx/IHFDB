@@ -107,14 +107,24 @@ static const NSString *IHFDB_ParentObjectKey                            = @"Pare
 
 + (NSArray *)selectWithCustomPrimaryKeyValue:(id)value inTableName:(NSString *)tableName inDataBase:(FMDatabase *)db isRecursive:(BOOL)recursive {
     
-    NSArray *primaryKeys = [self customPrimaryKeyLists];
-    if ([primaryKeys count]) {
-        NSString *customPrimarykey = [primaryKeys firstObject];
-        NSString *predicateStr = [NSString stringWithFormat:@"%@ = '%@'",customPrimarykey,value];
-        IHFPredicate *predicate = [IHFPredicate predicateWithString:predicateStr];
-        return [self selectWithPredicate:predicate inTableName:tableName inDataBase:db isRecursive:recursive];
+    NSArray *primaryKeys = [[self class] customPrimaryKeyLists];
+    if (![primaryKeys count]) return nil;
+    id childArray = [primaryKeys firstObject];
+    if (childArray && [childArray count]) {
+        
+        NSAssert([childArray count] == 1, @"You set not only one primary key value , can not use the method , please use IHFPredicate instead");
+
+        id primaryKey = [childArray firstObject];
+        if (primaryKey && [primaryKey isKindOfClass:[NSString class]] ) {
+            NSString *predicateStr = [NSString stringWithFormat:@"%@ = '%@'",primaryKey,value];
+            IHFPredicate *predicate = [IHFPredicate predicateWithString:predicateStr];
+            return [self selectWithPredicate:predicate inTableName:tableName inDataBase:db isRecursive:recursive];
+        } else {
+            NSAssert(true == true, @"customPrimarykey must be NSString AND not nil");
+            return nil;
+        }
     } else {
-        NSAssert(YES == YES, @"you not set the primary key for this class");
+        NSAssert(true == true, @"customPrimarykey must be NSArray AND not nil");
         return nil;
     }
 }
@@ -175,7 +185,7 @@ static const NSString *IHFDB_ParentObjectKey                            = @"Pare
 }
 
 + (BOOL)saveModelArray:(NSArray *)modelArray inTableName:(NSString *)tableName inDataBase:(FMDatabase *)db completeBlock:(IHFDBCompleteBlock)completion {
-    
+    [self createTable];
     IHFDataBaseExecute *execute = [IHFDataBaseExecute shareDataBaseExecute];
     return [execute insertIntoClassWithModelArray:modelArray inTableName:tableName inDataBase:db completeBlock:completion];
 }
@@ -334,11 +344,23 @@ static const NSString *IHFDB_ParentObjectKey                            = @"Pare
     return objc_getAssociatedObject(self, &IHFDB_ParentObjectKey);
 }
 
-- (id)customPrimarykeyValue {
+- (NSMutableDictionary *)customPrimarykeyValues {
     NSArray *primaryKeys = [[self class] customPrimaryKeyLists];
     if (![primaryKeys count]) return nil;
-    NSString *Key = [primaryKeys firstObject];
-    return [self valueWithPropertName:Key];
+    id childArray = [primaryKeys firstObject];
+    if (childArray && [childArray count]) {
+        __block NSMutableDictionary *keyValues = [NSMutableDictionary dictionary];
+        [childArray enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            if ([obj isKindOfClass:[NSString class]]) {
+                id value = [self valueWithPropertName:obj];
+                if (!value) value = @"";
+                [keyValues setObject:[self valueWithPropertName:obj] forKey:obj];
+            }
+        }];
+        return keyValues;
+    } else {
+        NSAssert(true == true, @"customPrimarykey must be NSArray AND not nil");
+        return nil;
+    }
 }
-
 @end

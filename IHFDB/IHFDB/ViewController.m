@@ -69,7 +69,10 @@
 //    [self selectByCustomIdFromDataBase];
 //    [self selectFromDataBase];
     
-    [self convertTo];
+//    [self convertTo];
+//    [self insertOneModelToDataBase];
+    [self insertManyModelToDataBase];
+    [self selectByDate];
 //    [self deletePatient];
 //    [self mapperTest];
     
@@ -226,7 +229,7 @@
     }];
 }
 
-- (void)mapperTest{
+- (void)mapperTest {
     
     NSMutableArray *array1 = [NSMutableArray array];
 
@@ -242,7 +245,7 @@
         [array1 addObject:dict];
     }
     
-    NSArray *patients = [Patient modelArrayFromDictionaryArray:array1];
+    NSArray *patients = [Patient modelsFromJSONObjectArray:array1];
     
 //    for (Patient *patient in patients) {
 //        NSLog(@"name = %@",patient.name);
@@ -251,7 +254,7 @@
 //        NSLog(@"number = %@",patient.mapperNumber1);
 //    }
     
-    NSArray *dicts = [patients dictionaryArrayFromModelArray];
+    NSArray *dicts = [patients JSONObjectsFromModelArray];
 
     NSLog(@"dicts = %@",dicts);
 }
@@ -268,7 +271,7 @@
     patient.height = 90.89;
     patient.test = @1;
     patient.aclass = [Person class];
-    patient.patientID = @"zhangfei";
+    patient.patientID = 30;
 
     Drug *drug = [[Drug alloc] init];
     drug.name = @"感冒药";
@@ -312,22 +315,22 @@
     patient.bed = bed;
     patient.dict = @{
                      @"patient" : @"guanyu",
-                     @"arry1" : [Drug dictionaryArrayFromModelArray:array1],               };
+                     @"arry1" : [Drug JSONObjectsFromModelArray:array1],               };
     
     patient.dictM = [NSMutableDictionary dictionaryWithObject:patient.dict forKey:@"key"];
 
-    [Patient createTable];
     // If you want to insert the patient
     [patient save];
 
-    [self printPatients:[Patient selectAll]];
+//    [self printPatients:[Patient selectAll]];
+    [self selectByCustomIdFromDataBase];
 }
 
 - (void)convertTo {
     
     NSMutableArray *patients = [NSMutableArray array];
     
-    for (int i = 0; i < 1; i++) {
+    for (int i = 0; i < 2; i++) {
         
         //        if(i % 2 != 0 || i % 3 != 0)  continue;
     
@@ -339,7 +342,7 @@
         patient.recordDate = [NSDate date];
         patient.idCard = @(1);
         patient.height = 100.89;
-        patient.patientID = [NSString stringWithFormat:@"%d",i];
+        patient.patientID = i;
         patient.test = @"333";
         
         [self printPropertys:patient];
@@ -355,10 +358,9 @@
             drug1.name = @"后悔药";
             drug1.drugID = @(2);
             
-        }else{
+        } else {
             drug1.name = @"消炎药";
             drug1.drugID = @(3);
-            
         }
                 
         DrugType *type = [[DrugType alloc] init];
@@ -397,13 +399,24 @@
         
         patient.bed = bed;
         
+        patient.dict = @{
+                         @"patient" : @"guanyu",
+                         @"arry1" : [Drug JSONObjectsFromModelArray:array1],               };
+        
+        patient.dictM = [NSMutableDictionary dictionaryWithObject:patient.dict forKey:@"key"];
+        
+        NSRange range;
+        range.length = 5;
+        range.location = 2;
+        patient.range = range;
+        
         [patients addObject:patient];
     }
 
     
         NSDate *beginDate = [NSDate date];
         NSLog(@"begin model -> dict");
-        NSArray *dicts = [patients dictionaryArrayFromModelArray];
+        NSArray *dicts = [patients JSONObjectsFromModelArray];
         NSLog(@"cost time for model -> dict ＝ %f",[[NSDate date] timeIntervalSince1970] - [beginDate timeIntervalSince1970]);
     
         NSDate *beginDateMJ = [NSDate date];
@@ -413,7 +426,7 @@
     
         NSDate *beginDate1 = [NSDate date];
         NSLog(@"begin dict -> model");
-        NSArray *models = [Patient modelArrayFromDictionaryArray:dicts];
+        NSArray *models = [Patient modelsFromJSONObjectArray:dicts];
         NSLog(@"cost time for dict -> model ＝ %f",[[NSDate date] timeIntervalSince1970] - [beginDate1 timeIntervalSince1970]);
     
         NSDate *beginDate1MJ = [NSDate date];
@@ -423,15 +436,24 @@
     
     
     [self printPatients:models];
-
-
 }
 
--(void)insertManyModelToDataBase{
+- (void)selectByDate {
+    NSDate *date = [DateTool dateToolforGetDateWithoutTimeWithDate:[NSDate date]];
+    
+    NSArray *patients = [Patient selectWithPredicate:[[IHFPredicate alloc] initWithFormat:@"birthday > %@",date]];
+    for (Patient *patient in patients) {
+        NSLog(@"name =  %@",patient.name);
+        NSLog(@"birthday = %@",patient.birthday);
+    }
+}
+
+
+- (void)insertManyModelToDataBase{
     
     NSMutableArray *patients = [NSMutableArray array];
     
-    for (int i = 0; i < 5000; i++) {
+    for (int i = 0; i < 10; i++) {
         
 //        if(i % 2 != 0 )  continue;
 //        if(i % 2 != 0 || i % 3 != 0)  continue;
@@ -440,12 +462,18 @@
         NSMutableArray *array1 = [NSMutableArray array];
         
         Patient *patient = [[Patient alloc] init];
+        if (i % 2 == 0) {
+            patient.birthday = [NSDate date];
+        } else {
+            patient.birthday = [NSDate dateWithTimeIntervalSinceNow:-24 * 60 * 60];
+        }
+
         patient.name = [NSString stringWithFormat:@"%@%d",@"张飞",i];
         patient.age = i;
         patient.recordDate = [NSDate date];
         patient.idCard = @(30.5);
         patient.height = 100.89;
-        patient.patientID = [NSString stringWithFormat:@"%d",i];
+        patient.patientID = i;
         Drug *drug = [[Drug alloc] init];
         drug.drugID = @(1);
         drug.name = @"感冒药";
@@ -516,7 +544,8 @@
     if ([patients count]) {
         
         for (Patient *patient in patients) {
-            NSLog(@"primary key = %@",[patient customPrimarykeyValue]);
+            NSLog(@"primary key = %@",[patient customPrimarykeyValues]);
+
             NSLog(@"name = %@",patient.name);
             
             NSLog(@"Aclass = %@",patient.aclass);
@@ -532,6 +561,9 @@
 
             NSLog(@"dictM = %@",patient.dictM);
             NSLog(@"dictM class = %@",[patient.dictM class]);
+
+            NSLog(@"length = %d",patient.range.length);
+            NSLog(@"location = %d",patient.range.location);
 
 
             for (Drug *durg in patient.drugs) {
@@ -566,7 +598,7 @@
 
 - (void)selectByCustomIdFromDataBase {
     
-    NSArray *patients = [Patient selectWithCustomPrimaryKeyValue:@"10"];
+    NSArray *patients = [Patient selectWithCustomPrimaryKeyValue:@"30"];
     [self printPatients:patients];
 }
 

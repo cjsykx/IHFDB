@@ -43,7 +43,7 @@ typedef void(^IHFDBCompleteBlock)(BOOL success);
 
 @property (strong,nonatomic) Bed *bed;
 
-@property (strong,nonatomic) NSString * patientID ;
+@property (assign,nonatomic) NSInteger patientID ;
 
 @property (strong,nonatomic) NSString * mapperStr1 ;
 @property (strong,nonatomic) NSString * mapperNumber1 ;
@@ -53,5 +53,7 @@ typedef void(^IHFDBCompleteBlock)(BOOL success);
 @property (strong,nonatomic) NSMutableDictionary * dictM ;
 
 @property (assign,nonatomic) NSRange range ;
+
+@property (strong,nonatomic) NSDate *birthday ;
 
 @end

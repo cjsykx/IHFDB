@@ -16,9 +16,8 @@
              };
 }
 
-+ (NSString *)customPrimarykey{
-    
-    return @"patientID";
++ (NSArray<NSString *> *)customPrimarykeys {
+    return @[@"patientID",@"name"];
 }
 
 + (NSDictionary *)propertyNameDictForMapper{
@@ -27,10 +26,21 @@
              };
 }
 
-
 + (NSArray *)propertyNamesForIgnore{
     return @[@"idCard",@"height"];
 }
 
+- (BOOL)doModelCustomConvertFromJSONObject:(NSDictionary *)JSONObject {
+    NSRange range;
+    range.length = [[JSONObject objectForKey:@"length"] integerValue];
+    range.location = [[JSONObject objectForKey:@"location"] integerValue];
+    self.range = range;
+    return YES;
+}
 
+- (BOOL)doModelCustomConvertToJSONObject:(NSMutableDictionary *)JSONObject {
+    [JSONObject setObject:@(self.range.length) forKey:@"length"];
+    [JSONObject setObject:@(self.range.location) forKey:@"location"];
+    return YES;
+}
 @end

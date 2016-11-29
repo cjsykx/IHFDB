@@ -17,40 +17,61 @@
 //-----------------------------------------------------------------------------
 
 /**
- Model convert to dict
+ Return JSON Object convert from model (self) ...
  */
-- (NSMutableDictionary *)dictionaryFromModel;
+- (NSMutableDictionary *)JSONObjectFromModel;
 
 /**
- Model Array convert to dict Array
+ Return JSON Object array convert from model array (self) ...
+ 
+ Instance method
  */
-- (NSArray <NSMutableDictionary *> *)dictionaryArrayFromModelArray;
-+ (NSArray <NSMutableDictionary *> *)dictionaryArrayFromModelArray:(NSArray *)modelArray;
+- (NSArray <NSMutableDictionary *> *)JSONObjectsFromModelArray;
+
+/**
+ Return JSON Object array convert from model array ..
+ 
+ Class method
+ */
++ (NSArray <NSMutableDictionary *> *)JSONObjectsFromModelArray:(NSArray *)modelArray;
+
+
+/**
+ Do your like to do when model convert to JSON Object and check if need the JSON obejct ..
+ 
+ @param JSONObject : The JSON object , always come from network ..
+ 
+ @return : If NO , the you will NOT get the JSON Object which will convert from model ..
+ */
+- (BOOL)doModelCustomConvertToJSONObject:(NSMutableDictionary *)JSONObject;
 
 //-----------------------------------------------------------------------------
 ///  ***********  Dict convert to Model ****************
 //-----------------------------------------------------------------------------
 
 /**
- Dict convert to Model
+ Returns model convert from JSON object
+
+ @param JSONObject : It usually is dictionary , but may be JSON string or JSON data
  */
-+ (instancetype)modelFromDictionary:(NSDictionary *)dict;
++ (instancetype)modelFromJSONObject:(id)JSONObject;
 
 /**
- Dict Array convert to Model Array
+ Returns model convert from JSON object
+ 
+ @param JSONObject : It usually is dictionary , but may be JSON string or JSON data
  */
++ (NSArray *)modelsFromJSONObjectArray:(NSArray <id>*)JSONObjects;
 
-+ (NSArray <id> *)modelArrayFromDictionaryArray:(NSArray <NSDictionary *> *)dictArray;
-
-/**
- JsonString convert to Model
- */
-+ (instancetype)modelFromJSONString:(NSString *)jSONString;
 
 /**
- JsonData convert to Model
+ Do your like to do when model convert from JSON Object and check if need the model
+
+ @param JSONObject : The JSON object , always come from network ..
+
+ @return : If NO , the you will NOT get the model which will convert from JSON object ..
  */
-+ (instancetype)modelFromJSONData:(NSData *)jSONData;
+- (BOOL)doModelCustomConvertFromJSONObject:(NSDictionary *)JSONObject;
 
 //-----------------------------------------------------------------------------
 ///  ************* Run time to property and Class ****************
@@ -98,11 +119,14 @@
 // Block
 typedef void (^IHFPropertiesEnumeration)(IHFProperty *property,NSUInteger idx, BOOL *stop);
 
-/** Enumerate the model's properties use block*/
-
+/**
+ Enumerate the model's properties use block
+ */
 + (void)enumeratePropertiesUsingBlock:(IHFPropertiesEnumeration)enumeration;
 
-/** Enumerate the model's class and super class  block */
+/**
+ Enumerate the model's class and super class  block
+ */
 typedef void (^IHFClassesEnumeration)(Class c, BOOL *stop);
 
 /**
@@ -111,12 +135,12 @@ typedef void (^IHFClassesEnumeration)(Class c, BOOL *stop);
 + (void)enumerateAllClassesUsingBlock:(IHFClassesEnumeration)enumeration;
 
 /**
- Get a Class All properties which type is array
+ Get a Class All properties which type is array (Include super class)
  */
 + (NSArray <IHFProperty *>*)propertiesForTypeOfArray;
 
 /**
- Get a Class All properties names which type is array
+ Get a Class All properties names which type is model (Include super class)
  */
 + (NSArray <IHFProperty *>*)propertiesForTypeOfModel;
 
@@ -136,14 +160,13 @@ typedef void (^IHFClassesEnumeration)(Class c, BOOL *stop);
 - (void)setValue:(NSObject *)value propertyName:(NSString *)name propertyType:(NSString *)type;
 
 /**
- Get value with property name
+ returns value with given property name
  */
 - (instancetype)valueWithPropertName:(NSString *)propertyName;
 
 /**
- Get value with property name
+ returns value with given property
  */
-
 - (instancetype)valueWithProperty:(IHFProperty *)property;
 
 /**

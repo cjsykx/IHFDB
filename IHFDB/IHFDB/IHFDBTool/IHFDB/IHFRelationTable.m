@@ -49,7 +49,7 @@
 }
 
 - (void)saveInDataBase:(FMDatabase *)db completeBlock:(IHFDBCompleteBlock)completion {
-    [self saveWithTableName:[self tableName] inDataBase:db completeBlock:completion];
+    [[self class] saveModelArray:[NSArray arrayWithObject:self] inDataBase:db];
 }
 - (void)saveInDataBase:(FMDatabase *)db {
     [self saveInDataBase:db completeBlock:nil];
@@ -62,7 +62,7 @@
     id relationTable = [modelArray firstObject];
     if (![relationTable isKindOfClass:[IHFRelationTable class]]) return;
     
-    [self saveModelArray:modelArray inTableName:[relationTable tableName] inDataBase:db completeBlock:completion];
+    [[IHFDataBaseExecute shareDataBaseExecute] insertIntoClassWithModelArray:modelArray inTableName:[relationTable tableName] inDataBase:db completeBlock:completion];
 }
 
 + (void)saveModelArray:(NSArray *)modelArray inDataBase:(FMDatabase *)db {
@@ -88,7 +88,7 @@
             }
             [selectArray addObject:object];
         }
-    } else if(self.relation == IHFRelationOneToMany) {
+    } else if (self.relation == IHFRelationOneToMany) {
     
         // Fetch the Object ID in relation table
         IHFPredicate *predicate = [[IHFPredicate alloc] initWithFormat:@"sourceObjectID = %ld",(long)self.sourceObjectID];

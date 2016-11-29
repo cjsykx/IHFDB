@@ -65,7 +65,12 @@
         type = IHFPropertyTypeUnsignedLongLong;
     } else if ([aString isEqualToString:@"#"]) {
         type = IHFPropertyTypeClass;
+    } else if ([aString isEqualToString:@"{"]) {
+        type = IHFPropertyTypeStruct;
+    } else if ([aString isEqualToString:@"^"]) {
+        type = IHFPropertyTypePointer;
     }
+
     
     return type;
 }

@@ -69,18 +69,17 @@
 - (instancetype _Nullable)parentObject;
 
 /**
- * Set custom primary key , to void dirty data insert ..
+ * Set custom primary keys , to void dirty data insert ..
  
  @ It will be use for judge if the data base exist the same data , so that not to insert ,instead of update!
- @ Warning : It will be a BUG if you custom primary key type is INT , if is INT , you'd better use NSNumer!
+ @ returns Array : for the local data sometimes can not use the only one property to judge the data is only one ..
  */
-+ (NSString * _Nullable)customPrimarykey;
-
++ (NSArray <NSString *>* _Nullable)customPrimarykeys;
 
 /**
- Return custom primary key value
+ Returns custom primary key value dictionary , the dictionary key is one of the custom primarykey ..
  */
-- (id _Nullable)customPrimarykeyValue;
+- (NSMutableDictionary * _Nullable)customPrimarykeyValues;
 @end
 
 #endif /* IHFDBObjectDataSource_h */

@@ -54,7 +54,9 @@ Table name is the class name
 + (NSArray *)selectWithPredicate:(IHFPredicate *)predicate inTableName:(NSString *)tableName inDataBase:(FMDatabase *)db;
 + (NSArray *)selectAllInTableName:(NSString *)tableName inDataBase:(FMDatabase *)db;
 
-/** select with custom primary key value , If you NOT set the Custom primary key for the model , it select will error */
+/**
+ select with custom primary key value (It noly take effect when you only set a primary key) , If you NOT set the Custom primary key for the model , it select will error
+ */
 
 + (NSArray *)selectWithCustomPrimaryKeyValue:(id)value ;
 + (NSArray *)selectWithCustomPrimaryKeyValue:(id)value isRecursive:(BOOL)recursive;

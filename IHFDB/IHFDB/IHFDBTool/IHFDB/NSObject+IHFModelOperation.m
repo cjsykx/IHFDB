@@ -216,84 +216,8 @@ static NSSet *IHFfoundationClasses;
 }
 
 - (void)setValue:(NSObject *)aValue propertyName:(NSString *)name propertyType:(NSString *)type {
-    
     IHFProperty *property = [[IHFProperty alloc] initWithName:name typeString:type srcClass:nil];
     [self setValue:aValue forProperty:property];
-    //
-    //    SEL setSel = [self createSetSEL:name];
-    //    if ([self respondsToSelector:setSel]) {
-    //        if ([type isEqualToString:@"NSDate"]) {
-    //            IMP imp = [self methodForSelector:setSel];
-    //            void (*func) (id,SEL,NSDate*) = (void*)imp;
-    //            func(self,setSel,(NSDate *)aValue);
-    //        } else if ([type isEqualToString:@"i"]||[type isEqualToString:@"B"]) {
-    //            if ([aValue isKindOfClass:[NSNumber class]]) {
-    //                int value = [((NSNumber *)aValue) intValue];
-    //                IMP imp = [self methodForSelector:setSel];
-    //                void (*func) (id,SEL,int) = (void *)imp;
-    //                func(self,setSel,value);
-    //            }
-    //        } else if ([type isEqualToString:@"d"]&&[aValue isKindOfClass:[NSNumber class]]) {
-    //            double value = [((NSNumber *)aValue) doubleValue];
-    //            IMP imp = [self methodForSelector:setSel];
-    //            void (*func) (id,SEL,double) = (void*)imp;
-    //            func(self,setSel,value);
-    //
-    //        } else if ([type isEqualToString:@"f"] && [aValue isKindOfClass:[NSNumber class]]) {
-    //            float value = [((NSNumber *)aValue) floatValue];
-    //            IMP imp = [self methodForSelector:setSel];
-    //            void (*func) (id,SEL,float) = (void*)imp;
-    //            func(self,setSel,value);
-    //
-    //        } else if ([type isEqualToString:@"q"]&&[aValue isKindOfClass:[NSNumber class]]) {
-    //            long value = [((NSNumber*)aValue) longValue];
-    //            IMP imp = [self methodForSelector:setSel];
-    //            void (*func) (id,SEL,long) = (void*)imp;
-    //            func(self,setSel,value);
-    //        } else if ([type isEqualToString:@"NSData"]) {
-    //            NSData* value = (NSData *)aValue;
-    //            IMP imp = [self methodForSelector:setSel];
-    //            void (*func) (id,SEL,NSData*) = (void*)imp;
-    //            func(self,setSel,value);
-    //        } else if ([type isEqualToString:@"UIImage"]) {
-    //            UIImage* value = [UIImage imageWithData:(NSData*)aValue];
-    //            IMP imp = [self methodForSelector:setSel];
-    //            void (*func) (id,SEL,UIImage*) = (void*)imp;
-    //            func(self,setSel,value);
-    //        } else if ([type isEqualToString:@"NSNumber"]) {
-    //            NSNumber *value;
-    //            if ([aValue isKindOfClass:[NSNumber class]]) {
-    //                value = (NSNumber *)aValue;
-    //            }else if([aValue isKindOfClass:[NSString class]]) {
-    //                NSNumberFormatter *format = [[NSNumberFormatter alloc] init];
-    //                value = [format numberFromString:(NSString *)aValue];
-    //            }
-    //            IMP imp = [self methodForSelector:setSel];
-    //            void (*func) (id,SEL,NSNumber*) = (void*)imp;
-    //            func(self,setSel,value);
-    //        } else if ([type isEqualToString:@"NSArray"]) {
-    //
-    //            if(![aValue isKindOfClass:[NSArray class]]) return;
-    //            IMP imp = [self methodForSelector:setSel];
-    //            void (*func) (id,SEL,NSArray*) = (void*)imp;
-    //            func(self,setSel,(NSArray *)aValue);
-    //        } else if ([type isEqualToString:@"NSDictionary"]) {
-    //            NSError* error;
-    //            NSData* data = [(NSString*)aValue dataUsingEncoding:NSUTF8StringEncoding];
-    //            NSDictionary* dic;
-    //            if (!data) {
-    //                dic = nil;
-    //            } else
-    //                dic = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:&error];
-    //            IMP imp = [self methodForSelector:setSel];
-    //            void (*func) (id,SEL,NSDictionary*) = (void*)imp;
-    //            func(self,setSel,dic);
-    //        } else {
-    //            IMP imp = [self methodForSelector:setSel];
-    //            void (*func) (id,SEL,id) = (void*)imp;
-    //            func(self,setSel,aValue);
-    //        }
-    //    }
 }
 
 #pragma mark - Get value
@@ -359,6 +283,10 @@ static NSSet *IHFfoundationClasses;
             NSUInteger returnValue = 0;
             [invocation getReturnValue:&returnValue];
             return [NSNumber numberWithUnsignedInteger:returnValue];
+        } else if (!memcmp(returnType, "{", 1)) {
+            // Struct not deal now ..
+        } else if (!memcmp(returnType, "^", 1)) {
+            // point not deal now ..
         } else {
             id __unsafe_unretained returnValue = nil;
             [invocation getReturnValue:&returnValue];
@@ -424,20 +352,18 @@ static NSSet *IHFfoundationClasses;
 }
 
 #pragma mark - dict with model convert
-- (NSMutableDictionary *)dictionaryFromModel {
-    
-    NSArray *dicts = [[NSArray arrayWithObject:self] dictionaryArrayFromModelArray];
+- (NSMutableDictionary *)JSONObjectFromModel {
+    NSArray *dicts = [[NSArray arrayWithObject:self] JSONObjectsFromModelArray];
     
     if (![dicts count]) return nil;
     return [dicts firstObject];
 }
 
-- (NSArray<NSMutableDictionary *> *)dictionaryArrayFromModelArray {
+- (NSArray<NSMutableDictionary *> *)JSONObjectsFromModelArray {
     
     if (![self isKindOfClass:[NSArray class]]) return nil;
     
-    NSMutableArray *modelArray = [NSMutableArray array];
-    
+    NSMutableArray *dictArrayM = [NSMutableArray array];
     for (id model in (NSArray *)self) {
         
         NSMutableDictionary *dict = [NSMutableDictionary dictionary];
@@ -453,15 +379,14 @@ static NSSet *IHFfoundationClasses;
             if (propertyType == IHFPropertyTypeArray) { // deal with array
                 
                 // Fetch the model contained in the array , to create table
-                
                 if (property.objectClass) {
                     if ([value isKindOfClass:[NSArray class]] && [value count]) {
-                        value = [value dictionaryArrayFromModelArray];
+                        value = [value JSONObjectsFromModelArray];
                     }
                 }
             } else if (propertyType == IHFPropertyTypeModel) { // deal with model
-                value = [value dictionaryFromModel];
-                [dict setValue:[value dictionaryFromModel] forKey:property.propertyName];
+                value = [value JSONObjectFromModel];
+                [dict setValue:[value JSONObjectFromModel] forKey:property.propertyName];
             }
             // Key change to mapper
             NSString *key = property.propertyName;
@@ -469,43 +394,37 @@ static NSSet *IHFfoundationClasses;
             if (!key) return;
             [dict setValue:value forKey:key];
         }];
-        
-        [modelArray addObject:dict];
+        BOOL checkResult = YES;
+        if ([model respondsToSelector:@selector(doModelCustomConvertToJSONObject:)]) {
+            checkResult = [model doModelCustomConvertToJSONObject:dict];
+        }
+        if (checkResult) [dictArrayM addObject:dict];
+    }
+    return dictArrayM;
+}
+
++ (NSArray<NSMutableDictionary *> *)JSONObjectsFromModelArray:(NSArray *)modelArray {
+    return [modelArray JSONObjectsFromModelArray];
+}
+
++ (instancetype)modelFromJSONObject:(id)JSONObject {
+    if ([JSONObject isKindOfClass:[NSString class]]) {
+        JSONObject = [NSJSONSerialization JSONObjectWithData:[((NSString *)JSONObject) dataUsingEncoding:NSUTF8StringEncoding] options:kNilOptions error:nil];
+    } else if ([JSONObject isKindOfClass:[NSData class]]) {
+        JSONObject = [NSJSONSerialization JSONObjectWithData:(NSData *)JSONObject options:kNilOptions error:nil];
     }
     
-    return modelArray;
-}
-
-+ (NSArray<NSMutableDictionary *> *)dictionaryArrayFromModelArray:(NSArray *)modelArray {
-    return [modelArray dictionaryArrayFromModelArray];
-}
-
-+ (instancetype)modelFromJSONString:(NSString *)jSONString {
-    if(!jSONString) return nil;
-    id object = [NSJSONSerialization JSONObjectWithData:[((NSString *)jSONString) dataUsingEncoding:NSUTF8StringEncoding] options:kNilOptions error:nil];
-    return [self modelFromDictionary:object];
-}
-
-+ (instancetype)modelFromJSONData:(NSData *)jSONData {
-    if(!jSONData) return nil;
-    id object = [NSJSONSerialization JSONObjectWithData:(NSData *)jSONData options:kNilOptions error:nil];
-    return [self modelFromDictionary:object];
-}
-
-+ (instancetype)modelFromDictionary:(NSDictionary *)dict {
-    
-    if (!dict) return nil;
-    NSArray *models = [self modelArrayFromDictionaryArray:[NSArray arrayWithObject:dict]];
+    if (!JSONObject) return nil;
+    NSArray *models = [self modelsFromJSONObjectArray:[NSArray arrayWithObject:JSONObject]];
     if (![models count]) return nil;
     return [models firstObject];
 }
 
-+ (NSArray <id> *)modelArrayFromDictionaryArray:(NSArray<NSDictionary *> *)dictArray {
-    
++ (NSArray *)modelsFromJSONObjectArray:(NSArray<id> *)JSONObjects {
     __weak typeof(self) weakSelf = self;
     __block NSMutableArray *models = [NSMutableArray array];
     
-    [dictArray enumerateObjectsUsingBlock:^(NSDictionary * _Nonnull dict, NSUInteger idx, BOOL * _Nonnull stop) {
+    [JSONObjects enumerateObjectsUsingBlock:^(id _Nonnull dict, NSUInteger idx, BOOL * _Nonnull stop) {
         if (!([dict isKindOfClass:[NSDictionary class]] || [dict isKindOfClass:[NSMutableDictionary class]])) return ;
         id model = [[weakSelf alloc] init];
         [weakSelf enumeratePropertiesUsingBlock:^(IHFProperty *property, NSUInteger idx, BOOL *stop) {
@@ -522,17 +441,21 @@ static NSSet *IHFfoundationClasses;
                 // Fetch the model contained in the array , to create table
                 if (property.objectClass) {
                     if ([value isKindOfClass:[NSArray class]]) {
-                        [model setValue:[property.objectClass modelArrayFromDictionaryArray:value] forProperty:property];
+                        [model setValue:[property.objectClass modelsFromJSONObjectArray:value]
+                            forProperty:property];
                     }
                 }
             } else if (propertyType == IHFPropertyTypeModel) { // Deal with model
-                [model setValue:[property.objectClass modelFromDictionary:value] forProperty:property];
+                [model setValue:[property.objectClass modelFromJSONObject:value] forProperty:property];
             } else {
                 [model setValue:value forProperty:property];
             }
         }];
-        
-        [models addObject:model];
+        BOOL checkResult = YES;
+        if ([model respondsToSelector:@selector(doModelCustomConvertFromJSONObject:)]) {
+            checkResult = [model doModelCustomConvertFromJSONObject:dict];
+        }
+        if (checkResult) [models addObject:model];
     }];
     
     return models;
@@ -545,8 +468,12 @@ static id objectType(NSString *typeString) {
             return strArray[1];
         } else
             return @"@"; // ID Type or block ....
-    } else
-        return [typeString substringWithRange:NSMakeRange(1, 1)];
+    } else if ([typeString containsString:@"{"]) {
+        return @"{";
+    } else if ([typeString containsString:@"^"]) {
+        return @"^";
+    }
+    else return [typeString substringWithRange:NSMakeRange(1, 1)];
 }
 
 #pragma mark - eumer property
@@ -569,7 +496,6 @@ static id objectType(NSString *typeString) {
                 NSString *propertyName = [NSString stringWithUTF8String:property_getName(property)];
                 
                 if (![ignores containsObject:propertyName]) {
-                    
                     // Get type
                     NSString *propertyType = [NSString stringWithUTF8String:property_getAttributes(property)];
                     
@@ -690,7 +616,9 @@ static id objectType(NSString *typeString) {
     [ignoresPropertyNames enumerateObjectsUsingBlock:^(id _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         
         if ([obj isKindOfClass:[NSString class]]) {
-            [dict setObject:[weakSelf valueWithPropertName:obj] forKey:obj];
+            id value = [weakSelf valueWithPropertName:obj];
+            if (!value) value = @"";
+            [dict setObject:value forKey:obj];
         }
     }];
     return dict;
@@ -748,13 +676,14 @@ static id objectType(NSString *typeString) {
     if (!primaryKeys) {
         primaryKeys = [NSMutableArray array];
         [self enumerateAllClassesUsingBlock:^(__unsafe_unretained Class c, BOOL *stop) {
-            if ([c respondsToSelector:@selector(customPrimarykey)]) {
-                id key = [c customPrimarykey];
-                if (!key || ![key isKindOfClass:[NSString class]]) {
-                    NSAssert([c customPrimarykey], @"primary key can not nil or not a NSString class");
+            if ([c respondsToSelector:@selector(customPrimarykeys)]) {
+                id key = [c customPrimarykeys];
+                if (key && [key isKindOfClass:[NSArray class]]) {
+                    [primaryKeys addObject:key];
+                } else {
+                    NSAssert(true == true, @"primary key can not nil or not a NSString class");
                     *stop = YES;
                 }
-                [primaryKeys addObject:key];
             }
         }];
         [_customPrimaryKeyPropertyNamesDict setObject:primaryKeys forKey:NSStringFromClass(self)];
