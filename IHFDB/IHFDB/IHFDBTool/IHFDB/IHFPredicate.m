@@ -43,7 +43,6 @@
 
         // Add '' for %@
         NSString *format = [name stringByReplacingOccurrencesOfString:@"%@" withString:@"'%@'"];
-        
         va_list args;
         va_start(args,name);
         _predicateFormat = [[NSString alloc] initWithFormat:format arguments:args];

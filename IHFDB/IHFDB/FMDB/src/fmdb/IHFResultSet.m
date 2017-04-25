@@ -1,25 +1,25 @@
-#import "FMResultSet.h"
-#import "FMDatabase.h"
+#import "IHFResultSet.h"
+#import "IHFDatabase.h"
 #import "unistd.h"
 
-#if FMDB_SQLITE_STANDALONE
+#if IHFDB_SQLITE_STANDALONE
 #import <sqlite3/sqlite3.h>
 #else
 #import <sqlite3.h>
 #endif
 
-@interface FMDatabase ()
-- (void)resultSetDidClose:(FMResultSet *)resultSet;
+@interface IHFDatabase ()
+- (void)resultSetDidClose:(IHFResultSet *)resultSet;
 @end
 
 
-@implementation FMResultSet
+@implementation IHFResultSet
 @synthesize query=_query;
 @synthesize statement=_statement;
 
-+ (instancetype)resultSetWithStatement:(FMStatement *)statement usingParentDatabase:(FMDatabase*)aDB {
++ (instancetype)resultSetWithStatement:(IHFStatement *)statement usingParentDatabase:(IHFDatabase*)aDB {
     
-    FMResultSet *rs = [[FMResultSet alloc] init];
+    IHFResultSet *rs = [[IHFResultSet alloc] init];
     
     [rs setStatement:statement];
     [rs setParentDB:aDB];
@@ -27,7 +27,7 @@
     NSParameterAssert(![statement inUse]);
     [statement setInUse:YES]; // weak reference
     
-    return FMDBReturnAutoreleased(rs);
+    return IHFDBReturnAutoreleased(rs);
 }
 
 - (void)finalize {
@@ -38,10 +38,10 @@
 - (void)dealloc {
     [self close];
     
-    FMDBRelease(_query);
+    IHFDBRelease(_query);
     _query = nil;
     
-    FMDBRelease(_columnNameToIndexMap);
+    IHFDBRelease(_columnNameToIndexMap);
     _columnNameToIndexMap = nil;
     
 #if ! __has_feature(objc_arc)
@@ -51,7 +51,7 @@
 
 - (void)close {
     [_statement reset];
-    FMDBRelease(_statement);
+    IHFDBRelease(_statement);
     _statement = nil;
     
     // we don't need this anymore... (i think)
@@ -112,7 +112,7 @@
             [dict setObject:objectValue forKey:columnName];
         }
         
-        return FMDBReturnAutoreleased([dict copy]);
+        return IHFDBReturnAutoreleased([dict copy]);
     }
     else {
         NSLog(@"Warning: There seem to be no columns in this set.");
@@ -187,7 +187,7 @@
                 // If 'next' or 'nextWithError' is called after the result set is closed,
                 // we need to return the appropriate error.
                 NSDictionary* errorMessage = [NSDictionary dictionaryWithObject:@"parentDB does not exist" forKey:NSLocalizedDescriptionKey];
-                *outErr = [NSError errorWithDomain:@"FMDatabase" code:SQLITE_MISUSE userInfo:errorMessage];
+                *outErr = [NSError errorWithDomain:@"IHFDatabase" code:SQLITE_MISUSE userInfo:errorMessage];
             }
             
         }
@@ -406,7 +406,7 @@
     return [NSString stringWithUTF8String: sqlite3_column_name([_statement statement], columnIdx)];
 }
 
-- (void)setParentDB:(FMDatabase *)newDb {
+- (void)setParentDB:(IHFDatabase *)newDb {
     _parentDB = newDb;
 }
 

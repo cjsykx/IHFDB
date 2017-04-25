@@ -1,6 +1,6 @@
 //
-//  FMDatabasePool.h
-//  fmdb
+//  IHFDatabasePool.h
+//  IHFDb
 //
 //  Created by August Mueller on 6/22/11.
 //  Copyright 2011 Flying Meat Inc. All rights reserved.
@@ -8,27 +8,27 @@
 
 #import <Foundation/Foundation.h>
 
-@class FMDatabase;
+@class IHFDatabase;
 
-/** Pool of `<FMDatabase>` objects.
+/** Pool of `<IHFDatabase>` objects.
 
  ### See also
  
- - `<FMDatabaseQueue>`
- - `<FMDatabase>`
+ - `<IHFDatabaseQueue>`
+ - `<IHFDatabase>`
 
- @warning Before using `FMDatabasePool`, please consider using `<FMDatabaseQueue>` instead.
+ @warning Before using `IHFDatabasePool`, please consider using `<IHFDatabaseQueue>` instead.
 
- If you really really really know what you're doing and `FMDatabasePool` is what
+ If you really really really know what you're doing and `IHFDatabasePool` is what
  you really really need (ie, you're using a read only database), OK you can use
  it.  But just be careful not to deadlock!
 
  For an example on deadlocking, search for:
- `ONLY_USE_THE_POOL_IF_YOU_ARE_DOING_READS_OTHERWISE_YOULL_DEADLOCK_USE_FMDATABASEQUEUE_INSTEAD`
+ `ONLY_USE_THE_POOL_IF_YOU_ARE_DOING_READS_OTHERWISE_YOULL_DEADLOCK_USE_IHFDATABASEQUEUE_INSTEAD`
  in the main.m file.
  */
 
-@interface FMDatabasePool : NSObject {
+@interface IHFDatabasePool : NSObject {
     NSString            *_path;
     
     dispatch_queue_t    _lockQueue;
@@ -40,7 +40,6 @@
     
     NSUInteger          _maximumNumberOfDatabasesToCreate;
     int                 _openFlags;
-    NSString            *_vfsName;
 }
 
 /** Database path */
@@ -59,10 +58,6 @@
 
 @property (atomic, readonly) int openFlags;
 
-/**  Custom virtual file system name */
-
-@property (atomic, copy) NSString *vfsName;
-
 
 ///---------------------
 /// @name Initialization
@@ -72,7 +67,7 @@
 
  @param aPath The file path of the database.
 
- @return The `FMDatabasePool` object. `nil` on error.
+ @return The `IHFDatabasePool` object. `nil` on error.
  */
 
 + (instancetype)databasePoolWithPath:(NSString*)aPath;
@@ -82,7 +77,7 @@
  @param aPath The file path of the database.
  @param openFlags Flags passed to the openWithFlags method of the database
 
- @return The `FMDatabasePool` object. `nil` on error.
+ @return The `IHFDatabasePool` object. `nil` on error.
  */
 
 + (instancetype)databasePoolWithPath:(NSString*)aPath flags:(int)openFlags;
@@ -91,7 +86,7 @@
 
  @param aPath The file path of the database.
 
- @return The `FMDatabasePool` object. `nil` on error.
+ @return The `IHFDatabasePool` object. `nil` on error.
  */
 
 - (instancetype)initWithPath:(NSString*)aPath;
@@ -101,30 +96,10 @@
  @param aPath The file path of the database.
  @param openFlags Flags passed to the openWithFlags method of the database
 
- @return The `FMDatabasePool` object. `nil` on error.
+ @return The `IHFDatabasePool` object. `nil` on error.
  */
 
 - (instancetype)initWithPath:(NSString*)aPath flags:(int)openFlags;
-
-/** Create pool using path and specified flags.
-
- @param aPath The file path of the database.
- @param openFlags Flags passed to the openWithFlags method of the database
- @param vfsName The name of a custom virtual file system
-
- @return The `FMDatabasePool` object. `nil` on error.
- */
-
-- (instancetype)initWithPath:(NSString*)aPath flags:(int)openFlags vfs:(NSString *)vfsName;
-
-/** Returns the Class of 'FMDatabase' subclass, that will be used to instantiate database object.
-
- Subclasses can override this method to return specified Class of 'FMDatabase' subclass.
-
- @return The Class of 'FMDatabase' subclass, that will be used to instantiate database object.
- */
-
-+ (Class)databaseClass;
 
 ///------------------------------------------------
 /// @name Keeping track of checked in/out databases
@@ -161,65 +136,65 @@
 
 /** Synchronously perform database operations in pool.
 
- @param block The code to be run on the `FMDatabasePool` pool.
+ @param block The code to be run on the `IHFDatabasePool` pool.
  */
 
-- (void)inDatabase:(void (^)(FMDatabase *db))block;
+- (void)inDatabase:(void (^)(IHFDatabase *db))block;
 
 /** Synchronously perform database operations in pool using transaction.
 
- @param block The code to be run on the `FMDatabasePool` pool.
+ @param block The code to be run on the `IHFDatabasePool` pool.
  */
 
-- (void)inTransaction:(void (^)(FMDatabase *db, BOOL *rollback))block;
+- (void)inTransaction:(void (^)(IHFDatabase *db, BOOL *rollback))block;
 
 /** Synchronously perform database operations in pool using deferred transaction.
 
- @param block The code to be run on the `FMDatabasePool` pool.
+ @param block The code to be run on the `IHFDatabasePool` pool.
  */
 
-- (void)inDeferredTransaction:(void (^)(FMDatabase *db, BOOL *rollback))block;
+- (void)inDeferredTransaction:(void (^)(IHFDatabase *db, BOOL *rollback))block;
 
 /** Synchronously perform database operations in pool using save point.
 
- @param block The code to be run on the `FMDatabasePool` pool.
+ @param block The code to be run on the `IHFDatabasePool` pool.
  
  @return `NSError` object if error; `nil` if successful.
 
- @warning You can not nest these, since calling it will pull another database out of the pool and you'll get a deadlock. If you need to nest, use `<[FMDatabase startSavePointWithName:error:]>` instead.
+ @warning You can not nest these, since calling it will pull another database out of the pool and you'll get a deadlock. If you need to nest, use `<[IHFDatabase startSavePointWithName:error:]>` instead.
 */
 
-- (NSError*)inSavePoint:(void (^)(FMDatabase *db, BOOL *rollback))block;
+- (NSError*)inSavePoint:(void (^)(IHFDatabase *db, BOOL *rollback))block;
 
 @end
 
 
-/** FMDatabasePool delegate category
+/** IHFDatabasePool delegate category
  
- This is a category that defines the protocol for the FMDatabasePool delegate
+ This is a category that defines the protocol for the IHFDatabasePool delegate
  */
 
-@interface NSObject (FMDatabasePoolDelegate)
+@interface NSObject (IHFDatabasePoolDelegate)
 
 /** Asks the delegate whether database should be added to the pool. 
  
- @param pool     The `FMDatabasePool` object.
- @param database The `FMDatabase` object.
+ @param pool     The `IHFDatabasePool` object.
+ @param database The `IHFDatabase` object.
  
  @return `YES` if it should add database to pool; `NO` if not.
  
  */
 
-- (BOOL)databasePool:(FMDatabasePool*)pool shouldAddDatabaseToPool:(FMDatabase*)database;
+- (BOOL)databasePool:(IHFDatabasePool*)pool shouldAddDatabaseToPool:(IHFDatabase*)database;
 
 /** Tells the delegate that database was added to the pool.
  
- @param pool     The `FMDatabasePool` object.
- @param database The `FMDatabase` object.
+ @param pool     The `IHFDatabasePool` object.
+ @param database The `IHFDatabase` object.
 
  */
 
-- (void)databasePool:(FMDatabasePool*)pool didAddDatabase:(FMDatabase*)database;
+- (void)databasePool:(IHFDatabasePool*)pool didAddDatabase:(IHFDatabase*)database;
 
 @end
 

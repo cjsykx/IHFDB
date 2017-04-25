@@ -7,16 +7,10 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "FMDB.h"
-#import "IHFPredicate.h"
-#import "NSObject+IHFModelOperation.h"
-#import "NSObject+IHFDB.h"
-#import "IHFDBObjectDataSource.h"
-#import "IHFRelationTable.h"
+#import "IHFDB.h"
+#import "IHFSQLStatement.h"
+#import "IHFDatabase.h"
 
-// Primary key and dirty Are the Column auto create in the sqlite
-static NSString *_primaryKey = @"IHFDB_ObjectID";
-static NSString *_dirtyKey = @"IHFDB_Dirty";
 
 @class IHFRelationTable;
 @interface IHFDataBaseExecute : NSObject<IHFDBObejctDataSource>
@@ -28,8 +22,8 @@ static NSString *_dirtyKey = @"IHFDB_Dirty";
 + (instancetype)dataBaseWithSqliteName:(NSString *)sqliteName;
 - (instancetype)initWithSqliteName:(NSString *)SqliteName;
 
-typedef void(^IHFDBCompleteBlock)(BOOL success);
-typedef void(^IHFDBUpdateCompleteBlock)(BOOL success,NSArray < IHFRelationTable *> *relationTables,FMDatabase *db , BOOL *rollback);
+typedef void(^IHFDBCompleteBlock)(BOOL success, IHFDatabase *db);
+typedef void(^IHFDBUpdateCompleteBlock)(BOOL success,NSArray < IHFRelationTable *> *relationTables,IHFDatabase *db , BOOL *rollback);
 
 // Create
 
@@ -37,14 +31,14 @@ typedef void(^IHFDBUpdateCompleteBlock)(BOOL success,NSArray < IHFRelationTable 
  tableName : if nil , the table name is class name .
  db : if nil , will create IN CODE  */
 
-- (BOOL)createTableWithClass:(Class)newClass customTableName:(NSString *)tableName inDataBase:(FMDatabase *)db completeBlock:(IHFDBCompleteBlock)completion;
+- (BOOL)createTableWithClass:(Class)newClass customTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db completeBlock:(IHFDBCompleteBlock)completion;
 
 // Select
 
-- (NSArray<id<IHFDBObejctDataSource>> *)selectFromClass:(Class)newClass predicate:(IHFPredicate *)predicate customTableName:(NSString *)tableName inDataBase:(FMDatabase *)db isRecursive:(BOOL)recursive;
+- (NSArray<id<IHFDBObejctDataSource>> *)selectFromClass:(Class)newClass predicate:(IHFPredicate *)predicate customTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db isRecursive:(BOOL)recursive;
 
 // Select count
-- (NSInteger)selectCountFromClass:(Class)newClass predicate:(IHFPredicate *)predicate customTableName:(NSString *)tableName inDataBase:(FMDatabase *)db;
+- (NSInteger)selectCountFromClass:(Class)newClass predicate:(IHFPredicate *)predicate customTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db;
 
 // Insert
 
@@ -52,31 +46,37 @@ typedef void(^IHFDBUpdateCompleteBlock)(BOOL success,NSArray < IHFRelationTable 
 
 /** Insert the model into the table ,which the table name is defalut defalt is class name */
 
-- (BOOL) insertIntoClassWithModel:(id)newModel inTableName:(NSString *)tableName inDataBase:(FMDatabase *)db completeBlock:(IHFDBCompleteBlock)completion;
+- (BOOL) insertIntoClassWithModel:(id)newModel inTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db completeBlock:(IHFDBCompleteBlock)completion;
 
 /** Insert the models into the table ,which the table name is defalut defalt is class name ,*/
 
-- (BOOL) insertIntoClassWithModelArray:(NSArray *)ModelArray inTableName:(NSString *)tableName inDataBase:(FMDatabase *)db completeBlock:(IHFDBCompleteBlock)completion;
+- (BOOL) insertIntoClassWithModelArray:(NSArray *)ModelArray inTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db completeBlock:(IHFDBCompleteBlock)completion;
 
 // Update
-- (void) updateModel:(id)newModel predicate:(IHFPredicate *)predicate customTableName:(NSString *)tableName inDataBase:(FMDatabase *)db isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion;
+- (void) updateModel:(id)newModel predicate:(IHFPredicate *)predicate customTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion;
 
 // Delete
-- (void) deleteFromClass:(Class)newClass predicate:(IHFPredicate *)predicate customTableName:(NSString *)tableName inDataBase:(FMDatabase *)db isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion;
+- (void) deleteFromClass:(Class)newClass predicate:(IHFPredicate *)predicate customTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion;
 
 // Delete dirty data
-- (void) deleteDirtyDataFromClass:(Class)newClass predicate:(IHFPredicate *)predicate customTableName:(NSString *)tableName inDataBase:(FMDatabase *)db isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion;
+- (void) deleteDirtyDataFromClass:(Class)newClass predicate:(IHFPredicate *)predicate customTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion;
 
+// SQLStatement by user
+- (NSArray<id<IHFDBObejctDataSource>> *)executeQueryWithClass:(Class)newClass statement:(IHFSQLStatement *)statement inDataBase:(IHFDatabase *)db isRecursive:(BOOL)recursive;
+- (BOOL)executeUpdateWithClass:(Class)newClass statements:(NSArray <IHFSQLStatement *>*)statements inDataBase:(IHFDatabase *)db useTransaction:(BOOL)useTransaction completeBlock:(IHFDBCompleteBlock)completion;
 
 // Sql statement by user
-- (NSArray<id<IHFDBObejctDataSource>> *)executeQueryWithClass:(Class)newClass sqlStatement:(NSString *)sqlStatement inDataBase:(FMDatabase *)db isRecursive:(BOOL)recursive;
+- (NSArray<id<IHFDBObejctDataSource>> *)executeQueryWithClass:(Class)newClass sqlStatement:(NSString *)sqlStatement inDataBase:(IHFDatabase *)db isRecursive:(BOOL)recursive;
 
 - (BOOL)executeUpdateWithClass:(Class)newClass sqlStatement:(NSString *)sqlStatement completeBlock:(IHFDBCompleteBlock)completion;
 
 - (BOOL)executeUpdateWithClass:(Class)newClass sqlStatements:(NSArray <NSString *>*)sqlStatements completeBlock:(IHFDBCompleteBlock)completion useTransaction:(BOOL)useTransaction;
 
+/** delete relation */
+- (void)deleteRelationForModelArray:(NSArray<id <IHFDBObejctDataSource>> *)modelArray inDataBase:(IHFDatabase *)db isCascade:(BOOL)cascade;
+
 /** judge is exist the table */
 
-- (BOOL)isTableExistWithTableName:(NSString *)tableName inDatabase:(FMDatabase *)db;
+- (BOOL)isTableExistWithTableName:(NSString *)tableName inDatabase:(IHFDatabase *)db;
 
 @end

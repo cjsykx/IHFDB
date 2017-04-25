@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 #import "IHFProperty.h"
 #import "IHFDBObjectDataSource.h"
+#import "IHFPredicate.h"
 
 @interface NSObject (IHFModelOperation)<IHFDBObejctDataSource>
 
@@ -36,15 +37,6 @@
 + (NSArray <NSMutableDictionary *> *)JSONObjectsFromModelArray:(NSArray *)modelArray;
 
 
-/**
- Do your like to do when model convert to JSON Object and check if need the JSON obejct ..
- 
- @param JSONObject : The JSON object , always come from network ..
- 
- @return : If NO , the you will NOT get the JSON Object which will convert from model ..
- */
-- (BOOL)doModelCustomConvertToJSONObject:(NSMutableDictionary *)JSONObject;
-
 //-----------------------------------------------------------------------------
 ///  ***********  Dict convert to Model ****************
 //-----------------------------------------------------------------------------
@@ -59,19 +51,9 @@
 /**
  Returns model convert from JSON object
  
- @param JSONObject : It usually is dictionary , but may be JSON string or JSON data
+ @param JSONObjects : is array usually contains dictionary , but may be JSON string or JSON data
  */
 + (NSArray *)modelsFromJSONObjectArray:(NSArray <id>*)JSONObjects;
-
-
-/**
- Do your like to do when model convert from JSON Object and check if need the model
-
- @param JSONObject : The JSON object , always come from network ..
-
- @return : If NO , the you will NOT get the model which will convert from JSON object ..
- */
-- (BOOL)doModelCustomConvertFromJSONObject:(NSDictionary *)JSONObject;
 
 //-----------------------------------------------------------------------------
 ///  ************* Run time to property and Class ****************
@@ -135,7 +117,7 @@ typedef void (^IHFClassesEnumeration)(Class c, BOOL *stop);
 + (void)enumerateAllClassesUsingBlock:(IHFClassesEnumeration)enumeration;
 
 /**
- Get a Class All properties which type is array (Include super class)
+ Get a Class All properties which type is array and the array contain object (Include super class)
  */
 + (NSArray <IHFProperty *>*)propertiesForTypeOfArray;
 
@@ -178,5 +160,53 @@ typedef void (^IHFClassesEnumeration)(Class c, BOOL *stop);
 
 /** Return type name in sqlite with the type  */
 - (NSString *)sqlTypeNameWithTypeName:(NSString *)TypeName;
+
+
+// *********** statement ********** //
+
+/**
+ Get sqlStatement With Column names
+ */
+
++ (NSString *)selectSqlStatementWithColumns:(NSArray <NSString *>*)columns;
+
+/**
+ Get class arguments insert Sql Statement
+ */
++ (NSString *)insertSqlStatement;
+
+/**
+ Get class arguments update Sql Statement for all class property
+ */
++ (NSString *)updateSqlStatement;
+
+/**
+ Get class arguments update Sql Statement with given columns
+ */
++ (NSString *)updateSqlStatementWithColumns:(NSArray <NSString *>*)columns withPredicate:(IHFPredicate *)predicate;
+
+/**
+ Delete sqlStatement With Column names
+ */
+
++ (NSString *)deleteSqlStatementWithColumns:(NSArray <NSString *>*)columns;
+
+/**
+ Get priamry key Predicate by customPrimaryKey ..
+ */
+
+- (IHFPredicate *)customPrimaryKeyPredicate;
+
+/**
+ Get model arguments with given colunms
+ */
+
+- (NSArray *)argumentsForStatementWithColumns:(NSArray <NSString *>*)columns ;
+
+/**
+ Get model arguments
+ */
+- (NSArray *)argumentsForStatement;
+
 
 @end

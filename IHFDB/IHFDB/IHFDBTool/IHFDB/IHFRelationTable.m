@@ -40,22 +40,22 @@
 }
 
 // create
-- (void)createInDataBase:(FMDatabase *)db {
+- (void)createInDataBase:(IHFDatabase *)db {
     [self createInDataBase:db completeBlock:nil];
 }
 
-- (void)createInDataBase:(FMDatabase *)db completeBlock:(IHFDBCompleteBlock)completion {
+- (void)createInDataBase:(IHFDatabase *)db completeBlock:(IHFDBCompleteBlock)completion {
     [[self class] createTableWithName:[self tableName] inDataBase:db CompleteBlock:completion];
 }
 
-- (void)saveInDataBase:(FMDatabase *)db completeBlock:(IHFDBCompleteBlock)completion {
+- (void)saveInDataBase:(IHFDatabase *)db completeBlock:(IHFDBCompleteBlock)completion {
     [[self class] saveModelArray:[NSArray arrayWithObject:self] inDataBase:db];
 }
-- (void)saveInDataBase:(FMDatabase *)db {
+- (void)saveInDataBase:(IHFDatabase *)db {
     [self saveInDataBase:db completeBlock:nil];
 }
 
-+ (void)saveModelArray:(NSArray *)modelArray inDataBase:(FMDatabase *)db completeBlock:(IHFDBCompleteBlock)completion {
++ (void)saveModelArray:(NSArray *)modelArray inDataBase:(IHFDatabase *)db completeBlock:(IHFDBCompleteBlock)completion {
     
     if (![modelArray count]) return;
     
@@ -65,19 +65,19 @@
     [[IHFDataBaseExecute shareDataBaseExecute] insertIntoClassWithModelArray:modelArray inTableName:[relationTable tableName] inDataBase:db completeBlock:completion];
 }
 
-+ (void)saveModelArray:(NSArray *)modelArray inDataBase:(FMDatabase *)db {
++ (void)saveModelArray:(NSArray *)modelArray inDataBase:(IHFDatabase *)db {
     [self saveModelArray:modelArray inDataBase:db completeBlock:nil];
 }
 
 // Fetch the relation models
-- (NSArray *)selectRelationsInDataBase:(FMDatabase *)db {
+- (NSArray *)selectRelationsInDataBase:(IHFDatabase *)db {
     
     __block NSMutableArray *selectArray = [NSMutableArray array];
     __weak typeof(self) weakSelf = self;
 
     if (self.relation == IHFRelationOneToOne) {
     
-        NSString *predicateStr = [NSString stringWithFormat:@"%@ = %ld",_primaryKey,(long)self.destinationObjectID];
+        NSString *predicateStr = [NSString stringWithFormat:@"%@ = %ld",IHFDBPrimaryKey,(long)self.destinationObjectID];
         IHFPredicate *predicate = [IHFPredicate predicateWithString:predicateStr];
         
         NSArray *relationModels = [[weakSelf.destinationObject class] selectWithPredicate:predicate inTableName:nil inDataBase:db];
@@ -99,7 +99,7 @@
             if (![obj isKindOfClass:[IHFRelationTable class]]) return ;
             
             IHFRelationTable *table = obj;
-            NSString *predicateStr = [NSString stringWithFormat:@"%@ = %ld",_primaryKey,(long)table.destinationObjectID];
+            NSString *predicateStr = [NSString stringWithFormat:@"%@ = %ld",IHFDBPrimaryKey,(long)table.destinationObjectID];
             IHFPredicate *predicate = [IHFPredicate predicateWithString:predicateStr];
 
             // run loop!
@@ -117,12 +117,12 @@
     return selectArray;
 }
 
-- (void)deleteInDataBase:(FMDatabase *)db completeBlock:(IHFDBCompleteBlock)completion {
+- (void)deleteInDataBase:(IHFDatabase *)db completeBlock:(IHFDBCompleteBlock)completion {
     
     IHFPredicate *predicate = [[IHFPredicate alloc] initWithFormat:@"sourceObjectID = %ld",(long)self.sourceObjectID];
     
-    [[self class] deleteWithPredicate:predicate inTableName:[self tableName] inDataBase:db completeBlock:^(BOOL success) {
-        if(completion) completion(success);
+    [[self class] deleteWithPredicate:predicate inTableName:[self tableName] inDataBase:db completeBlock:^(BOOL success,IHFDatabase *db) {
+        if(completion) completion(success,db);
     }];
 }
 @end

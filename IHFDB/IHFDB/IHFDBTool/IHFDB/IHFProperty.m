@@ -69,9 +69,10 @@
         type = IHFPropertyTypeStruct;
     } else if ([aString isEqualToString:@"^"]) {
         type = IHFPropertyTypePointer;
+    } else if ([aString isEqualToString:@"@?"]) {
+        type = IHFPropertyTypeBlock;
     }
 
-    
     return type;
 }
 
@@ -96,6 +97,7 @@
                            @(IHFPropertyTypeDate),
                            @(IHFPropertyTypeData),
                            @(IHFPropertyTypeError),
+                           @(IHFPropertyTypeArray),
                            @(IHFPropertyTypeDictionaryI),
                            @(IHFPropertyTypeDictionaryM),
                            @(IHFPropertyTypeString),

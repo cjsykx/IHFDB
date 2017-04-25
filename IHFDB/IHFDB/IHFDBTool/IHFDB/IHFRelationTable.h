@@ -11,7 +11,6 @@
 #import "NSObject+IHFDB.h"
 #import "NSObject+IHFModelOperation.h"
 #import "IHFDataBaseExecute.h"
-#import "FMDB.h"
 
 typedef NS_OPTIONS(NSUInteger, IHFRelation) {
     
@@ -34,8 +33,6 @@ typedef NS_OPTIONS(NSUInteger, IHFRelation) {
 
 //@property (copy,nonatomic) NSString *tableName;  /**< Get table name */
 
-typedef void(^IHFDBCompleteBlock)(BOOL success);
-
 - (NSString *)tableName;
 - (instancetype)initWithSourceObject:(id<IHFDBObejctDataSource>)sourceObject destinationObject:(id<IHFDBObejctDataSource>)destinationObject relationName:(NSString *)relationName relation:(IHFRelation)relation;
 + (instancetype)relationTableWithSourceObject:(id<IHFDBObejctDataSource>)sourceObject destinationObject:(id<IHFDBObejctDataSource>)destinationObject relationName:(NSString *)relationName relation:(IHFRelation)relation;;
@@ -43,20 +40,20 @@ typedef void(^IHFDBCompleteBlock)(BOOL success);
 
 /** Create relation table  */
 
-- (void)createInDataBase:(FMDatabase *)db;
-- (void)createInDataBase:(FMDatabase *)db completeBlock:(IHFDBCompleteBlock)completion;
+- (void)createInDataBase:(IHFDatabase *)db;
+- (void)createInDataBase:(IHFDatabase *)db completeBlock:(IHFDBCompleteBlock)completion;
 
 /** Insert relation */
 
-- (void)saveInDataBase:(FMDatabase *)db;
-- (void)saveInDataBase:(FMDatabase *)db completeBlock:(IHFDBCompleteBlock)completion;
+- (void)saveInDataBase:(IHFDatabase *)db;
+- (void)saveInDataBase:(IHFDatabase *)db completeBlock:(IHFDBCompleteBlock)completion;
 
-+ (void)saveModelArray:(NSArray *)modelArray inDataBase:(FMDatabase *)db;
-+ (void)saveModelArray:(NSArray *)modelArray inDataBase:(FMDatabase *)db completeBlock:(IHFDBCompleteBlock)completion;
++ (void)saveModelArray:(NSArray *)modelArray inDataBase:(IHFDatabase *)db;
++ (void)saveModelArray:(NSArray *)modelArray inDataBase:(IHFDatabase *)db completeBlock:(IHFDBCompleteBlock)completion;
 
 /** Select relation */
-- (NSArray *)selectRelationsInDataBase:(FMDatabase *)db;
+- (NSArray *)selectRelationsInDataBase:(IHFDatabase *)db;
 
 /** delete relation */
-- (void)deleteInDataBase:(FMDatabase *)db completeBlock:(IHFDBCompleteBlock)completion;
+- (void)deleteInDataBase:(IHFDatabase *)db completeBlock:(IHFDBCompleteBlock)completion;
 @end

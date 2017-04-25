@@ -12,19 +12,19 @@
 #endif
 #endif
 
-@class FMDatabase;
-@class FMStatement;
+@class IHFDatabase;
+@class IHFStatement;
 
-/** Represents the results of executing a query on an `<FMDatabase>`.
+/** Represents the results of executing a query on an `<IHFDatabase>`.
  
  ### See also
  
- - `<FMDatabase>`
+ - `<IHFDatabase>`
  */
 
-@interface FMResultSet : NSObject {
-    FMDatabase          *_parentDB;
-    FMStatement         *_statement;
+@interface IHFResultSet : NSObject {
+    IHFDatabase          *_parentDB;
+    IHFStatement         *_statement;
     
     NSString            *_query;
     NSMutableDictionary *_columnNameToIndexMap;
@@ -42,30 +42,30 @@
 
 @property (readonly) NSMutableDictionary *columnNameToIndexMap;
 
-/** `FMStatement` used by result set. */
+/** `IHFStatement` used by result set. */
 
-@property (atomic, retain) FMStatement *statement;
+@property (atomic, retain) IHFStatement *statement;
 
 ///------------------------------------
 /// @name Creating and closing database
 ///------------------------------------
 
-/** Create result set from `<FMStatement>`
+/** Create result set from `<IHFStatement>`
  
- @param statement A `<FMStatement>` to be performed
+ @param statement A `<IHFStatement>` to be performed
  
- @param aDB A `<FMDatabase>` to be used
+ @param aDB A `<IHFDatabase>` to be used
  
- @return A `FMResultSet` on success; `nil` on failure
+ @return A `IHFResultSet` on success; `nil` on failure
  */
 
-+ (instancetype)resultSetWithStatement:(FMStatement *)statement usingParentDatabase:(FMDatabase*)aDB;
++ (instancetype)resultSetWithStatement:(IHFStatement *)statement usingParentDatabase:(IHFDatabase*)aDB;
 
 /** Close result set */
 
 - (void)close;
 
-- (void)setParentDB:(FMDatabase *)newDb;
+- (void)setParentDB:(IHFDatabase *)newDb;
 
 ///---------------------------------------
 /// @name Iterating through the result set

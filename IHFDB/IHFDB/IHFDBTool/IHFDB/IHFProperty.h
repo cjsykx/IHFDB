@@ -35,9 +35,10 @@ typedef NS_OPTIONS(NSUInteger, IHFPropertyType) {
     IHFPropertyTypeLongLong            = 0x16, // q
     IHFPropertyTypeUnsignedLongLong    = 0x17, // Q
     IHFPropertyTypeShort               = 0x18, // int 16, s
-    IHFPropertyTypeClass               = 0x19, // int 16, s
-    IHFPropertyTypeStruct              = 0x20, // int 16, s
-    IHFPropertyTypePointer               = 0x21, // int 16, s
+    IHFPropertyTypeClass               = 0x19,
+    IHFPropertyTypeStruct              = 0x20,
+    IHFPropertyTypePointer             = 0x21,
+    IHFPropertyTypeBlock               = 0x22,
 
     IHFPropertyTypeAny                       ,
     

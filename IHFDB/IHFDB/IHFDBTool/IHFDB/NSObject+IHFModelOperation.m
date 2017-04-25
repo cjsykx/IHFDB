@@ -21,6 +21,11 @@ static NSMutableDictionary *_customPrimaryKeyPropertyNamesDict;
 static NSMutableDictionary *_TypeOfArrayPropertiesDict;
 static NSMutableDictionary *_TypeOfModelPropertiesDict;
 
+// Contain sql statement
+static NSMutableDictionary *_insertSqlStatementsDict;
+static NSMutableDictionary *_updateSqlStatementsDict;
+
+
 static NSSet *IHFfoundationClasses;
 
 
@@ -35,6 +40,8 @@ static NSSet *IHFfoundationClasses;
     _relationPropertyNamesDict   =  [NSMutableDictionary dictionary];
     _customPrimaryKeyPropertyNamesDict =  [NSMutableDictionary dictionary];
     
+    _insertSqlStatementsDict = [NSMutableDictionary dictionary];
+    _updateSqlStatementsDict = [NSMutableDictionary dictionary];
 }
 
 - (void)setProperties:(id)properties forKey:(NSString *)key {
@@ -346,8 +353,10 @@ static NSSet *IHFfoundationClasses;
     } else if ([TypeName isEqualToString:@"NSArray"] || [TypeName isEqualToString:@"NSMutableArray"]) {
         return @"TEXT";  // TODO : if need insert Array or not (object in array)
     } else if ([TypeName isEqualToString:@"NSDictionary"] || [TypeName isEqualToString:@"NSMutableDictionary"]) {
+        return @"BLOB";
+    } else if ([TypeName isEqualToString:@"NSDate"]) {
         return @"TEXT";
-    } else
+    }else
         return @"TEXT";
 }
 
@@ -365,35 +374,35 @@ static NSSet *IHFfoundationClasses;
     
     NSMutableArray *dictArrayM = [NSMutableArray array];
     for (id model in (NSArray *)self) {
-        
-        NSMutableDictionary *dict = [NSMutableDictionary dictionary];
+        id dict;
         Class theClass = [model class];
-        
-        [theClass enumeratePropertiesUsingBlock:^(IHFProperty *property, NSUInteger idx, BOOL *stop) {
-            
-            id value = [model valueWithPropertName:property.propertyName];
-            if (!value || value == [NSNull null]) return ;
-            
-            IHFPropertyType propertyType = property.type;
-            
-            if (propertyType == IHFPropertyTypeArray) { // deal with array
+        if ([model isClassFromFoundation]) { // if IS foundation class
+            dict = model;
+        } else {
+            dict = [NSMutableDictionary dictionary];
+            [theClass enumeratePropertiesUsingBlock:^(IHFProperty *property, NSUInteger idx, BOOL *stop) {
+                NSString *key = property.propertyName;
+                id value = [model valueWithPropertName:key];
+                if (!value || value == [NSNull null]) return ;
                 
-                // Fetch the model contained in the array , to create table
-                if (property.objectClass) {
+                IHFPropertyType propertyType = property.type;
+                
+                if (propertyType == IHFPropertyTypeArray) { // deal with array
+                    
+                    // Fetch the model contained in the array , to create table
                     if ([value isKindOfClass:[NSArray class]] && [value count]) {
                         value = [value JSONObjectsFromModelArray];
                     }
+                } else if (propertyType == IHFPropertyTypeModel) { // deal with model
+                    value = [value JSONObjectFromModel];
+                    [dict setValue:[value JSONObjectFromModel] forKey:property.propertyName];
                 }
-            } else if (propertyType == IHFPropertyTypeModel) { // deal with model
-                value = [value JSONObjectFromModel];
-                [dict setValue:[value JSONObjectFromModel] forKey:property.propertyName];
-            }
-            // Key change to mapper
-            NSString *key = property.propertyName;
-            if (property.propertyNameMapped) key = property.propertyNameMapped;
-            if (!key) return;
-            [dict setValue:value forKey:key];
-        }];
+                // Key change to mapper
+                if (property.propertyNameMapped) key = property.propertyNameMapped;
+                if (!key) return;
+                [dict setValue:value forKey:key];
+            }];
+        }
         BOOL checkResult = YES;
         if ([model respondsToSelector:@selector(doModelCustomConvertToJSONObject:)]) {
             checkResult = [model doModelCustomConvertToJSONObject:dict];
@@ -428,7 +437,6 @@ static NSSet *IHFfoundationClasses;
         if (!([dict isKindOfClass:[NSDictionary class]] || [dict isKindOfClass:[NSMutableDictionary class]])) return ;
         id model = [[weakSelf alloc] init];
         [weakSelf enumeratePropertiesUsingBlock:^(IHFProperty *property, NSUInteger idx, BOOL *stop) {
-            
             NSString *key = property.propertyName;
             if (property.propertyNameMapped) key = property.propertyNameMapped; // change to mapper
             if (!key) return ;
@@ -441,15 +449,13 @@ static NSSet *IHFfoundationClasses;
                 // Fetch the model contained in the array , to create table
                 if (property.objectClass) {
                     if ([value isKindOfClass:[NSArray class]]) {
-                        [model setValue:[property.objectClass modelsFromJSONObjectArray:value]
-                            forProperty:property];
+                        value = [property.objectClass modelsFromJSONObjectArray:value];
                     }
                 }
             } else if (propertyType == IHFPropertyTypeModel) { // Deal with model
-                [model setValue:[property.objectClass modelFromJSONObject:value] forProperty:property];
-            } else {
-                [model setValue:value forProperty:property];
+                value = [property.objectClass modelFromJSONObject:value];
             }
+            [model setValue:value forProperty:property]; 
         }];
         BOOL checkResult = YES;
         if ([model respondsToSelector:@selector(doModelCustomConvertFromJSONObject:)]) {
@@ -466,8 +472,10 @@ static id objectType(NSString *typeString) {
         NSArray* strArray = [typeString componentsSeparatedByString:@"\""];
         if (strArray.count > 1) {
             return strArray[1];
+        } else if ([typeString containsString:@"@?"]) {
+            return @"@?"; // block
         } else
-            return @"@"; // ID Type or block ....
+            return @"@"; // Id Type
     } else if ([typeString containsString:@"{"]) {
         return @"{";
     } else if ([typeString containsString:@"^"]) {
@@ -494,11 +502,10 @@ static id objectType(NSString *typeString) {
             for (int i = 0; i < count; i++) {
                 objc_property_t property = property_t[i];
                 NSString *propertyName = [NSString stringWithUTF8String:property_getName(property)];
-                
                 if (![ignores containsObject:propertyName]) {
+                    
                     // Get type
                     NSString *propertyType = [NSString stringWithUTF8String:property_getAttributes(property)];
-                    
                     IHFProperty *theProperty = [[IHFProperty alloc] initWithName:propertyName typeString:objectType(propertyType) srcClass:self];
                     [allowProperties addObject:theProperty];
                 }
@@ -534,7 +541,7 @@ static id objectType(NSString *typeString) {
         properties = [NSMutableArray array];
         [self enumerateAllClassesUsingBlock:^(__unsafe_unretained Class c, BOOL *stop) {
             [c enumeratePropertiesUsingBlock:^(IHFProperty *property, NSUInteger idx, BOOL *stop) {
-                if (property.type == IHFPropertyTypeArray) {
+                if (property.type == IHFPropertyTypeArray && property.objectClass) {
                     [properties addObject:property];
                 }
             }];
@@ -606,6 +613,10 @@ static id objectType(NSString *typeString) {
     return result;
 }
 
+- (BOOL)isClassFromFoundation {
+    return [[self class] isClassFromFoundation:[self class]];
+}
+
 #pragma mark - ignore property names
 
 - (NSDictionary *)dictWithIgnoredPropertyNames {
@@ -661,8 +672,8 @@ static id objectType(NSString *typeString) {
     if (!relationPropertyNames) {
         relationPropertyNames = [NSMutableArray array];
         [self enumerateAllClassesUsingBlock:^(__unsafe_unretained Class c, BOOL *stop) {
-            if ([c respondsToSelector:@selector(relationshipDictForClassInArray)]) {
-                [relationPropertyNames addObject:[c relationshipDictForClassInArray]];
+            if ([c respondsToSelector:@selector(propertyNameDictForClassInArray)]) {
+                [relationPropertyNames addObject:[c propertyNameDictForClassInArray]];
             }
         }];
         [_relationPropertyNamesDict setObject:relationPropertyNames forKey:NSStringFromClass(self)];
@@ -676,12 +687,12 @@ static id objectType(NSString *typeString) {
     if (!primaryKeys) {
         primaryKeys = [NSMutableArray array];
         [self enumerateAllClassesUsingBlock:^(__unsafe_unretained Class c, BOOL *stop) {
-            if ([c respondsToSelector:@selector(customPrimarykeys)]) {
-                id key = [c customPrimarykeys];
+            if ([c respondsToSelector:@selector(propertyNamesForCustomPrimarykeys)]) {
+                id key = [c propertyNamesForCustomPrimarykeys];
                 if (key && [key isKindOfClass:[NSArray class]]) {
                     [primaryKeys addObject:key];
                 } else {
-                    NSAssert(true == true, @"primary key can not nil or not a NSString class");
+                    NSAssert(true != true, @"primary key can not nil or not a NSString class");
                     *stop = YES;
                 }
             }
@@ -690,4 +701,164 @@ static id objectType(NSString *typeString) {
     }
     return primaryKeys;
 }
+
+#pragma mark -  statement
+
++ (NSString *)insertSqlStatement {
+    
+    NSString *sql = [_insertSqlStatementsDict objectForKey:NSStringFromClass(self)];
+    if (!sql) {
+        
+        __block NSMutableString *keyStr = [NSMutableString string];
+        __block NSMutableString *value = [NSMutableString string];
+        
+        [self enumeratePropertiesUsingBlock:^(IHFProperty *property, NSUInteger idx, BOOL *stop) {
+            
+            if (property.type == IHFPropertyTypeModel) return ;
+            if (property.type == IHFPropertyTypeArray && property.objectClass) return ;
+            
+            [keyStr appendFormat:@"%@,",property.propertyName];
+            [value appendString:@"?,"];
+        }];
+        
+        // if insert , the data is not dirty
+        [keyStr appendFormat:@"%@",IHFDBDirtyKey];
+        [value appendString:@"1"];
+        
+        sql = [NSString stringWithFormat:@"(%@) VALUES (%@)",keyStr,value];
+        [_insertSqlStatementsDict setObject:sql forKey:NSStringFromClass(self)];
+    }
+    return sql;
+}
+
++ (NSString *)updateSqlStatement {
+    
+    NSMutableString *sql = [_updateSqlStatementsDict objectForKey:NSStringFromClass(self)];
+    if (!sql) {
+        sql = [NSMutableString string];
+        [self enumeratePropertiesUsingBlock:^(IHFProperty *property, NSUInteger idx, BOOL *stop) {
+            
+            if (property.type == IHFPropertyTypeArray && property.objectClass) return ;
+            if (property.type == IHFPropertyTypeModel) return ;
+            
+            [sql appendFormat:@"%@ = ?,",property.propertyName];
+        }];
+        
+        [sql appendFormat:@"%@ = %d",IHFDBDirtyKey,1];
+        [_updateSqlStatementsDict setObject:sql forKey:NSStringFromClass(self)];
+    }
+    return sql;
+}
+
++ (NSString *)updateSqlStatementWithColumns:(NSArray<NSString *> *)columns withPredicate:(IHFPredicate *)predicate {
+    if (!columns && ![columns count]) return nil;
+    __block NSMutableString *sql = [NSMutableString stringWithFormat:@"update %@ set ",NSStringFromClass([self class])];
+    [columns enumerateObjectsUsingBlock:^(NSString * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        if (obj && [obj isKindOfClass:[NSString class]]) {
+            [sql appendFormat:@"%@ = ?",obj];
+            
+            if (idx != [columns count] - 1) {
+                [sql appendFormat:@", "];
+            }
+        }
+    }];
+    if (predicate) {
+        if (predicate.predicateFormat) {
+            [sql appendFormat:@" WHERE %@",predicate.predicateFormat];
+        }
+    }
+    return sql;
+}
+
++ (NSString *)selectSqlStatementWithColumns:(NSArray <NSString *>*)columns {
+    if (!columns && ![columns count]) return nil;
+    NSMutableString *sql = [NSMutableString stringWithFormat:@"select * from %@ where ",NSStringFromClass([self class])];
+    [columns enumerateObjectsUsingBlock:^(NSString * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        if (obj && [obj isKindOfClass:[NSString class]]) {
+            [sql appendFormat:@"%@ = ? ",obj];
+            
+            if (idx != [columns count] - 1) {
+                [sql appendFormat:@"AND "];
+            }
+        } else {
+            NSAssert(true != true, @"column can NOT contain nil or not string class object");
+        }
+    }];
+    return sql;
+}
+
++ (NSString *)deleteSqlStatementWithColumns:(NSArray <NSString *>*)columns {
+    if (!columns && ![columns count]) return nil;
+    NSMutableString *sql = [NSMutableString stringWithFormat:@"delete from %@ where ",NSStringFromClass([self class])];
+    [columns enumerateObjectsUsingBlock:^(NSString * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        if (obj && [obj isKindOfClass:[NSString class]]) {
+            [sql appendFormat:@"%@ = ? ",obj];
+            
+            if (idx != [columns count] - 1) {
+                [sql appendFormat:@"AND "];
+            }
+        } else {
+            NSAssert(true != true, @"columnNames can NOT contain nil or not string class object");
+        }
+    }];
+    return [sql substringToIndex:[sql length] - 1];
+}
+
+- (IHFPredicate *)customPrimaryKeyPredicate {
+    NSArray *primaryKeys = [[self class] customPrimaryKeyLists];
+    NSAssert([primaryKeys count], @"You have NOT set the custom primary keys for this Class");
+    if (![primaryKeys count]) return nil;
+    id childArray = [primaryKeys firstObject];
+    if (childArray && [childArray count]) {
+        __block NSMutableString *precicate = [[NSMutableString alloc] init];
+        [childArray enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            if (obj && [obj isKindOfClass:[NSString class]]) {
+                [precicate appendFormat:@"%@ = %@ ",obj,[self valueWithPropertName:obj]];
+                if (idx != [childArray count] - 1) {
+                    [precicate appendString:@"AND "];
+                }
+            }
+        }];
+        return [IHFPredicate predicateWithString:precicate];
+    } else {
+        NSAssert(true != true, @"customPrimarykey must be NSArray AND not nil");
+        return nil;
+    }
+}
+
+- (NSArray *)argumentsForStatementWithColumns:(NSArray <NSString *>*)columns {
+    if (!columns && ![columns count]) return nil;
+    __block NSMutableArray *arguments = [NSMutableArray array];
+    [columns enumerateObjectsUsingBlock:^(NSString * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        if (obj && [obj isKindOfClass:[NSString class]]) {
+            id value = [self valueWithPropertName:obj];
+            if (!value) {
+                [arguments addObject:[NSNull null]];
+            } else {
+                [arguments addObject:value];
+            }
+        }
+    }];
+    return arguments;
+}
+
+- (NSArray *)argumentsForStatement {
+    
+    __block NSMutableArray *arguments = [NSMutableArray array];
+    
+    [[self class] enumeratePropertiesUsingBlock:^(IHFProperty *property, NSUInteger idx, BOOL *stop) {
+        
+        if (property.type == IHFPropertyTypeArray && property.objectClass) return ;
+        if (property.type == IHFPropertyTypeModel) return ;
+        
+        id value = [self valueWithProperty:property];
+        if (!value) {
+            [arguments addObject:[NSNull null]];
+        } else {
+            [arguments addObject:value];
+        }
+    }];
+    return arguments;
+}
+
 @end

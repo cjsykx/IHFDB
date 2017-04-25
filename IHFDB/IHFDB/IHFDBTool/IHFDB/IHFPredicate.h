@@ -13,6 +13,7 @@
 // TODO: It have BUG if you want a predicate format = [[IHFPredicate alloc] initWithFormat:@"%@ = %@",@"RecordDate",[NSDate date]] ;
 
 // IF You must use
+
 // format = [[IHFPredicate alloc] initWithFormat:@"@"RecordDate = %@",[NSDate date]];
 // Or
 //NSStirng *str = [[IHFPredicate alloc] initWithFormat:@"%@ = %@",@"RecordDate",[NSDate date]];

@@ -7,10 +7,10 @@
 //
 
 #import "NSObject+IHFDB.h"
-
+#import "IHFRelationTable.h"
 static const NSString *IHFDBPrimaryKey_ObjectIDKey                = @"objectIDKey_";
 static const NSString *IHFDB_DirtyKey                             = @"dirtyKey_";
-static const NSString *IHFDB_ParentObjectKey                            = @"ParentObejctKey_";
+static const NSString *IHFDB_ParentObjectKey                      = @"ParentObejctKey_";
 
 
 @implementation NSObject (IHFDB)
@@ -60,21 +60,22 @@ static const NSString *IHFDB_ParentObjectKey                            = @"Pare
     return [self selectWithPredicate:nil];
 }
 
-+ (NSArray *)selectWithPredicate:(IHFPredicate *)predicate inTableName:(NSString *)tableName inDataBase:(FMDatabase *)db {
++ (NSArray *)selectWithPredicate:(IHFPredicate *)predicate
+                     inTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db {
     return [self selectWithPredicate:predicate inTableName:tableName inDataBase:db isRecursive:YES];
 }
 
-+ (NSArray *)selectAllInTableName:(NSString *)tableName inDataBase:(FMDatabase *)db {
++ (NSArray *)selectAllInTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db {
     return [self selectWithPredicate:nil inTableName:tableName inDataBase:db];
 }
 
-+ (NSArray *)selectWithPredicate:(IHFPredicate *)predicate inTableName:(NSString *)tableName inDataBase:(FMDatabase *)db isRecursive:(BOOL)recursive {
++ (NSArray *)selectWithPredicate:(IHFPredicate *)predicate inTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db isRecursive:(BOOL)recursive {
     
     IHFDataBaseExecute *execute = [IHFDataBaseExecute shareDataBaseExecute];
     return [execute selectFromClass:self predicate:predicate customTableName:tableName inDataBase:db isRecursive:recursive];
 }
 
-+ (NSArray *)selectAllInTableName:(NSString *)tableName inDataBase:(FMDatabase *)db isRecursive:(BOOL)recursive {
++ (NSArray *)selectAllInTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db isRecursive:(BOOL)recursive {
     return [self selectWithPredicate:nil inTableName:tableName inDataBase:db isRecursive:recursive];
 }
 
@@ -85,52 +86,44 @@ static const NSString *IHFDB_ParentObjectKey                            = @"Pare
     return [self selectCountWithPredicate:predicate inTableName:nil inDataBase:nil];
 }
 
-+ (NSInteger)selectCountWithPredicate:(IHFPredicate *)predicate inTableName:(NSString *)tableName inDataBase:(FMDatabase *)db {
++ (NSInteger)selectCountWithPredicate:(IHFPredicate *)predicate inTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db {
     IHFDataBaseExecute *execute = [IHFDataBaseExecute shareDataBaseExecute];
     return [execute selectCountFromClass:self predicate:predicate customTableName:tableName inDataBase:db];
 }
 
-
 #pragma mark - Select by custom primary key
 
-+ (NSArray *)selectWithCustomPrimaryKeyValue:(id)value  {
-    return [self selectWithCustomPrimaryKeyValue:value isRecursive:YES];
++ (NSArray *)selectWithCustomPrimaryKeyValues:(NSArray <id>*)values {
+    return [self selectWithCustomPrimaryKeyValues:values isRecursive:YES];
 }
 
-+ (NSArray *)selectWithCustomPrimaryKeyValue:(id)value isRecursive:(BOOL)recursive {
-    return [self selectWithCustomPrimaryKeyValue:value inTableName:nil inDataBase:nil isRecursive:recursive];
++ (NSArray *)selectWithCustomPrimaryKeyValues:(NSArray <id>*)values isRecursive:(BOOL)recursive {
+    return [self selectWithCustomPrimaryKeyValues:values inTableName:nil inDataBase:nil isRecursive:recursive];
 }
 
-+ (NSArray *)selectWithCustomPrimaryKeyValue:(id)value inTableName:(NSString *)tableName inDataBase:(FMDatabase *)db {
-    return [self selectWithCustomPrimaryKeyValue:value inTableName:tableName inDataBase:db isRecursive:YES];
++ (NSArray *)selectWithCustomPrimaryKeyValues:(NSArray <id>*)values inTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db {
+    return [self selectWithCustomPrimaryKeyValues:values inTableName:tableName inDataBase:db isRecursive:YES];
 }
 
-+ (NSArray *)selectWithCustomPrimaryKeyValue:(id)value inTableName:(NSString *)tableName inDataBase:(FMDatabase *)db isRecursive:(BOOL)recursive {
++ (NSArray *)selectWithCustomPrimaryKeyValues:(NSArray <id>*)values inTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db isRecursive:(BOOL)recursive {
     
     NSArray *primaryKeys = [[self class] customPrimaryKeyLists];
     if (![primaryKeys count]) return nil;
+    NSAssert([primaryKeys count], @"You have NOT set the custom primary keys for this Class");
     id childArray = [primaryKeys firstObject];
     if (childArray && [childArray count]) {
         
-        NSAssert([childArray count] == 1, @"You set not only one primary key value , can not use the method , please use IHFPredicate instead");
-
-        id primaryKey = [childArray firstObject];
-        if (primaryKey && [primaryKey isKindOfClass:[NSString class]] ) {
-            NSString *predicateStr = [NSString stringWithFormat:@"%@ = '%@'",primaryKey,value];
-            IHFPredicate *predicate = [IHFPredicate predicateWithString:predicateStr];
-            return [self selectWithPredicate:predicate inTableName:tableName inDataBase:db isRecursive:recursive];
-        } else {
-            NSAssert(true == true, @"customPrimarykey must be NSString AND not nil");
-            return nil;
-        }
+        IHFSQLStatement *stament = [[IHFSQLStatement alloc] initWithSql:[self selectSqlStatementWithColumns:childArray] arguments:values];
+        IHFDataBaseExecute *execute = [IHFDataBaseExecute shareDataBaseExecute];
+        return [execute executeQueryWithClass:self statement:stament inDataBase:db isRecursive:recursive];
     } else {
-        NSAssert(true == true, @"customPrimarykey must be NSArray AND not nil");
+        NSAssert(true != true, @"customPrimarykey must be NSArray AND not nil");
         return nil;
     }
 }
 
 - (NSArray *)selectRelationModelWithPropertyName:(NSString *)propertyName {
-
+    
     if(self.objectID == 0) return nil;  // If the the model not ObjectID , it may not come from data base
     
     IHFProperty *property = [self propertyWithName:propertyName];
@@ -140,15 +133,20 @@ static const NSString *IHFDB_ParentObjectKey                            = @"Pare
     if (property.type == IHFPropertyTypeModel)  { // One-to-One
         relation = IHFRelationOneToOne;
     }
-
-    IHFRelationTable *table = [[IHFRelationTable alloc] initWithSourceObject:self destinationObject:[[theClass alloc] init] relationName:property.propertyName relation:relation];
+    
+    IHFRelationTable *table = [[IHFRelationTable alloc] initWithSourceObject:self
+                                                           destinationObject:[[theClass alloc] init]
+                                                                relationName:property.propertyName
+                                                                    relation:relation];
     table.sourceObjectID = self.objectID;
     return [table selectRelationsInDataBase:nil];
 }
 
-#pragma marl - insert 
+#pragma mark - insert
 
 - (BOOL)save {
+    NSAssert(self, @"warning : Can not save the nil object into db");
+    if (!self) return NO;
     return [self saveDidCompleteBlock:nil];
 }
 
@@ -180,20 +178,34 @@ static const NSString *IHFDB_ParentObjectKey                            = @"Pare
     return [self saveModelArray:modelArray inTableName:tableName inDataBase:nil completeBlock:completion];
 }
 
-- (BOOL)saveWithTableName:(NSString *)tableName inDataBase:(FMDatabase *)db completeBlock:(IHFDBCompleteBlock)completion {
+- (BOOL)saveWithTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db completeBlock:(IHFDBCompleteBlock)completion {
     return [[self class] saveModelArray:[NSArray arrayWithObject:self] inTableName:tableName inDataBase:db completeBlock:completion];
 }
 
-+ (BOOL)saveModelArray:(NSArray *)modelArray inTableName:(NSString *)tableName inDataBase:(FMDatabase *)db completeBlock:(IHFDBCompleteBlock)completion {
++ (BOOL)saveModelArray:(NSArray *)modelArray inTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db completeBlock:(IHFDBCompleteBlock)completion {
     [self createTable];
     IHFDataBaseExecute *execute = [IHFDataBaseExecute shareDataBaseExecute];
     return [execute insertIntoClassWithModelArray:modelArray inTableName:tableName inDataBase:db completeBlock:completion];
 }
 
 #pragma marl - update
+/**
+ Update with values by custom primary keys , and the values orders is your custom primary keys orders. The cascade Default NO .
+ Warning : (It noly take effect when you only set a primary key) , If you NOT set the Custom primary key for the model , the select will error .
+ */
+- (void)updateInTable {
+    [self updateInTableWithIsCascade:NO];
+}
+
+- (void)updateInTableWithIsCascade:(BOOL)cascade {
+    [self updateInTableWithIsCascade:cascade completeBlock:nil];
+}
+
+- (void)updateInTableWithIsCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion {
+    [self updateWithPredicate:[self customPrimaryKeyPredicate]];
+}
 
 - (void)updateWithPredicate:(IHFPredicate *)predicate completeBlock:(IHFDBCompleteBlock)completion {
-    
     [self updateWithPredicate:predicate isCascade:YES inTableName:nil inDataBase:nil completeBlock:completion];
 }
 
@@ -206,20 +218,32 @@ static const NSString *IHFDB_ParentObjectKey                            = @"Pare
 }
 
 - (void)updateWithPredicate:(IHFPredicate *)predicate isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion {
-       [self updateWithPredicate:predicate isCascade:cascade inTableName:nil inDataBase:nil completeBlock:completion];
+    [self updateWithPredicate:predicate isCascade:cascade inTableName:nil inDataBase:nil completeBlock:completion];
 }
 
-- (void)updateWithPredicate:(IHFPredicate *)predicate isCascade:(BOOL)cascade inTableName:(NSString *)tableName inDataBase:(FMDatabase *)db {
+- (void)updateWithPredicate:(IHFPredicate *)predicate isCascade:(BOOL)cascade inTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db {
     [self updateWithPredicate:predicate isCascade:cascade inTableName:tableName inDataBase:db completeBlock:nil];
 }
 
-- (void)updateWithPredicate:(IHFPredicate *)predicate isCascade:(BOOL)cascade inTableName:(NSString *)tableName inDataBase:(FMDatabase *)db completeBlock:(IHFDBCompleteBlock)completion {
+- (void)updateWithPredicate:(IHFPredicate *)predicate isCascade:(BOOL)cascade inTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db completeBlock:(IHFDBCompleteBlock)completion {
     
     IHFDataBaseExecute *execute = [IHFDataBaseExecute shareDataBaseExecute];
     [execute updateModel:self predicate:predicate customTableName:tableName inDataBase:db isCascade:cascade completeBlock:completion ];
 }
 
-#pragma marl - delete
+#pragma mark - delete
+
+- (BOOL)deleteFromTable {
+    return [self deleteFromTableIsCascade:NO];
+}
+
+- (BOOL)deleteFromTableIsCascade:(BOOL)cascade {
+    return [self deleteFromTableIsCascade:cascade completeBlock:nil];
+}
+
+- (BOOL)deleteFromTableIsCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion {
+    return [[self class] deleteWithCustomPrimaryKeyValues:[self customPrimarykeyValues] isCascade:cascade completeBlock:completion];
+}
 
 + (void)deleteWithPredicate:(IHFPredicate *)predicate {
     [self deleteWithPredicate:predicate completeBlock:nil];
@@ -230,7 +254,6 @@ static const NSString *IHFDB_ParentObjectKey                            = @"Pare
 }
 
 + (void)deleteWithPredicate:(IHFPredicate *)predicate completeBlock:(IHFDBCompleteBlock)completion {
-    
     [self deleteWithPredicate:predicate inTableName:nil inDataBase:nil isCascade:YES completeBlock:completion];
 }
 
@@ -239,15 +262,14 @@ static const NSString *IHFDB_ParentObjectKey                            = @"Pare
 }
 
 + (void)deleteWithPredicate:(IHFPredicate *)predicate isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion {
-    
     [self deleteWithPredicate:predicate inTableName:nil inDataBase:nil isCascade:cascade completeBlock:completion];
 }
 
-+ (void)deleteWithPredicate:(IHFPredicate *)predicate inTableName:(NSString *)tableName inDataBase:(FMDatabase *)db  completeBlock:(IHFDBCompleteBlock)completion {
++ (void)deleteWithPredicate:(IHFPredicate *)predicate inTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db  completeBlock:(IHFDBCompleteBlock)completion {
     [self deleteWithPredicate:predicate inTableName:tableName inDataBase:db isCascade:YES completeBlock:completion];
 }
 
-+ (void)deleteAllInTableName:(NSString *)tableName inDataBase:(FMDatabase *)db completeBlock:(IHFDBCompleteBlock)completion {
++ (void)deleteAllInTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db completeBlock:(IHFDBCompleteBlock)completion {
     [self deleteWithPredicate:nil inTableName:tableName inDataBase:db completeBlock:completion];
 }
 
@@ -255,14 +277,55 @@ static const NSString *IHFDB_ParentObjectKey                            = @"Pare
     [self deleteWithPredicate:nil completeBlock:completion];
 }
 
-+ (void)deleteWithPredicate:(IHFPredicate *)predicate inTableName:(NSString *)tableName inDataBase:(FMDatabase *)db isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion {
++ (void)deleteWithPredicate:(IHFPredicate *)predicate inTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion {
     
     IHFDataBaseExecute *execute = [IHFDataBaseExecute shareDataBaseExecute];
     [execute deleteFromClass:self predicate:predicate customTableName:tableName inDataBase:db isCascade:cascade completeBlock:completion];
 }
 
-+ (void)deleteAllInTableName:(NSString *)tableName inDataBase:(FMDatabase *)db isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion {
++ (void)deleteAllInTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion {
     [self deleteWithPredicate:nil inTableName:tableName inDataBase:db isCascade:cascade completeBlock:completion];
+}
+
+// delete by custom keys 
++ (BOOL)deleteWithCustomPrimaryKeyValues:(NSArray<id> *)values {
+    return [self deleteWithCustomPrimaryKeyValues:values isCascade:NO];
+}
+
++ (BOOL)deleteWithCustomPrimaryKeyValues:(NSArray<id> *)values isCascade:(BOOL)cascade {
+    return [self deleteWithCustomPrimaryKeyValues:values isCascade:cascade completeBlock:nil];
+}
+
++ (BOOL)deleteWithCustomPrimaryKeyValues:(NSArray<id> *)values isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion {
+    
+    // selected the models you will delete ! In order to fetch the Obejct ID for Delete Relation for one-to-many and foreign key for One-to-One !
+    NSArray *modelArray = [self selectWithCustomPrimaryKeyValues:values isRecursive:NO];
+    
+    if ([modelArray count]) { // If not have the models you want to delete in the data base, not need to delete!
+        
+        NSArray *primaryKeys = [[self class] customPrimaryKeyLists];
+        NSAssert([primaryKeys count], @"You have NOT set the custom primary keys for this Class");
+        if (![primaryKeys count]) return NO;
+        id childArray = [primaryKeys firstObject];
+        if (childArray && [childArray count]) {
+            
+            IHFSQLStatement *stament = [[IHFSQLStatement alloc] initWithSql:[self deleteSqlStatementWithColumns:childArray] arguments:values];
+            IHFDataBaseExecute *execute = [IHFDataBaseExecute shareDataBaseExecute];
+            BOOL success = [execute executeUpdateWithClass:self statements:@[stament] inDataBase:nil useTransaction:YES completeBlock:^(BOOL success,IHFDatabase *db) {
+                if (success) { // delete success ,delete ralation
+                    [execute deleteRelationForModelArray:modelArray inDataBase:db isCascade:cascade];
+                }
+                if (completion) completion(success,db);
+            }];
+            return success;
+        } else {
+            NSAssert(true != true, @"customPrimarykey must be NSArray AND not nil");
+            return NO;
+        }
+    } else {
+        NSLog(@"warning : what you want to delete %@ not exist in the DB",NSStringFromClass(self));
+        return YES;
+    }
 }
 
 #pragma marl - Sql statement by user
@@ -272,7 +335,7 @@ static const NSString *IHFDB_ParentObjectKey                            = @"Pare
     return [self executeQueryWithSqlStatement:sqlStatement inDataBase:nil];
 }
 
-+ (NSArray *)executeQueryWithSqlStatement:(NSString *)sqlStatement inDataBase:(FMDatabase *)db {
++ (NSArray *)executeQueryWithSqlStatement:(NSString *)sqlStatement inDataBase:(IHFDatabase *)db {
     
     IHFDataBaseExecute *execute = [IHFDataBaseExecute shareDataBaseExecute];
     return [execute executeQueryWithClass:self sqlStatement:sqlStatement inDataBase:db isRecursive:YES];
@@ -289,6 +352,67 @@ static const NSString *IHFDB_ParentObjectKey                            = @"Pare
     [execute executeUpdateWithClass:self sqlStatement:sqlStatement completeBlock:completion];
 }
 
+
+#pragma mark - opertion by custom colunm
+// select
++ (NSArray *)selectWithColumns:(NSArray<NSString *> *)columns withValues:(NSArray<id> *)values {
+    return [self selectWithColumns:columns withValues:values isRecursive:YES];
+}
+
++ (NSArray *)selectWithColumns:(NSArray<NSString *> *)columns withValues:(NSArray<id> *)values isRecursive:(BOOL)recursive {
+    return [self selectWithColumns:columns withValues:values isRecursive:recursive completeBlock:nil];
+}
+
++ (NSArray *)selectWithColumns:(NSArray<NSString *> *)columns withValues:(NSArray<id> *)values isRecursive:(BOOL)recursive completeBlock:(IHFDBCompleteBlock)completion {
+    if (!columns && ![columns count] && !values && ![values count]) {
+        NSAssert(true != true, @"You can NOT set nil or count = 0 for the columns or values ");
+        return nil;
+    } else if ([columns count] != [values count]) {
+        NSAssert(true != true, @"columns count is is different from values count ");
+        return nil;
+    }
+    IHFSQLStatement *stament = [[IHFSQLStatement alloc] initWithSql:[self selectSqlStatementWithColumns:columns] arguments:values];
+    IHFDataBaseExecute *execute = [IHFDataBaseExecute shareDataBaseExecute];
+    return [execute executeQueryWithClass:self statement:stament inDataBase:nil isRecursive:recursive];
+}
+
+// delete
++ (BOOL)deleteWithColumns:(NSArray <NSString *>*)columns withValues:(NSArray <id>*)values {
+    return [self deleteWithColumns:columns withValues:values isCascade:NO];
+}
+
++ (BOOL)deleteWithColumns:(NSArray <NSString *>*)columns withValues:(NSArray <id>*)values isCascade:(BOOL)cascade {
+    return [self deleteWithColumns:columns withValues:values isCascade:NO completeBlock:nil];
+}
+
++ (BOOL)deleteWithColumns:(NSArray <NSString *>*)columns withValues:(NSArray <id>*)values isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion {
+    if (!columns && ![columns count] && !values && ![values count]) {
+        NSAssert(true != true, @"You can NOT set nil or count = 0 for the columns or values ");
+        return NO;
+    } else if ([columns count] != [values count]) {
+        NSAssert(true != true, @"columns count is is different from values count ");
+        return NO;
+    }
+    IHFSQLStatement *stament = [[IHFSQLStatement alloc] initWithSql:[self deleteSqlStatementWithColumns:columns] arguments:values];
+    IHFDataBaseExecute *execute = [IHFDataBaseExecute shareDataBaseExecute];
+    return [execute executeUpdateWithClass:self statements:@[stament] inDataBase:nil useTransaction:YES completeBlock:completion];
+}
+
+// update
+- (BOOL)updateColumns:(NSArray<NSString *> *)columns {
+    return [self updateColumns:columns setValues:[self argumentsForStatementWithColumns:columns]];
+}
+
+- (BOOL)updateColumns:(NSArray<NSString *> *)columns setValues:(NSArray<id> *)values {
+    return [[self class] updateColumns:columns setValues:values predicate:[self customPrimaryKeyPredicate]];
+}
+
++ (BOOL)updateColumns:(NSArray<NSString *> *)columns setValues:(NSArray<id> *)values predicate:(IHFPredicate *)preciate {
+    IHFSQLStatement *stament = [[IHFSQLStatement alloc] initWithSql:[[self class] updateSqlStatementWithColumns:columns withPredicate:preciate] arguments:values];
+    IHFDataBaseExecute *execute = [IHFDataBaseExecute shareDataBaseExecute];
+    return [execute executeUpdateWithClass:[self class] statements:@[stament] inDataBase:nil useTransaction:NO completeBlock:nil];
+}
+
 #pragma mark -  delete dirty data
 + (void)deleteDirtyDataWithPredicate:(IHFPredicate *)predicate {
     [self deleteDirtyDataWithPredicate:predicate completeBlock:nil];
@@ -302,11 +426,10 @@ static const NSString *IHFDB_ParentObjectKey                            = @"Pare
     [self deleteDirtyDataWithPredicate:predicate inTableName:nil inDataBase:nil isCascade:YES completeBlock:completion];
 }
 
-+ (void)deleteDirtyDataWithPredicate:(IHFPredicate *)predicate inTableName:(NSString *)tableName inDataBase:(FMDatabase *)db isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion {
++ (void)deleteDirtyDataWithPredicate:(IHFPredicate *)predicate inTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion {
     
     IHFDataBaseExecute *execute = [IHFDataBaseExecute shareDataBaseExecute];
     [execute deleteDirtyDataFromClass:self predicate:predicate customTableName:tableName inDataBase:db isCascade:cascade completeBlock:completion];
-
 }
 
 #pragma mark -  protocol method
@@ -344,22 +467,22 @@ static const NSString *IHFDB_ParentObjectKey                            = @"Pare
     return objc_getAssociatedObject(self, &IHFDB_ParentObjectKey);
 }
 
-- (NSMutableDictionary *)customPrimarykeyValues {
+- (NSMutableArray *)customPrimarykeyValues {
     NSArray *primaryKeys = [[self class] customPrimaryKeyLists];
     if (![primaryKeys count]) return nil;
     id childArray = [primaryKeys firstObject];
     if (childArray && [childArray count]) {
-        __block NSMutableDictionary *keyValues = [NSMutableDictionary dictionary];
+        __block NSMutableArray *values = [NSMutableArray array];
         [childArray enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-            if ([obj isKindOfClass:[NSString class]]) {
+            if (obj && [obj isKindOfClass:[NSString class]]) {
                 id value = [self valueWithPropertName:obj];
                 if (!value) value = @"";
-                [keyValues setObject:[self valueWithPropertName:obj] forKey:obj];
+                [values addObject:value];
             }
         }];
-        return keyValues;
+        return values;
     } else {
-        NSAssert(true == true, @"customPrimarykey must be NSArray AND not nil");
+        NSAssert(true != true, @"customPrimarykey must be NSArray AND not nil");
         return nil;
     }
 }

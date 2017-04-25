@@ -1,29 +1,29 @@
 //
-//  FMDatabasePool.m
-//  fmdb
+//  IHFDatabasePool.m
+//  IHFDb
 //
 //  Created by August Mueller on 6/22/11.
 //  Copyright 2011 Flying Meat Inc. All rights reserved.
 //
 
-#if FMDB_SQLITE_STANDALONE
+#if IHFDB_SQLITE_STANDALONE
 #import <sqlite3/sqlite3.h>
 #else
 #import <sqlite3.h>
 #endif
 
-#import "FMDatabasePool.h"
-#import "FMDatabase.h"
+#import "IHFDatabasePool.h"
+#import "IHFDatabase.h"
 
-@interface FMDatabasePool()
+@interface IHFDatabasePool()
 
-- (void)pushDatabaseBackInPool:(FMDatabase*)db;
-- (FMDatabase*)db;
+- (void)pushDatabaseBackInPool:(IHFDatabase*)db;
+- (IHFDatabase*)db;
 
 @end
 
 
-@implementation FMDatabasePool
+@implementation IHFDatabasePool
 @synthesize path=_path;
 @synthesize delegate=_delegate;
 @synthesize maximumNumberOfDatabasesToCreate=_maximumNumberOfDatabasesToCreate;
@@ -31,31 +31,26 @@
 
 
 + (instancetype)databasePoolWithPath:(NSString*)aPath {
-    return FMDBReturnAutoreleased([[self alloc] initWithPath:aPath]);
+    return IHFDBReturnAutoreleased([[self alloc] initWithPath:aPath]);
 }
 
 + (instancetype)databasePoolWithPath:(NSString*)aPath flags:(int)openFlags {
-    return FMDBReturnAutoreleased([[self alloc] initWithPath:aPath flags:openFlags]);
+    return IHFDBReturnAutoreleased([[self alloc] initWithPath:aPath flags:openFlags]);
 }
 
-- (instancetype)initWithPath:(NSString*)aPath flags:(int)openFlags vfs:(NSString *)vfsName {
+- (instancetype)initWithPath:(NSString*)aPath flags:(int)openFlags {
     
     self = [super init];
     
     if (self != nil) {
         _path               = [aPath copy];
-        _lockQueue          = dispatch_queue_create([[NSString stringWithFormat:@"fmdb.%@", self] UTF8String], NULL);
-        _databaseInPool     = FMDBReturnRetained([NSMutableArray array]);
-        _databaseOutPool    = FMDBReturnRetained([NSMutableArray array]);
+        _lockQueue          = dispatch_queue_create([[NSString stringWithFormat:@"IHFDb.%@", self] UTF8String], NULL);
+        _databaseInPool     = IHFDBReturnRetained([NSMutableArray array]);
+        _databaseOutPool    = IHFDBReturnRetained([NSMutableArray array]);
         _openFlags          = openFlags;
-        _vfsName            = [vfsName copy];
     }
     
     return self;
-}
-
-- (instancetype)initWithPath:(NSString*)aPath flags:(int)openFlags {
-    return [self initWithPath:aPath flags:openFlags vfs:nil];
 }
 
 - (instancetype)initWithPath:(NSString*)aPath
@@ -68,19 +63,16 @@
     return [self initWithPath:nil];
 }
 
-+ (Class)databaseClass {
-    return [FMDatabase class];
-}
 
 - (void)dealloc {
     
     _delegate = 0x00;
-    FMDBRelease(_path);
-    FMDBRelease(_databaseInPool);
-    FMDBRelease(_databaseOutPool);
+    IHFDBRelease(_path);
+    IHFDBRelease(_databaseInPool);
+    IHFDBRelease(_databaseOutPool);
     
     if (_lockQueue) {
-        FMDBDispatchQueueRelease(_lockQueue);
+        IHFDBDispatchQueueRelease(_lockQueue);
         _lockQueue = 0x00;
     }
 #if ! __has_feature(objc_arc)
@@ -93,7 +85,7 @@
     dispatch_sync(_lockQueue, aBlock);
 }
 
-- (void)pushDatabaseBackInPool:(FMDatabase*)db {
+- (void)pushDatabaseBackInPool:(IHFDatabase*)db {
     
     if (!db) { // db can be null if we set an upper bound on the # of databases to create.
         return;
@@ -102,7 +94,7 @@
     [self executeLocked:^() {
         
         if ([self->_databaseInPool containsObject:db]) {
-            [[NSException exceptionWithName:@"Database already in pool" reason:@"The FMDatabase being put back into the pool is already present in the pool" userInfo:nil] raise];
+            [[NSException exceptionWithName:@"Database already in pool" reason:@"The IHFDatabase being put back into the pool is already present in the pool" userInfo:nil] raise];
         }
         
         [self->_databaseInPool addObject:db];
@@ -111,9 +103,9 @@
     }];
 }
 
-- (FMDatabase*)db {
+- (IHFDatabase*)db {
     
-    __block FMDatabase *db;
+    __block IHFDatabase *db;
     
     
     [self executeLocked:^() {
@@ -136,13 +128,13 @@
                 }
             }
             
-            db = [[[self class] databaseClass] databaseWithPath:self->_path];
+            db = [IHFDatabase databaseWithPath:self->_path];
             shouldNotifyDelegate = YES;
         }
         
         //This ensures that the db is opened before returning
 #if SQLITE_VERSION_NUMBER >= 3005000
-        BOOL success = [db openWithFlags:self->_openFlags vfs:self->_vfsName];
+        BOOL success = [db openWithFlags:self->_openFlags];
 #else
         BOOL success = [db open];
 #endif
@@ -210,20 +202,20 @@
     }];
 }
 
-- (void)inDatabase:(void (^)(FMDatabase *db))block {
+- (void)inDatabase:(void (^)(IHFDatabase *db))block {
     
-    FMDatabase *db = [self db];
+    IHFDatabase *db = [self db];
     
     block(db);
     
     [self pushDatabaseBackInPool:db];
 }
 
-- (void)beginTransaction:(BOOL)useDeferred withBlock:(void (^)(FMDatabase *db, BOOL *rollback))block {
+- (void)beginTransaction:(BOOL)useDeferred withBlock:(void (^)(IHFDatabase *db, BOOL *rollback))block {
     
     BOOL shouldRollback = NO;
     
-    FMDatabase *db = [self db];
+    IHFDatabase *db = [self db];
     
     if (useDeferred) {
         [db beginDeferredTransaction];
@@ -245,15 +237,15 @@
     [self pushDatabaseBackInPool:db];
 }
 
-- (void)inDeferredTransaction:(void (^)(FMDatabase *db, BOOL *rollback))block {
+- (void)inDeferredTransaction:(void (^)(IHFDatabase *db, BOOL *rollback))block {
     [self beginTransaction:YES withBlock:block];
 }
 
-- (void)inTransaction:(void (^)(FMDatabase *db, BOOL *rollback))block {
+- (void)inTransaction:(void (^)(IHFDatabase *db, BOOL *rollback))block {
     [self beginTransaction:NO withBlock:block];
 }
 
-- (NSError*)inSavePoint:(void (^)(FMDatabase *db, BOOL *rollback))block {
+- (NSError*)inSavePoint:(void (^)(IHFDatabase *db, BOOL *rollback))block {
 #if SQLITE_VERSION_NUMBER >= 3007000
     static unsigned long savePointIdx = 0;
     
@@ -261,7 +253,7 @@
     
     BOOL shouldRollback = NO;
     
-    FMDatabase *db = [self db];
+    IHFDatabase *db = [self db];
     
     NSError *err = 0x00;
     
@@ -284,7 +276,7 @@
 #else
     NSString *errorMessage = NSLocalizedString(@"Save point functions require SQLite 3.7", nil);
     if (self.logsErrors) NSLog(@"%@", errorMessage);
-    return [NSError errorWithDomain:@"FMDatabase" code:0 userInfo:@{NSLocalizedDescriptionKey : errorMessage}];
+    return [NSError errorWithDomain:@"IHFDatabase" code:0 userInfo:@{NSLocalizedDescriptionKey : errorMessage}];
 #endif
 }
 

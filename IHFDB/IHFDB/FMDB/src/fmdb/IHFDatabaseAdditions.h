@@ -1,23 +1,23 @@
 //
-//  FMDatabaseAdditions.h
-//  fmdb
+//  IHFDatabaseAdditions.h
+//  IHFDb
 //
 //  Created by August Mueller on 10/30/05.
 //  Copyright 2005 Flying Meat Inc.. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
-#import "FMDatabase.h"
+#import "IHFDatabase.h"
 
 
-/** Category of additions for `<FMDatabase>` class.
+/** Category of additions for `<IHFDatabase>` class.
  
  ### See also
 
- - `<FMDatabase>`
+ - `<IHFDatabase>`
  */
 
-@interface FMDatabase (FMDatabaseAdditions)
+@interface IHFDatabase (IHFDatabaseAdditions)
 
 ///----------------------------------------
 /// @name Return results of SQL to variable
@@ -30,7 +30,7 @@
 
  @return `int` value.
  
- @note To use this method from Swift, you must include `FMDatabaseAdditionsVariadic.swift` in your project.
+ @note To use this method from Swift, you must include `IHFDatabaseAdditionsVariadic.swift` in your project.
  */
 
 - (int)intForQuery:(NSString*)query, ...;
@@ -42,7 +42,7 @@
 
  @return `long` value.
  
- @note To use this method from Swift, you must include `FMDatabaseAdditionsVariadic.swift` in your project.
+ @note To use this method from Swift, you must include `IHFDatabaseAdditionsVariadic.swift` in your project.
  */
 
 - (long)longForQuery:(NSString*)query, ...;
@@ -54,7 +54,7 @@
 
  @return `BOOL` value.
  
- @note To use this method from Swift, you must include `FMDatabaseAdditionsVariadic.swift` in your project.
+ @note To use this method from Swift, you must include `IHFDatabaseAdditionsVariadic.swift` in your project.
  */
 
 - (BOOL)boolForQuery:(NSString*)query, ...;
@@ -66,7 +66,7 @@
 
  @return `double` value.
  
- @note To use this method from Swift, you must include `FMDatabaseAdditionsVariadic.swift` in your project.
+ @note To use this method from Swift, you must include `IHFDatabaseAdditionsVariadic.swift` in your project.
  */
 
 - (double)doubleForQuery:(NSString*)query, ...;
@@ -78,7 +78,7 @@
 
  @return `NSString` value.
  
- @note To use this method from Swift, you must include `FMDatabaseAdditionsVariadic.swift` in your project.
+ @note To use this method from Swift, you must include `IHFDatabaseAdditionsVariadic.swift` in your project.
  */
 
 - (NSString*)stringForQuery:(NSString*)query, ...;
@@ -90,7 +90,7 @@
 
  @return `NSData` value.
  
- @note To use this method from Swift, you must include `FMDatabaseAdditionsVariadic.swift` in your project.
+ @note To use this method from Swift, you must include `IHFDatabaseAdditionsVariadic.swift` in your project.
  */
 
 - (NSData*)dataForQuery:(NSString*)query, ...;
@@ -102,7 +102,7 @@
 
  @return `NSDate` value.
  
- @note To use this method from Swift, you must include `FMDatabaseAdditionsVariadic.swift` in your project.
+ @note To use this method from Swift, you must include `IHFDatabaseAdditionsVariadic.swift` in your project.
  */
 
 - (NSDate*)dateForQuery:(NSString*)query, ...;
@@ -136,12 +136,12 @@
  - `rootpage` - The page number of the root b-tree page for tables and indices
  - `sql` - The SQL that created the entity
 
- @return `FMResultSet` of schema; `nil` on error.
+ @return `IHFResultSet` of schema; `nil` on error.
  
  @see [SQLite File Format](http://www.sqlite.org/fileformat.html)
  */
 
-- (FMResultSet*)getSchema;
+- (IHFResultSet*)getSchema;
 
 /** The schema of the database.
 
@@ -160,12 +160,12 @@
 
  @param tableName The name of the table for whom the schema will be returned.
  
- @return `FMResultSet` of schema; `nil` on error.
+ @return `IHFResultSet` of schema; `nil` on error.
  
  @see [table_info](http://www.sqlite.org/pragma.html#pragma_table_info)
  */
 
-- (FMResultSet*)getTableSchema:(NSString*)tableName;
+- (IHFResultSet*)getTableSchema:(NSString*)tableName;
 
 /** Test to see if particular column exists for particular table in database
  

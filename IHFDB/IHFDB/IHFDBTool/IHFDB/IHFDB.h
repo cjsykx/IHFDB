@@ -9,8 +9,17 @@
 #ifndef IHFDB_h
 #define IHFDB_h
 
-#import "NSObject+IHFModelOperation.h" // Main to convert model to dictionary or dictionary convert to model
+// Sqlite name is IHFDB.sqlite
 
+#import "NSObject+IHFModelOperation.h" // Main to convert model to dictionary or dictionary convert to model
 #import "NSObject+IHFDB.h" // Main save model into sqlite and DO CURL operation .
+#import "IHFDBObjectDataSource.h" // Main set additional propery attribute ...
+
+
+#import "IHFDatabase.h"
+#import "IHFResultSet.h"
+#import "IHFDatabaseAdditions.h"
+#import "IHFDatabaseQueue.h"
+#import "IHFDatabasePool.h"
 
 #endif /* IHFDB_h */
