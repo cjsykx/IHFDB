@@ -117,7 +117,7 @@ typedef void (^IHFClassesEnumeration)(Class c, BOOL *stop);
 + (void)enumerateAllClassesUsingBlock:(IHFClassesEnumeration)enumeration;
 
 /**
- Get a Class All properties which type is array and the array contain object (Include super class)
+ Returns a Class All properties which type is array and the array contain object (Include super class)
  */
 + (NSArray <IHFProperty *>*)propertiesForTypeOfArray;
 
@@ -137,9 +137,12 @@ typedef void (^IHFClassesEnumeration)(Class c, BOOL *stop);
 /** Fetch the property with the its name */
 - (IHFProperty *)propertyWithName:(NSString *)propertyame;
 
-// set model value
+// Set model value
 -(void)setValue:(id)aValue forProperty:(IHFProperty *)property;
-- (void)setValue:(NSObject *)value propertyName:(NSString *)name propertyType:(NSString *)type;
+
+- (void)setValue:(NSObject *)value
+    propertyName:(NSString *)name
+    propertyType:(NSString *)type;
 
 /**
  returns value with given property name
@@ -165,48 +168,60 @@ typedef void (^IHFClassesEnumeration)(Class c, BOOL *stop);
 // *********** statement ********** //
 
 /**
- Get sqlStatement With Column names
+ Returns sqlStatement With Column names
  */
-
-+ (NSString *)selectSqlStatementWithColumns:(NSArray <NSString *>*)columns;
++ (NSString *)selectSqlStatementWithColumns:(NSArray <NSString *>*)columns
+                                    fromTable:(NSString *)tableName
+                                    orderBy:(NSString *)orderBy
+                                     isDesc:(BOOL)isDesc
+                                 limitRange:(NSRange)limitRange;
 
 /**
- Get class arguments insert Sql Statement
+ Returns class arguments insert Sql Statement
  */
 + (NSString *)insertSqlStatement;
 
 /**
- Get class arguments update Sql Statement for all class property
+ Returns class arguments update Sql Statement for all class property
  */
 + (NSString *)updateSqlStatement;
 
 /**
- Get class arguments update Sql Statement with given columns
+ Returns class arguments update Sql Statement with given columns
  */
-+ (NSString *)updateSqlStatementWithColumns:(NSArray <NSString *>*)columns withPredicate:(IHFPredicate *)predicate;
++ (NSString *)updateSqlStatementWithColumns:(NSArray <NSString *>*)columns
+                              withPredicate:(IHFPredicate *)predicate
+                                  fromTable:(NSString *)tableName;
+
 
 /**
- Delete sqlStatement With Column names
+ Returns delete sqlStatement With Column names
  */
-
-+ (NSString *)deleteSqlStatementWithColumns:(NSArray <NSString *>*)columns;
++ (NSString *)deleteSqlStatementWithColumns:(NSArray <NSString *>*)columns
+                                  fromTable:(NSString *)tableName;
 
 /**
- Get priamry key Predicate by customPrimaryKey ..
+ Returns priamry key Predicate by customPrimaryKey ..
  */
-
 - (IHFPredicate *)customPrimaryKeyPredicate;
 
 /**
- Get model arguments with given colunms
+ Returns priamry key Predicate by customPrimaryKey and given values..
  */
++ (IHFPredicate *)customPrimaryKeyPredicateWithValue:(NSArray *)values;
 
+/**
+ Returns Predicate by given columns and values..
+ */
++ (IHFPredicate *)predicateWithColumns:(NSArray *)columns Value:(NSArray *)values;
+
+/**
+ Returns model arguments with given colunms
+ */
 - (NSArray *)argumentsForStatementWithColumns:(NSArray <NSString *>*)columns ;
 
 /**
- Get model arguments
+ Returns model arguments
  */
 - (NSArray *)argumentsForStatement;
-
-
 @end

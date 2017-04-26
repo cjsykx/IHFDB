@@ -7,7 +7,10 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "RemoteApplicationCreateRequest.h"
 
 @interface Request : NSObject
+@property (strong,nonatomic) RemoteApplicationCreateRequest *request;
+@property (copy,nonatomic) NSString *requestId;
 
 @end

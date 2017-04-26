@@ -46,23 +46,24 @@ typedef void(^IHFDBUpdateCompleteBlock)(BOOL success,NSArray < IHFRelationTable 
 
 /** Insert the model into the table ,which the table name is defalut defalt is class name */
 
-- (BOOL) insertIntoClassWithModel:(id)newModel inTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db completeBlock:(IHFDBCompleteBlock)completion;
+- (BOOL)insertIntoClassWithModel:(id)newModel fromTable:(NSString *)tableName inDataBase:(IHFDatabase *)db completeBlock:(IHFDBCompleteBlock)completion;
 
 /** Insert the models into the table ,which the table name is defalut defalt is class name ,*/
 
-- (BOOL) insertIntoClassWithModelArray:(NSArray *)ModelArray inTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db completeBlock:(IHFDBCompleteBlock)completion;
+- (BOOL)insertIntoClassWithModelArray:(NSArray *)ModelArray fromTable:(NSString *)tableName inDataBase:(IHFDatabase *)db completeBlock:(IHFDBCompleteBlock)completion;
 
 // Update
-- (void) updateModel:(id)newModel predicate:(IHFPredicate *)predicate customTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion;
+- (BOOL)updateModel:(id)newModel predicate:(IHFPredicate *)predicate customTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db isCascade:(BOOL)cascade updateColumns:(NSArray *)columns updateValues:(NSArray *)values completeBlock:(IHFDBCompleteBlock)completion;
 
 // Delete
-- (void) deleteFromClass:(Class)newClass predicate:(IHFPredicate *)predicate customTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion;
+- (BOOL)deleteFromClass:(Class)newClass predicate:(IHFPredicate *)predicate customTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion;
 
 // Delete dirty data
-- (void) deleteDirtyDataFromClass:(Class)newClass predicate:(IHFPredicate *)predicate customTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion;
+- (BOOL)deleteDirtyDataFromClass:(Class)newClass predicate:(IHFPredicate *)predicate customTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion;
 
 // SQLStatement by user
 - (NSArray<id<IHFDBObejctDataSource>> *)executeQueryWithClass:(Class)newClass statement:(IHFSQLStatement *)statement inDataBase:(IHFDatabase *)db isRecursive:(BOOL)recursive;
+
 - (BOOL)executeUpdateWithClass:(Class)newClass statements:(NSArray <IHFSQLStatement *>*)statements inDataBase:(IHFDatabase *)db useTransaction:(BOOL)useTransaction completeBlock:(IHFDBCompleteBlock)completion;
 
 // Sql statement by user

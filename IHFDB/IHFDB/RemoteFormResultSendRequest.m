@@ -35,16 +35,4 @@
     return self;
 }
 
-- (instancetype)initWithFormResult:(RemoteFormResult *)formResult {
-    self = [super init];
-    if (self) {
-        if (formResult) {
-            self.template_id = formResult.template_id;
-            self.content = formResult.resultDictM;
-            self.applicationId = formResult.applicationId;
-            self.content_text = @{@"key" : @"value"};
-        }
-    }
-    return self;
-}
 @end

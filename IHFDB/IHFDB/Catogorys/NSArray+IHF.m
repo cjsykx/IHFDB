@@ -22,10 +22,7 @@
 
 + (NSArray *)arrayWithJSONStirng:(NSString *)string {
     if (!string) return nil;
-    if ([NSJSONSerialization isValidJSONObject:self]) {
-        return [NSJSONSerialization JSONObjectWithData:[string dataUsingEncoding:NSUTF8StringEncoding] options:kNilOptions error:nil];
-    }
-    return nil;
+    return [NSJSONSerialization JSONObjectWithData:[string dataUsingEncoding:NSUTF8StringEncoding] options:kNilOptions error:nil];
 }
 
 @end
@@ -38,9 +35,6 @@
 
 + (NSMutableArray *)arrayWithJSONStirng:(NSString *)string {
     if (!string) return nil;
-    if ([NSJSONSerialization isValidJSONObject:self]) {
-        return [NSMutableArray arrayWithArray:[NSJSONSerialization JSONObjectWithData:[string dataUsingEncoding:NSUTF8StringEncoding] options:kNilOptions error:nil]];
-    }
-    return nil;
+    return [NSMutableArray arrayWithArray:[NSJSONSerialization JSONObjectWithData:[string dataUsingEncoding:NSUTF8StringEncoding] options:kNilOptions error:nil]];
 }
 @end

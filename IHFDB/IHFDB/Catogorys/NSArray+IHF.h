@@ -47,6 +47,6 @@
  @param string : It must be JSON String ..
  */
 
-+ (NSMutableDictionary *)arrayWithJSONStirng:(NSString *)string;
++ (NSMutableArray *)arrayWithJSONStirng:(NSString *)string;
 
 @end

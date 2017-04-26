@@ -11,9 +11,8 @@
 #import "Drug.h"
 #import "IHFDB.h"
 #import "Person.h"
+#import "RemoteApplicationCreateRequest.h"
 @interface Patient : Person
-
-typedef void(^IHFDBCompleteBlock)(BOOL success);
 
 @property (assign,nonatomic) int8_t aint8 ;
 @property (assign,nonatomic) int16_t aint16 ;
@@ -37,6 +36,7 @@ typedef void(^IHFDBCompleteBlock)(BOOL success);
 @property (copy,nonatomic) NSString * name ;
 @property (strong,nonatomic) NSMutableArray <Drug *>* drugs ;
 
+
 @property (assign,nonatomic) CGFloat  height ;
 
 @property (strong,nonatomic) NSDate * recordDate ;
@@ -49,11 +49,23 @@ typedef void(^IHFDBCompleteBlock)(BOOL success);
 @property (strong,nonatomic) NSString * mapperNumber1 ;
 
 @property (strong,nonatomic) id test ;
+@property (strong,nonatomic) NSNumber *hostipalID ;
+
+
+// Not contain object
 @property (strong,nonatomic) NSDictionary * dict ;
 @property (strong,nonatomic) NSMutableDictionary * dictM ;
+@property (strong,nonatomic) NSArray *array ;
+@property (strong,nonatomic) NSMutableArray *arrayM ;
 
 @property (assign,nonatomic) NSRange range ;
+@property (strong,nonatomic) NSDate *birthday;
 
-@property (strong,nonatomic) NSDate *birthday ;
+// data and image
+@property (strong,nonatomic) NSData * data ;
+@property (strong,nonatomic) UIImage * image ;
+
+@property (strong,nonatomic) NSMutableArray * dogs ;
+@property (strong,nonatomic) RemoteApplicationCreateRequest *request;
 
 @end

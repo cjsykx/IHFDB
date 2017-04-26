@@ -78,11 +78,11 @@ Table name is the class name
 + (NSArray *)selectWithPredicate:(IHFPredicate *)predicate isRecursive:(BOOL)recursive;
 + (NSArray *)selectAllWithRecursive:(BOOL)recursive;
 
-+ (NSArray *)selectWithPredicate:(IHFPredicate *)predicate inTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db isRecursive:(BOOL)recursive;
-+ (NSArray *)selectAllInTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db isRecursive:(BOOL)recursive;
++ (NSArray *)selectWithPredicate:(IHFPredicate *)predicate fromTable:(NSString *)tableName inDataBase:(IHFDatabase *)db isRecursive:(BOOL)recursive;
++ (NSArray *)selectAllFromTable:(NSString *)tableName inDataBase:(IHFDatabase *)db isRecursive:(BOOL)recursive;
 
-+ (NSArray *)selectWithPredicate:(IHFPredicate *)predicate inTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db;
-+ (NSArray *)selectAllInTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db;
++ (NSArray *)selectWithPredicate:(IHFPredicate *)predicate fromTable:(NSString *)tableName inDataBase:(IHFDatabase *)db;
++ (NSArray *)selectAllFromTable:(NSString *)tableName inDataBase:(IHFDatabase *)db;
 
 
 /**  Fetch the model's relation models Using the property name */
@@ -92,7 +92,7 @@ Table name is the class name
 /** Select Count for your predicate */
 
 + (NSInteger)selectCountWithPredicate:(IHFPredicate *)predicate;
-+ (NSInteger)selectCountWithPredicate:(IHFPredicate *)predicate inTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db;
++ (NSInteger)selectCountWithPredicate:(IHFPredicate *)predicate fromTable:(NSString *)tableName inDataBase:(IHFDatabase *)db;
 
 
 //////////////////////
@@ -112,14 +112,14 @@ Table name is the class name
 /** Insert the models into the table ,which the table name is by user costom name ,*/
 
 - (BOOL)saveWithTableName:(NSString *)tableName;
-+ (BOOL)saveModelArray:(NSArray *)modelArray inTableName:(NSString *)tableName;
++ (BOOL)saveModelArray:(NSArray *)modelArray fromTable:(NSString *)tableName;
 
 - (BOOL)saveWithTableName:(NSString *)tableName completeBlock:(IHFDBCompleteBlock)completion;
-+ (BOOL)saveModelArray:(NSArray *)modelArray inTableName:(NSString *)tableName completeBlock:(IHFDBCompleteBlock)completion ;
++ (BOOL)saveModelArray:(NSArray *)modelArray fromTable:(NSString *)tableName completeBlock:(IHFDBCompleteBlock)completion ;
 
 // db
 - (BOOL)saveWithTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db completeBlock:(IHFDBCompleteBlock)completion;
-+ (BOOL)saveModelArray:(NSArray *)modelArray inTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db completeBlock:(IHFDBCompleteBlock)completion ;
++ (BOOL)saveModelArray:(NSArray *)modelArray fromTable:(NSString *)tableName inDataBase:(IHFDatabase *)db completeBlock:(IHFDBCompleteBlock)completion ;
 
 /** Update */
 
@@ -127,32 +127,33 @@ Table name is the class name
  Update with values by custom primary keys , and the values orders is your custom primary keys orders. The cascade Default NO .
  Warning : (It noly take effect when you only set a primary key) , If you NOT set the Custom primary key for the model , the select will error .
  */
-- (void)updateInTable;
-- (void)updateInTableWithIsCascade:(BOOL)cascade;
-- (void)updateInTableWithIsCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion;
+- (BOOL)updateFromTable;
+- (BOOL)updateFromTableWithIsCascade:(BOOL)cascade;
+- (BOOL)updateFromTableWithIsCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion;
+- (BOOL)updateFromTable:(NSString *)tableName inDataBase:(IHFDatabase *)db isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion;
 
 /**
- Update with predicate ..
+ Update with predicate , warning : Only model can use predicate ..
  */
-- (void)updateWithPredicate:(IHFPredicate *)predicate;
-- (void)updateWithPredicate:(IHFPredicate *)predicate completeBlock:(IHFDBCompleteBlock)completion;
+- (BOOL)updateWithPredicate:(IHFPredicate *)predicate;
+- (BOOL)updateWithPredicate:(IHFPredicate *)predicate completeBlock:(IHFDBCompleteBlock)completion;
 
 /** Cascade : Default yes , if you set it not , it means it only update the model , not change the model relation and relation table! */
 
-- (void)updateWithPredicate:(IHFPredicate *)predicate isCascade:(BOOL)cascade;
-- (void)updateWithPredicate:(IHFPredicate *)predicate isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion;
+- (BOOL)updateWithPredicate:(IHFPredicate *)predicate isCascade:(BOOL)cascade;
+- (BOOL)updateWithPredicate:(IHFPredicate *)predicate isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion;
 
-- (void)updateWithPredicate:(IHFPredicate *)predicate isCascade:(BOOL)cascade inTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db;
-- (void)updateWithPredicate:(IHFPredicate *)predicate isCascade:(BOOL)cascade inTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db completeBlock:(IHFDBCompleteBlock)completion;
+- (BOOL)updateWithPredicate:(IHFPredicate *)predicate isCascade:(BOOL)cascade fromTable:(NSString *)tableName inDataBase:(IHFDatabase *)db;
+- (BOOL)updateWithPredicate:(IHFPredicate *)predicate isCascade:(BOOL)cascade fromTable:(NSString *)tableName inDataBase:(IHFDatabase *)db completeBlock:(IHFDBCompleteBlock)completion;
 
 
 /** Delete */
 
-+ (void)deleteWithPredicate:(IHFPredicate *)predicate;
-+ (void)deleteAll;
++ (BOOL)deleteWithPredicate:(IHFPredicate *)predicate;
++ (BOOL)deleteAll;
 
-+ (void)deleteWithPredicate:(IHFPredicate *)predicate completeBlock:(IHFDBCompleteBlock)completion;
-+ (void)deleteAllDidCompleteBlock:(IHFDBCompleteBlock)completion;
++ (BOOL)deleteWithPredicate:(IHFPredicate *)predicate completeBlock:(IHFDBCompleteBlock)completion;
++ (BOOL)deleteAllDidCompleteBlock:(IHFDBCompleteBlock)completion;
 
 /**
  Delete self from table , it will use this custom primary keys , if NOT set , it will delete fail..
@@ -160,21 +161,22 @@ Table name is the class name
 - (BOOL)deleteFromTable;
 - (BOOL)deleteFromTableIsCascade:(BOOL)cascade;
 - (BOOL)deleteFromTableIsCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion;
+- (BOOL)deleteFromTable:(NSString *)tableName inDataBase:(IHFDatabase *)db IsCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion;
 
-/** Cascade : Default yes , means not only delete the model with fit the predicate ,but also delete the all it relation model! */
+/** Cascade : Default NO , means not only delete the model with fit the predicate ,but also delete the all it relation model! */
 
-+ (void)deleteWithPredicate:(IHFPredicate *)predicate isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion;
-+ (void)deleteAllWithCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion;
++ (BOOL)deleteWithPredicate:(IHFPredicate *)predicate isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion;
++ (BOOL)deleteAllWithCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion;
 
 /** table name, db  */
 
-+ (void)deleteWithPredicate:(IHFPredicate *)predicate inTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db completeBlock:(IHFDBCompleteBlock)completion;
-+ (void)deleteAllInTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db completeBlock:(IHFDBCompleteBlock)completion;
++ (BOOL)deleteWithPredicate:(IHFPredicate *)predicate fromTable:(NSString *)tableName inDataBase:(IHFDatabase *)db completeBlock:(IHFDBCompleteBlock)completion;
++ (BOOL)deleteAllFromTable:(NSString *)tableName inDataBase:(IHFDatabase *)db completeBlock:(IHFDBCompleteBlock)completion;
 
 /** table name, db and cascade */
 
-+ (void)deleteWithPredicate:(IHFPredicate *)predicate inTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion;
-+ (void)deleteAllInTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion;
++ (BOOL)deleteWithPredicate:(IHFPredicate *)predicate fromTable:(NSString *)tableName inDataBase:(IHFDatabase *)db isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion;
++ (BOOL)deleteAllFromTable:(NSString *)tableName inDataBase:(IHFDatabase *)db isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion;
 
 // **********************************************************************
 // ****************** CURL main by Primary keys *************************
@@ -186,8 +188,8 @@ Table name is the class name
 
 + (NSArray *)selectWithCustomPrimaryKeyValues:(NSArray <id>*)values;
 + (NSArray *)selectWithCustomPrimaryKeyValues:(NSArray <id>*)values isRecursive:(BOOL)recursive;
-+ (NSArray *)selectWithCustomPrimaryKeyValues:(NSArray <id>*)values inTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db;
-+ (NSArray *)selectWithCustomPrimaryKeyValues:(NSArray <id>*)values inTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db isRecursive:(BOOL)recursive;
++ (NSArray *)selectWithCustomPrimaryKeyValues:(NSArray <id>*)values fromTable:(NSString *)tableName inDataBase:(IHFDatabase *)db;
++ (NSArray *)selectWithCustomPrimaryKeyValues:(NSArray <id>*)values isRecursive:(BOOL)recursive fromTable:(NSString *)tableName inDataBase:(IHFDatabase *)db;
 
 /**
  Delete with values by custom primary keys , and the values orders is your custom primary keys orders. The cascade Default NO .
@@ -197,26 +199,50 @@ Table name is the class name
 + (BOOL)deleteWithCustomPrimaryKeyValues:(NSArray <id>*)values;
 + (BOOL)deleteWithCustomPrimaryKeyValues:(NSArray <id>*)values isCascade:(BOOL)cascade;
 + (BOOL)deleteWithCustomPrimaryKeyValues:(NSArray <id>*)values isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion;
++ (BOOL)deleteWithCustomPrimaryKeyValues:(NSArray<id> *)values isCascade:(BOOL)cascade fromTable:(NSString *)tableName inDataBase:(IHFDatabase *)db completeBlock:(IHFDBCompleteBlock)completion;
+
+/// Update columns by primary key values
++ (BOOL)updateColumns:(NSArray<NSString *> *)columns setValues:(NSArray<id> *)values customPrimaryKeyValues:(NSArray <id>*)primaryKeyValues;
++ (BOOL)updateColumns:(NSArray<NSString *> *)columns setValues:(NSArray<id> *)values customPrimaryKeyValues:(NSArray <id>*)primaryKeyValues completeBlock:(IHFDBCompleteBlock)completion;
++ (BOOL)updateColumns:(NSArray<NSString *> *)columns setValues:(NSArray<id> *)values customPrimaryKeyValues:(NSArray <id>*)primaryKeyValues fromTable:(NSString *)tableName inDataBase:(IHFDatabase *)db completeBlock:(IHFDBCompleteBlock)completion;
 
 // **********************************************************************
 // ****************** CURL main by column your set **********************
 // **********************************************************************
 + (NSArray *)selectWithColumns:(NSArray <NSString *>*)columns withValues:(NSArray <id>*)values;
 + (NSArray *)selectWithColumns:(NSArray <NSString *>*)columns withValues:(NSArray <id>*)values isRecursive:(BOOL)recursive;
-+ (NSArray *)selectWithColumns:(NSArray <NSString *>*)columns withValues:(NSArray <id>*)values isRecursive:(BOOL)recursive completeBlock:(IHFDBCompleteBlock)completion;
-
++ (NSArray *)selectWithColumns:(NSArray <NSString *>*)columns withValues:(NSArray <id>*)values isRecursive:(BOOL)recursive fromTable:(NSString *)tableName inDataBase:(IHFDatabase *)db;
++ (NSArray *)selectWithColumns:(NSArray<NSString *> *)columns withValues:(NSArray<id> *)values isRecursive:(BOOL)recursive fromTable:(NSString *)tableName inDataBase:(IHFDatabase *)db orderBy:(NSString *)orderBy isDesc:(BOOL)isDesc limitRange:(NSRange)limitRange;
+    
 + (BOOL)deleteWithColumns:(NSArray <NSString *>*)columns withValues:(NSArray <id>*)values;
 + (BOOL)deleteWithColumns:(NSArray <NSString *>*)columns withValues:(NSArray <id>*)values isCascade:(BOOL)cascade;
 + (BOOL)deleteWithColumns:(NSArray <NSString *>*)columns withValues:(NSArray <id>*)values isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion;
++ (BOOL)deleteWithColumns:(NSArray <NSString *>*)columns withValues:(NSArray <id>*)values isCascade:(BOOL)cascade fromTable:(NSString *)tableName inDataBase:(IHFDatabase *)db completeBlock:(IHFDBCompleteBlock)completion;
 
 /** Update data and set value for given columns , and the preciate come for his custom primary keys ..
  
  @prama values : values get can from self ..
  Warning : (It noly take effect when you only set a primary key) , If you NOT set the Custom primary key for the model , the select will error .
  */
-- (BOOL)updateColumns:(NSArray <NSString *>*)columns;
-- (BOOL)updateColumns:(NSArray <NSString *>*)columns setValues:(NSArray <id>*)values;
-+ (BOOL)updateColumns:(NSArray <NSString *>*)columns setValues:(NSArray <id>*)values predicate:(IHFPredicate *)preciate;
+- (BOOL)updateColumns:(NSArray<NSString *> *)columns;
+- (BOOL)updateColumns:(NSArray<NSString *> *)columns isCascade:(BOOL)cascade;
+- (BOOL)updateColumns:(NSArray<NSString *> *)columns setValues:(NSArray<id> *)values;
+- (BOOL)updateColumns:(NSArray<NSString *> *)columns setValues:(NSArray<id> *)values completeBlock:(IHFDBCompleteBlock)completion;
+- (BOOL)updateColumns:(NSArray<NSString *> *)columns setValues:(NSArray<id> *)values fromTable:(NSString *)tableName inDataBase:(IHFDatabase *)db isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion;
+
+/// Update value get from self model , cascade Defalut NO.
+- (BOOL)updateColumns:(NSArray<NSString *> *)columns fromTable:(NSString *)tableName inDataBase:(IHFDatabase *)db completeBlock:(IHFDBCompleteBlock)completion;
+
+- (BOOL)updateColumns:(NSArray<NSString *> *)columns fromTable:(NSString *)tableName inDataBase:(IHFDatabase *)db isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion;
+
++ (BOOL)updateColumns:(NSArray<NSString *> *)columns setValues:(NSArray<id> *)values predicate:(IHFPredicate *)preciate;
++ (BOOL)updateColumns:(NSArray<NSString *> *)columns setValues:(NSArray<id> *)values predicate:(IHFPredicate *)preciate completeBlock:(IHFDBCompleteBlock)completion;
++ (BOOL)updateColumns:(NSArray<NSString *> *)columns setValues:(NSArray<id> *)values predicate:(IHFPredicate *)preciate fromTable:(NSString *)tableName inDataBase:(IHFDatabase *)db completeBlock:(IHFDBCompleteBlock)completion;
+
++ (BOOL)updateColumns:(NSArray<NSString *> *)columns setValues:(NSArray<id> *)values conditionColumns:(NSArray *)conditionColumns conditionValues:(NSArray *)conditionValues;
++ (BOOL)updateColumns:(NSArray<NSString *> *)columns setValues:(NSArray<id> *)values conditionColumns:(NSArray *)conditionColumns conditionValues:(NSArray *)conditionValues completeBlock:(IHFDBCompleteBlock)completion;
++ (BOOL)updateColumns:(NSArray<NSString *> *)columns setValues:(NSArray<id> *)values conditionColumns:(NSArray *)conditionColumns conditionValues:(NSArray *)conditionValues fromTable:(NSString *)tableName inDataBase:(IHFDatabase *)db completeBlock:(IHFDBCompleteBlock)completion;
+
 
 // **********************************************************************
 // Delete dirty data
@@ -226,13 +252,9 @@ Table name is the class name
  Warning : If data update or insert in DB , it will change the dirty is 1! But if call the method , it will reset it 0! So you'd better call the method after network request success and DO update or insert ,it will help you to delete the dirty data。
  */
 
-+ (void)deleteDirtyDataWithPredicate:(IHFPredicate *)predicate;
-+ (void)deleteDirtyDataWithPredicate:(IHFPredicate *)predicate completeBlock:(IHFDBCompleteBlock)completion;
-
-+ (void)deleteDirtyDataWithPredicate:(IHFPredicate *)predicate isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion;
-
-+ (void)deleteDirtyDataWithPredicate:(IHFPredicate *)predicate inTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion;
-
++ (BOOL)deleteDirtyDataWithPredicate:(IHFPredicate *)predicate;
++ (BOOL)deleteDirtyDataWithPredicate:(IHFPredicate *)predicate completeBlock:(IHFDBCompleteBlock)completion;
++ (BOOL)deleteDirtyDataWithPredicate:(IHFPredicate *)predicate fromTable:(NSString *)tableName inDataBase:(IHFDatabase *)db completeBlock:(IHFDBCompleteBlock)completion;
 
 // Sql statement by user
 // Select

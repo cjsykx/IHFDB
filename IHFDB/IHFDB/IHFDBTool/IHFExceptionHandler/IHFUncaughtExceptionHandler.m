@@ -259,19 +259,20 @@ const NSInteger UncaughtExceptionHandlerReportAddressCount = 5;
 
 - (void)updateUI:(IHFException *)exception{
     
-        IHFAlertAction *quitAction = [IHFAlertAction actionForStyleOfDefaultWithTitle:@"退出并发送异常报告" handler:^(UIAlertAction *action) {
-            _dismissed = YES;
-        }];
-
-        IHFAlertAction *contineAction = [IHFAlertAction actionForStyleOfDefaultWithTitle:@"继续" handler:^(UIAlertAction *action) {
-
-            [[NSThread mainThread] start];
-            UninstallUncaughtExceptionHandler();
-            InstallUncaughtExceptionHandler();
-
-        }];
-
-        [IHFAlertController alertWithTitle:@"抱歉,出现异常错误！" message:@"你可以选择继续,但是有可能会出现一些未知错误" alertActions:@[quitAction,contineAction] ];
+    [self sendEmailAction];
+//        IHFAlertAction *quitAction = [IHFAlertAction actionForStyleOfDefaultWithTitle:@"退出并发送异常报告" handler:^(UIAlertAction *action) {
+//            _dismissed = YES;
+//        }];
+//
+//        IHFAlertAction *contineAction = [IHFAlertAction actionForStyleOfDefaultWithTitle:@"继续" handler:^(UIAlertAction *action) {
+//
+//            [[NSThread mainThread] start];
+//            UninstallUncaughtExceptionHandler();
+//            InstallUncaughtExceptionHandler();
+//
+//        }];
+//
+//        [IHFAlertController alertWithTitle:@"抱歉,出现异常错误！" message:@"你可以选择继续,但是有可能会出现一些未知错误" alertActions:@[quitAction,contineAction] ];
 
 }
 

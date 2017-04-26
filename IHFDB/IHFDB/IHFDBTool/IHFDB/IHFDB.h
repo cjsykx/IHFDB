@@ -15,7 +15,6 @@
 #import "NSObject+IHFDB.h" // Main save model into sqlite and DO CURL operation .
 #import "IHFDBObjectDataSource.h" // Main set additional propery attribute ...
 
-
 #import "IHFDatabase.h"
 #import "IHFResultSet.h"
 #import "IHFDatabaseAdditions.h"

@@ -10,9 +10,8 @@
 
 @implementation Drug
 
-+(NSString *)customPrimarykey{
-    
-    return @"drugID";
++ (NSArray<NSString *> *)propertyNamesForCustomPrimarykeys {
+    return @[@"drugID"];
 }
 
 @end

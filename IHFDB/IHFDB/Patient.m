@@ -9,24 +9,25 @@
 #import "Patient.h"
 
 @implementation Patient
-+ (NSDictionary *)relationshipDictForClassInArray{
++ (NSDictionary *)propertyNameDictForClassInArray {
     
     return @{
              @"drugs" : [Drug class],
+             @"patientImages" : [PatientImage class],
              };
 }
 
-+ (NSArray<NSString *> *)customPrimarykeys {
-    return @[@"patientID",@"name"];
++ (NSArray<NSString *> *)propertyNamesForCustomPrimarykeys {
+    return @[@"patientID",@"hostipalID"];
 }
 
-+ (NSDictionary *)propertyNameDictForMapper{
++ (NSDictionary *)propertyNameDictForMapper {
     return @{ @"mapperStr1" : @"mapperStr",
               @"mapperNumber1" :@"mapperNumber",
              };
 }
 
-+ (NSArray *)propertyNamesForIgnore{
++ (NSArray *)propertyNamesForIgnore {
     return @[@"idCard",@"height"];
 }
 

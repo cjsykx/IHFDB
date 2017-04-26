@@ -9,5 +9,8 @@
 #import "PatientImage.h"
 
 @implementation PatientImage
++ (NSArray<NSString *> *)propertyNamesForCustomPrimarykeys {
+    return @[@"imageId"];
+}
 
 @end

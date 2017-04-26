@@ -9,5 +9,7 @@
 #import <Foundation/Foundation.h>
 
 @interface PatientImage : NSObject
+@property (copy, nonatomic) NSString *imageId;
+@property (copy, nonatomic) NSString *imageName;
 
 @end

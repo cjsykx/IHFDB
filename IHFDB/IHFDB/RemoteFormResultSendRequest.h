@@ -5,8 +5,8 @@
 //  Created by chenjiasong on 16/12/13.
 //  Copyright © 2016年 IHEFE CO., LIMITED. All rights reserved.
 //
+#import <Foundation/Foundation.h>
 
-#import <IHFKit/IHFKit.h>
 #import "RemoteApplicationCreateRequest.h"
 
 /*
@@ -25,8 +25,4 @@
  */
 - (instancetype)initWithApplicationCreateRequest:(RemoteApplicationCreateRequest *)request;
 
-/**
- Send the Collaborative form
- */
-- (instancetype)initWithFormResult:(RemoteFormResult *)formResult;
 @end

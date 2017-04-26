@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <objc/runtime.h>
 
-typedef NS_OPTIONS(NSUInteger, IHFPropertyType) {
+typedef NS_ENUM(NSUInteger, IHFPropertyType) {
     
     IHFPropertyTypeModel               = 0x00, // Default , It not predicate!
     IHFPropertyTypeBOOL                = 0x01, // int 8,  c

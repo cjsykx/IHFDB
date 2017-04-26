@@ -32,7 +32,6 @@
 }
 
 + (instancetype)predicateWithString:(NSString *)string OrderBy:(NSString *)sortString {
-    
     IHFPredicate *predicate = [[IHFPredicate alloc] initWithString:string OrderBy:sortString];
     return predicate;
 }
@@ -40,7 +39,6 @@
 - (instancetype)initWithFormat:(NSString *)name, ... {
     self = [super init];
     if (self) {
-
         // Add '' for %@
         NSString *format = [name stringByReplacingOccurrencesOfString:@"%@" withString:@"'%@'"];
         va_list args;
@@ -94,14 +92,32 @@
 }
 
 #pragma mark - append AND and OR predicate
--(void)appendAnd_Predicate:(IHFPredicate *)and_predicate {
-    
-    self.predicateFormat = [NSString stringWithFormat:@"%@ AND %@",self.predicateFormat,and_predicate.predicateFormat];
+- (void)appendAnd_Predicate:(IHFPredicate *)and_predicate {
+    NSString *format;
+    if (self.predicateFormat && and_predicate.predicateFormat) {
+        format = [NSString stringWithFormat:@"%@ AND %@",self.predicateFormat,and_predicate.predicateFormat];
+    } else if (self.predicateFormat && !and_predicate.predicateFormat) {
+        format = [NSString stringWithFormat:@"%@",self.predicateFormat];
+    } else if (!self.predicateFormat && and_predicate.predicateFormat) {
+        format = [NSString stringWithFormat:@"%@",and_predicate.predicateFormat];
+    } else {
+        format = nil;
+    }
+    self.predicateFormat = format;
 }
 
--(void)appendOr_Predicate:(IHFPredicate *)or_predicate {
-    
-    self.predicateFormat = [NSString stringWithFormat:@"%@ OR %@",self.predicateFormat,or_predicate.predicateFormat];
+- (void)appendOr_Predicate:(IHFPredicate *)or_predicate {
+    NSString *format;
+    if (self.predicateFormat && or_predicate.predicateFormat) {
+        format = [NSString stringWithFormat:@"%@ OR %@",self.predicateFormat,or_predicate.predicateFormat];
+    } else if (self.predicateFormat && !or_predicate.predicateFormat) {
+        format = [NSString stringWithFormat:@"%@",self.predicateFormat];
+    } else if (!self.predicateFormat && or_predicate.predicateFormat) {
+        format = [NSString stringWithFormat:@"%@",or_predicate.predicateFormat];
+    } else {
+        format = nil;
+    }
+    self.predicateFormat = format;
 }
 
 

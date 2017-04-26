@@ -39,11 +39,9 @@ static NSMutableDictionary *_propertyNameDict;
 
 // use single instance 
 + (instancetype)shareDataBaseExecute {
-    
     static id shareDataBaseExecute;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        
         shareDataBaseExecute = [[IHFDataBaseExecute alloc] initWithSqliteName:IHFDBSqliteName];
         _propertyNameDict = [NSMutableDictionary dictionary];
     });
@@ -53,7 +51,6 @@ static NSMutableDictionary *_propertyNameDict;
 #pragma mark - init the sqlite name
 - (instancetype)initWithSqliteName:(NSString *)SqliteName {
     self = [super init];
-    
     if (self) {
         self.sqliteName = SqliteName;
     }
@@ -69,7 +66,6 @@ static NSMutableDictionary *_propertyNameDict;
     
     // create IHFDatabaseQueue
     NSString *dataBasePath = [[NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) lastObject] stringByAppendingPathComponent:_sqliteName];
-    
     NSLog(@"dataBasePath = %@",dataBasePath);
     _queue = [IHFDatabaseQueue databaseQueueWithPath:dataBasePath];
 }
@@ -86,12 +82,12 @@ static NSMutableDictionary *_propertyNameDict;
         if (completion) completion(YES,db);
         return YES;
     }
+    
     if (db) {
         BOOL success = [db executeUpdate:createTableSql];
         if (completion) completion(success,db);
         return success;
     }
-    
     // If not db , create db in _queue
     return [self executeUpdateWithClass:newClass sqlStatement:createTableSql completeBlock:completion];
 }
@@ -139,7 +135,7 @@ static NSMutableDictionary *_propertyNameDict;
             [createTableSql appendString:colum];
 
             if ([property.typeString isEqualToString:newTableName]) return ; // Void the one-to-one relation class is self
-            
+    
              [self createTableWithClass:property.objectClass customTableName:nil inDataBase:db completeBlock:nil];
         } else {
             NSString *colum = [NSString stringWithFormat:@"%@ %@,",property.propertyName,[self sqlTypeNameWithTypeName:property.typeString]];
@@ -175,7 +171,6 @@ static NSMutableDictionary *_propertyNameDict;
     NSMutableString *selectSql = [NSMutableString stringWithFormat:@"%@ %@,%@ from %@ ",_select,IHFDBPrimaryKey,IHFDBDirtyKey, newTableName];
     
     if (predicate) {
-        
         if (predicate.predicateFormat) {
             [selectSql appendFormat:@"WHERE %@ ",predicate.predicateFormat];
         }
@@ -197,14 +192,11 @@ static NSMutableDictionary *_propertyNameDict;
 
 /** Return sql statement with all colonm */
 - (NSString *)selectSqlStatementWithClass:(Class)newClass predicate:(IHFPredicate *)predicate customTableName:(NSString *)tableName {
-    
     NSString *newTableName = NSStringFromClass(newClass);
     if (tableName) newTableName = tableName;
     
-        NSMutableString *selectSql = [NSMutableString stringWithFormat:@"%@ * FROM %@ ",_select,newTableName];
-
+    NSMutableString *selectSql = [NSMutableString stringWithFormat:@"%@ * FROM %@ ",_select,newTableName];
     if (predicate) {
-        
         if (predicate.predicateFormat) {
             [selectSql appendFormat:@"WHERE %@ ",predicate.predicateFormat];
         }
@@ -215,7 +207,7 @@ static NSMutableDictionary *_propertyNameDict;
             [selectSql appendFormat:@"ORDER BY %@ %@ ",predicate.orderBy,desc];
         }
     
-        if(!NSEqualRanges(predicate.limitRange, NSMakeRange(0, 0))) {
+        if (!NSEqualRanges(predicate.limitRange, NSMakeRange(0, 0))) {
             NSRange limitRange = predicate.limitRange;
             [selectSql appendFormat:@"LIMIT %ld OFFSET %ld ",(long)limitRange.length,(long)limitRange.location];
         }
@@ -234,42 +226,43 @@ static NSMutableDictionary *_propertyNameDict;
     
     Class srcClass = [[relationTables firstObject].destinationObject class];
     
-    if ([[srcClass propertiesForTypeOfArray] count]) { // If have array , so it need delete relation table
-        
-        [relationTables enumerateObjectsUsingBlock:^(IHFRelationTable * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop)  {
-            [inSqlStatement appendFormat:@"%ld,",(long)obj.destinationObjectID];
-        }];
-        
-        if ([inSqlStatement length])  {
-            [inSqlStatement deleteCharactersInRange:NSMakeRange(inSqlStatement.length -  1, 1)];
-            [self deleteRelationUseIn_SqlStatement:inSqlStatement forClass:srcClass inDataBase:db];
-        }
-    }
-    
-    [[srcClass propertiesForTypeOfArray] enumerateObjectsUsingBlock:^(IHFProperty * _Nonnull property, NSUInteger idx, BOOL * _Nonnull stop) {
-        NSMutableArray *muModels = [NSMutableArray array];
-        [relationTables enumerateObjectsUsingBlock:^(IHFRelationTable * _Nonnull relation, NSUInteger idx, BOOL * _Nonnull stop) {
-            
-            id sourceObject = relation.destinationObject;
-            id modelArray = [sourceObject valueWithProperty:property];
+    // Insert to-many relation need delete relation table value
+    // It need delete relation first (void dirty) and then insert
+    NSArray <IHFProperty *>* arrayProperties = [srcClass propertiesForTypeOfArray];
+    [arrayProperties enumerateObjectsUsingBlock:^(IHFProperty * _Nonnull property, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSMutableArray *muModels = [NSMutableArray array]; // For save
+        [relationTables enumerateObjectsUsingBlock:^(IHFRelationTable * _Nonnull table, NSUInteger idx, BOOL * _Nonnull stop)  {
+            [inSqlStatement appendFormat:@"%ld,",(long)table.destinationObjectID];
+            // After delete , begin save
+            id sourceObject = table.destinationObject;
+            id modelArray = [sourceObject valueWithProperty:property]; // Get value for bulid relation
             
             [modelArray enumerateObjectsUsingBlock:^(id <IHFDBObejctDataSource> _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-                
+                // Table for update
                 IHFRelationTable *relationTable = [[IHFRelationTable alloc] initWithSourceObject:sourceObject destinationObject:obj relationName:property.propertyName relation:IHFRelationOneToMany];
-                relationTable.sourceObjectID = relation.destinationObjectID;
+                relationTable.sourceObjectID = table.destinationObjectID;
                 
                 [muModels addObject:relationTable];
             }];
         }];
         
+        // Begin delete
+        if ([inSqlStatement length]) {
+            [inSqlStatement deleteCharactersInRange:NSMakeRange(inSqlStatement.length -  1, 1)]; // delete ","
+            NSString *tableName = [NSString stringWithFormat:@"%@_%@_Relation",NSStringFromClass(srcClass),property.propertyName];
+            [weakSelf deleteRelationUseIn_SqlStatement:inSqlStatement forTableName:tableName inDataBase:db];
+        }
+
+        // After delete , begin save
         if ([muModels count]) { // For use 'in' statement
-            [self executeUpdateWithModels:muModels useTransaction:YES inTableName:nil inDataBase:db rollback:rollBack updateCompletion:^(BOOL success,  NSArray  <IHFRelationTable *> *relationTables, IHFDatabase *db, BOOL *rollback)  {
-                
+            [self executeUpdateWithModels:muModels useTransaction:YES fromTable:nil inDataBase:db rollback:rollBack updateCompletion:^(BOOL success,  NSArray  <IHFRelationTable *> *relationTables, IHFDatabase *db, BOOL *rollback)  {
+                // To create relation table
                 [weakSelf enumerateRelationTables:relationTables inDataBase:db rollBack:rollBack];
             }];
         }
     }];
     
+    // For type of model , one-one
     [[srcClass propertiesForTypeOfModel] enumerateObjectsUsingBlock:^(IHFProperty * _Nonnull property, NSUInteger idx, BOOL * _Nonnull stop)  {
         
         NSMutableArray *muModels = [NSMutableArray array];
@@ -286,8 +279,7 @@ static NSMutableDictionary *_propertyNameDict;
         }];
         
         if ([muModels count]) {
-            [self executeUpdateWithModels:muModels useTransaction:YES inTableName:nil inDataBase:db rollback:rollBack updateCompletion:^(BOOL success,NSArray <IHFRelationTable *> *relationTables, IHFDatabase *db, BOOL *rollback)  {
-                
+            [self executeUpdateWithModels:muModels useTransaction:YES fromTable:nil inDataBase:db rollback:rollBack updateCompletion:^(BOOL success,NSArray <IHFRelationTable *> *relationTables, IHFDatabase *db, BOOL *rollback)  {
                 [weakSelf enumerateRelationTables:relationTables inDataBase:db rollBack:rollBack];
             }];
         }
@@ -296,28 +288,28 @@ static NSMutableDictionary *_propertyNameDict;
 
 #pragma mark - insert
 
-- (BOOL)insertIntoClassWithModel:(id)newModel inTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db completeBlock:(IHFDBCompleteBlock)completion {
-    return [self insertIntoClassWithModelArray:[NSArray arrayWithObject:newModel] inTableName:tableName inDataBase:db completeBlock:completion];
+- (BOOL)insertIntoClassWithModel:(id)newModel fromTable:(NSString *)tableName inDataBase:(IHFDatabase *)db completeBlock:(IHFDBCompleteBlock)completion {
+    return [self insertIntoClassWithModelArray:[NSArray arrayWithObject:newModel] fromTable:tableName inDataBase:db completeBlock:completion];
 }
 
-- (BOOL)insertIntoClassWithModelArray:(NSArray *)ModelArray inTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db completeBlock:(IHFDBCompleteBlock)completion {
+- (BOOL)insertIntoClassWithModelArray:(NSArray *)ModelArray fromTable:(NSString *)tableName inDataBase:(IHFDatabase *)db completeBlock:(IHFDBCompleteBlock)completion {
     
     __block NSMutableArray *relationTableArray = [NSMutableArray array];
     
     // Model array change into relation table array
-    [ModelArray enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop)  {
-        
+    [ModelArray enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         IHFRelationTable *relation = [[IHFRelationTable alloc] initWithSourceObject:nil destinationObject:obj relationName:nil relation:IHFRelationNone];
         [relationTableArray addObject:relation];
     }];
     
     BOOL rollBack = NO;
     
+    __weak typeof(self) weakSelf = self;
     // Execute insert or update
-    BOOL result = [self executeUpdateWithModels:relationTableArray useTransaction:YES inTableName:tableName inDataBase:db rollback:&rollBack updateCompletion:^(BOOL success,NSArray  <IHFRelationTable *> *relationTables, IHFDatabase *db, BOOL *rollback)  {
-        
+    // TODO: if need cascade .. 
+    BOOL result = [self executeUpdateWithModels:relationTableArray useTransaction:YES fromTable:tableName inDataBase:db rollback:&rollBack updateCompletion:^(BOOL success,NSArray  <IHFRelationTable *> *relationTables, IHFDatabase *db, BOOL *rollback)  {
         // If success insert or update , enmumerate it relation to insert or update
-        [self enumerateRelationTables:relationTables inDataBase:db rollBack:rollback];
+        [weakSelf enumerateRelationTables:relationTables inDataBase:db rollBack:rollback];
     }];
     
     if (completion) completion(result,db);
@@ -325,22 +317,19 @@ static NSMutableDictionary *_propertyNameDict;
 }
 
 // For insert
-- (BOOL)executeUpdateWithModels:(NSArray <IHFRelationTable *>*)newModels useTransaction:(BOOL)useTransaction inTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db rollback:(BOOL *)rollBack updateCompletion:(IHFDBUpdateCompleteBlock)updateCompletion {
-    
+- (BOOL)executeUpdateWithModels:(NSArray <IHFRelationTable *>*)newModels useTransaction:(BOOL)useTransaction fromTable:(NSString *)tableName inDataBase:(IHFDatabase *)db rollback:(BOOL *)rollBack updateCompletion:(IHFDBUpdateCompleteBlock)updateCompletion {
     __block BOOL result = YES;
-
     if (db) {
-        result = [self insertModels:newModels inTableName:tableName inDataBase:db rollback:rollBack updateCompletion:updateCompletion];
+        result = [self insertModels:newModels fromTable:tableName inDataBase:db rollback:rollBack updateCompletion:updateCompletion];
     } else {
          [_queue inTransaction:^(IHFDatabase *db, BOOL *rollback)  {
-            result = [self insertModels:newModels inTableName:tableName inDataBase:db rollback:rollBack updateCompletion:updateCompletion];
+            result = [self insertModels:newModels fromTable:tableName inDataBase:db rollback:rollBack updateCompletion:updateCompletion];
         }];
     }
     return result;
 }
 
-- (BOOL)insertModels:(NSArray <IHFRelationTable *>*)newModels inTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db rollback:(BOOL *)rollback updateCompletion:(IHFDBUpdateCompleteBlock)updateCompletion {
-    
+- (BOOL)insertModels:(NSArray <IHFRelationTable *>*)newModels fromTable:(NSString *)tableName inDataBase:(IHFDatabase *)db rollback:(BOOL *)rollback updateCompletion:(IHFDBUpdateCompleteBlock)updateCompletion {
     __block BOOL result = YES;
     __block BOOL isUpdate = NO;
 
@@ -381,7 +370,6 @@ static NSMutableDictionary *_propertyNameDict;
                 
                 // If the objectID > 0 , mean it have exist in the data base
                 isUpdate = objectID > 0 ? YES : NO;
-                
             } else {
                 // If NOT have the custom key , it only insert
                 isUpdate = NO;
@@ -389,18 +377,15 @@ static NSMutableDictionary *_propertyNameDict;
         }
         if (isUpdate) {
             statement = [self updateStatementWithModel:obj.destinationObject
-                                             predicate:predicate inTableName:tableName];
+                                             predicate:predicate fromTable:tableName];
         } else { // Insert
-            statement = [self insertStatementWithModel:obj.destinationObject inTableName:tableName];
+            statement = [self insertStatementWithModel:obj.destinationObject fromTable:tableName];
         }
 
         // Insert the destinationObject!
         BOOL success = [db executeUpdate:statement.sql withArgumentsInArray:statement.arguments];
-        
         if (success) {
-            
             NSString *selectTableName = NSStringFromClass([obj.destinationObject class]);
-            
             if (!obj.sourceObject && tableName)  {  // If is super model , else sub model insert table name still is its class name!
                 selectTableName = tableName;
             }
@@ -410,7 +395,7 @@ static NSMutableDictionary *_propertyNameDict;
                 
             } else {
                 // Fetch maxID after the object insert success!
-                obj.destinationObjectID = [self maxObjectIDIntableName:selectTableName inDataBase:db];
+                obj.destinationObjectID = [self maxObjectIDfromTable:selectTableName inDataBase:db];
             }
             
             if (obj.sourceObject) { // Have source , it need create relation table !
@@ -444,7 +429,6 @@ static NSMutableDictionary *_propertyNameDict;
                     }];
                 }
             }
-            
         } else { // Not success DO update or insert
             *rollback = YES;
             *stop = YES;
@@ -457,65 +441,93 @@ static NSMutableDictionary *_propertyNameDict;
 }
 
 - (IHFSQLStatement *)insertStatementWithModel:(id)newModel
-                           inTableName:(NSString *)tableName {
+                           fromTable:(NSString *)tableName {
 
     NSString *insertTableName = NSStringFromClass([newModel class]);
     if (tableName) insertTableName = tableName;
     
     NSMutableString *insertSql = [NSMutableString stringWithFormat:@"%@ %@ ",_insert,insertTableName];
     [insertSql appendString:[[newModel class] insertSqlStatement]];
-    
     return [[IHFSQLStatement alloc] initWithSql:insertSql arguments:[newModel argumentsForStatement]];
 }
 
 #pragma mark - update
 
-- (void)updateModel:(id)newModel predicate:(IHFPredicate *)predicate customTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion {
+- (BOOL)updateModel:(id)newModel predicate:(IHFPredicate *)predicate customTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db isCascade:(BOOL)cascade updateColumns:(NSArray *)columns updateValues:(NSArray *)values completeBlock:(IHFDBCompleteBlock)completion {
+    // Model must NOT array ...
+    if ([newModel isKindOfClass:[NSArray class]]) {
+        NSAssert(true != true, @"Can NOT update array use predicate");
+        return NO;
+    }
     
+    __block BOOL result = NO;
+    __weak typeof(self) weakSelf = self;
     if (db) {
-        [self executeForUpdateModel:newModel
+        result = [self executeForUpdateModel:newModel
                           predicate:predicate
                     customTableName:tableName
                          inDataBase:db
                           isCascade:cascade
+                      updateColumns:columns
+                        updateValues:values
                       completeBlock:completion];
     } else {
         [_queue inTransaction:^(IHFDatabase *db, BOOL *rollback) {
-            [self executeForUpdateModel:newModel
-                              predicate:predicate
-                        customTableName:tableName
-                             inDataBase:db
-                              isCascade:cascade
-                          completeBlock:completion];
+            result = [weakSelf executeForUpdateModel:newModel
+                                       predicate:predicate
+                                 customTableName:tableName
+                                      inDataBase:db
+                                       isCascade:cascade
+                                   updateColumns:columns
+                                    updateValues:values
+                                   completeBlock:completion];
         }];
     }
+    return result;
 }
 
-- (void)executeForUpdateModel:(id)newModel predicate:(IHFPredicate *)predicate customTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion {
-    
-    if (cascade) {
-        
-        NSArray *selects = [[newModel class] selectWithPredicate:predicate inTableName:tableName inDataBase:db];
-        
-        // Delete all relation for reset relation
-        [[newModel class] deleteWithPredicate:predicate inTableName:tableName inDataBase:db completeBlock:^(BOOL success,IHFDatabase *db)  {
-            
-            // Reset model and relation
-            __weak typeof(self) weakSelf = self;
-            [selects enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop)  {
-                [weakSelf insertIntoClassWithModel:newModel inTableName:tableName inDataBase:db completeBlock:completion];
-            }];
-        }];
-    } else { // Only update model , not update it's relation
-        
+- (BOOL)executeForUpdateModel:(id)newModel predicate:(IHFPredicate *)predicate customTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db isCascade:(BOOL)cascade updateColumns:(NSArray *)columns updateValues:(NSArray *)values completeBlock:(IHFDBCompleteBlock)completion {
+    // Need cascade Or not
+    __block BOOL result = NO;
+    Class targetClass = [newModel class];
+ 
+    if (!columns) {
         IHFSQLStatement *statement = [self updateStatementWithModel:newModel
-                                                       predicate:predicate inTableName:tableName];
-        BOOL success = [db executeUpdate:statement.sql withArgumentsInArray:statement.arguments];
-        if (completion) completion(success,db);
+                                                          predicate:predicate
+                                                          fromTable:tableName];
+        result = [db executeUpdate:statement.sql withArgumentsInArray:statement.arguments];
+    } else { // have update columns
+        IHFSQLStatement *stament = [[IHFSQLStatement alloc] initWithSql:[targetClass updateSqlStatementWithColumns:columns withPredicate:predicate fromTable:tableName] arguments:values];
+        result = [self executeUpdateWithClass:targetClass statements:@[stament] inDataBase:db useTransaction:NO completeBlock:nil];
     }
+    
+    if (cascade) { // Delete relation and reset ..
+        BOOL rollBack = NO;
+        __block NSMutableArray *relationTableArray = [NSMutableArray array];
+        IHFRelationTable *relation = [[IHFRelationTable alloc] initWithSourceObject:nil destinationObject:newModel relationName:nil relation:IHFRelationNone];
+        [relationTableArray addObject:relation];
+        [self enumerateRelationTables:relationTableArray inDataBase:db rollBack:&rollBack];
+    }
+    if (completion) completion(result,db);
+    return result;
 }
 
-- (IHFSQLStatement *)updateStatementWithModel:(id)newModel predicate:(IHFPredicate *)predicate inTableName:(NSString *)tableName {
+- (BOOL)resetAllWithModels:(id)newModel predicate:(IHFPredicate *)predicate customTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db isCascade:(BOOL)cascade {
+    __block BOOL result = NO;
+    Class targetClass = [newModel class];
+    NSArray *selects = [targetClass selectWithPredicate:predicate fromTable:tableName inDataBase:db];
+    // Delete all relation for reset relation
+    [targetClass deleteWithPredicate:predicate fromTable:tableName inDataBase:db completeBlock:^(BOOL success,IHFDatabase *db)  {
+        // Reset model and relation
+        __weak typeof(self) weakSelf = self;
+        [selects enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop)  {
+            result = [weakSelf insertIntoClassWithModel:newModel fromTable:tableName inDataBase:db completeBlock:nil];
+        }];
+    }];
+    return result;
+}
+
+- (IHFSQLStatement *)updateStatementWithModel:(id)newModel predicate:(IHFPredicate *)predicate fromTable:(NSString *)tableName {
     
     NSString *newTableName = NSStringFromClass([newModel class]);
     if (tableName) newTableName = tableName;
@@ -550,18 +562,20 @@ static NSMutableDictionary *_propertyNameDict;
     return deleteSql;
 }
 
-- (void)deleteFromClass:(Class)newClass predicate:(IHFPredicate *)predicate customTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion {
-    
+- (BOOL)deleteFromClass:(Class)newClass predicate:(IHFPredicate *)predicate customTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion {
+    // Do in given db , if not db , it need Transaction to do ...
+    __block BOOL result;
     if (db) {
-        [self executeDeleteFromClass:newClass predicate:predicate customTableName:tableName inDataBase:db isCascade:cascade completeBlock:completion];
+        result = [self executeDeleteFromClass:newClass predicate:predicate customTableName:tableName inDataBase:db isCascade:cascade completeBlock:completion];
     } else {
         [_queue inTransaction:^(IHFDatabase *db, BOOL *rollback) {
-            [self executeDeleteFromClass:newClass predicate:predicate customTableName:tableName inDataBase:db isCascade:cascade completeBlock:completion];
+            result = [self executeDeleteFromClass:newClass predicate:predicate customTableName:tableName inDataBase:db isCascade:cascade completeBlock:completion];
         }];
     }
+    return result;
 }
 
-- (void)executeDeleteFromClass:(Class)newClass predicate:(IHFPredicate *)predicate customTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion {
+- (BOOL)executeDeleteFromClass:(Class)newClass predicate:(IHFPredicate *)predicate customTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion {
     
     // selected the models you will delete ! In order to fetch the Obejct ID for Delete Relation for one-to-many and foreign key for One-to-One !
     NSArray *modelArray = [self selectFromClass:newClass predicate:predicate customTableName:tableName inDataBase:db isRecursive:NO];
@@ -578,70 +592,65 @@ static NSMutableDictionary *_propertyNameDict;
                                    inDataBase:db isCascade:cascade];
         }
         if (completion) completion(success,db);
+        return success;
     } else {
-        NSLog(@"warning : what you want to delete %@ not exist in the DB",NSStringFromClass(newClass));
+        NSLog(@"What you want to delete %@ data not exist in the DB",NSStringFromClass(newClass));
+        return YES;
     }
 }
 
-// in_SqlStatement like (1,2)
-- (void)deleteRelationUseIn_SqlStatement:(NSString *)in_SqlStatement forClass:(Class)aClass inDataBase:(IHFDatabase *)db {
-    
+/// Delete in_SqlStatement like (1,2) , USE class ..
+- (void)deleteRelationUseIn_SqlStatement:(NSString *)in_SqlStatement
+                                forClass:(Class)aClass inDataBase:(IHFDatabase *)db {
+    __weak typeof(self) weakSelf = self;
     NSArray <IHFProperty *>*properies = [aClass propertiesForTypeOfArray];
-    __block NSString *deleteStament ;
-    
     [properies enumerateObjectsUsingBlock:^(IHFProperty *_Nonnull property, NSUInteger idx, BOOL * _Nonnull stop) {
-        
         NSString *tableName = [NSString stringWithFormat:@"%@_%@_Relation",NSStringFromClass(aClass),property.propertyName];
-        
-        deleteStament = [NSString stringWithFormat:@"delete from %@ where %@ in (%@)",tableName,@"sourceObjectID",in_SqlStatement];
-        [db executeUpdate:deleteStament];
+        [weakSelf deleteRelationUseIn_SqlStatement:in_SqlStatement forTableName:tableName inDataBase:db];
     }];
 }
 
+/// Delete in_SqlStatement like (1,2) , use tableName ..
+- (void)deleteRelationUseIn_SqlStatement:(NSString *)in_SqlStatement forTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db {
+    if (!in_SqlStatement && !tableName && ![in_SqlStatement length] && ![tableName length]) return;
+    NSString *deleteStament = [NSString stringWithFormat:@"delete from %@ where %@ in (%@)",tableName,@"sourceObjectID",in_SqlStatement];
+    [db executeUpdate:deleteStament];
+}
+
 - (void)deleteRelationForModelArray:(NSArray<id <IHFDBObejctDataSource>> *)modelArray inDataBase:(IHFDatabase *)db isCascade:(BOOL)cascade {
-    
+    // Delete relation ...
     [modelArray enumerateObjectsUsingBlock:^(id _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        
         [[obj class] enumeratePropertiesUsingBlock:^(IHFProperty *property, NSUInteger idx, BOOL *stop) {
-
+            // Judge Array or model
             if (property.type == IHFPropertyTypeArray) { // deal with array
-
                 if (property.objectClass) {
-                    
                     IHFRelationTable *table = [[IHFRelationTable alloc] initWithSourceObject:obj
                                                                            destinationObject:[[property.objectClass alloc] init]
                                                                                 relationName:property.propertyName
                                                                                     relation:IHFRelationOneToMany];
                     id <IHFDBObejctDataSource> model = obj;
                     table.sourceObjectID = model.objectID;
-                    
                     NSArray *models;
                     
                     if (cascade) { // Is cascade , get the relation models !
                         models = [table selectRelationsInDataBase:db];
                     }
-                    
                     [table deleteInDataBase:db completeBlock:^(BOOL success,IHFDatabase *db) { // delete relation table
-
                         if (cascade) { // Is cascade , Not noly delete the relation table , but also the table itself!
-
                             [models enumerateObjectsUsingBlock:^(id <IHFDBObejctDataSource> _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-                                
                                 NSString *predicateStr = [NSString stringWithFormat:@"%@ = %ld",IHFDBPrimaryKey,(long)obj.objectID];
                                 IHFPredicate *predicate = [IHFPredicate predicateWithString:predicateStr];
-                                [[obj class] deleteWithPredicate:predicate inTableName:nil inDataBase:db isCascade:YES completeBlock:nil];
+                                [[obj class] deleteWithPredicate:predicate fromTable:nil inDataBase:db isCascade:YES completeBlock:nil];
                             }];
                         }
                     }];
                 }
             } else if (property.type == IHFPropertyTypeModel) {
-                
                 if (cascade) {
                     id value = [obj valueWithProperty:property];
-                    
                     NSString *predicateStr = [NSString stringWithFormat:@"%@ = %ld",IHFDBPrimaryKey,(long)value];
                     IHFPredicate *predicate = [IHFPredicate predicateWithString:predicateStr];
-                    [property.objectClass deleteWithPredicate:predicate inTableName:nil inDataBase:db isCascade:YES completeBlock:nil];
+                    [property.objectClass deleteWithPredicate:predicate fromTable:nil inDataBase:db isCascade:YES completeBlock:nil];
                 }
             }
         }];
@@ -651,7 +660,6 @@ static NSMutableDictionary *_propertyNameDict;
 #pragma mark -  Execute sql statment by user
 
 - (NSArray<id<IHFDBObejctDataSource>> *)executeQueryWithClass:(Class)newClass sqlStatement:(NSString *)sqlStatement inDataBase:(IHFDatabase *)db isRecursive:(BOOL)recursive {
-    
     __block NSArray *modelArray = [NSArray array];
     __weak typeof(self) weakSelf = self;
     if (db) {
@@ -667,14 +675,11 @@ static NSMutableDictionary *_propertyNameDict;
 }
 
 - (NSArray *)modelsWithClass:(Class)newClass IHFResultSet:(IHFResultSet *)rs inDataBase:(IHFDatabase *)db isRecursive:(BOOL)recursive {
-    
     NSMutableArray *models = [NSMutableArray array];
     __weak typeof(self) weakSelf = self;
-
     while (rs.next) {
-        
         NSObject <IHFDBObejctDataSource> *model = [[newClass alloc] init];
-        
+    
         // Model get the object ID and Dirty
         [model setObjectID:[rs intForColumn:IHFDBPrimaryKey]];
         [model setDirty:[rs intForColumn:IHFDBDirtyKey]];
@@ -682,10 +687,8 @@ static NSMutableDictionary *_propertyNameDict;
         [[newClass class] enumeratePropertiesUsingBlock:^(IHFProperty *property, NSUInteger idx, BOOL *stop) {
             [weakSelf setValueWithFMResult:rs forModel:model property:property isRecursive:recursive inDataBase:db];
         }];
-        
         [models addObject:model];
     }
-
     return models;
 }
 
@@ -697,25 +700,22 @@ static NSMutableDictionary *_propertyNameDict;
 #pragma mark -  select count
 
 - (NSInteger)selectCountFromClass:(Class)newClass predicate:(IHFPredicate *)predicate customTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db {
-    
     NSString *selectSql = [self selectSystemColumnsqlStatementWithClass:newClass predicate:predicate customTableName:tableName];
-    
     if (db) {
         IHFResultSet *rs = [db executeQuery:selectSql];
-        return [self countWithresultSet:rs];
+        return [self countWithResultSet:rs];
     } else {
         __weak typeof(self) weakSelf = self;
         __block NSInteger count;
         [_queue inDatabase:^(IHFDatabase *db) {
             IHFResultSet *rs = [db executeQuery:selectSql];
-            count =  [weakSelf countWithresultSet:rs];
+            count =  [weakSelf countWithResultSet:rs];
         }];
         return count;
     }
 }
 
-- (NSInteger)countWithresultSet:(IHFResultSet *)rs {
-    
+- (NSInteger)countWithResultSet:(IHFResultSet *)rs {
     NSInteger count = 0;
     while (rs.next)  { count++; }
     return count;
@@ -842,7 +842,6 @@ static NSMutableDictionary *_propertyNameDict;
                 func(model,setSel,[NSJSONSerialization JSONObjectWithData:obj options:kNilOptions error:nil]);
             } break;
             case IHFPropertyTypeClass : {
-                
                 NSString *obj = [rs stringForColumn:key];
                 if (obj || ![obj isEqualToString:@"(null)"]) {
                     void (*func) (id,SEL,Class) = (void*)imp;
@@ -939,45 +938,46 @@ static NSMutableDictionary *_propertyNameDict;
 
 - (BOOL)executeUpdateWithClass:(Class)newClass statements:(NSArray<IHFSQLStatement *> *)statements inDataBase:(IHFDatabase *)db useTransaction:(BOOL)useTransaction completeBlock:(IHFDBCompleteBlock)completion {
     __block BOOL result = YES;
-    if (useTransaction) { // If execute update fail , it will be roll back
-        
-        [_queue inTransaction:^(IHFDatabase *db, BOOL *rollback) {
-            
-            [statements enumerateObjectsUsingBlock:^(IHFSQLStatement * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-                BOOL success = [db executeUpdate:obj.sql withArgumentsInArray:obj.arguments];
-                if (!success)  {
-                    if(completion) completion(success,db);
-                    result = NO;
-                    *stop = YES;
-                    *rollback = YES; // roll back
-                }
-            }];
-            if (result) {
-                if(completion) completion(YES,db);
+    __block IHFDatabase *newDb = db;
+    
+    if (db) {
+        [statements enumerateObjectsUsingBlock:^(IHFSQLStatement * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            result = [db executeUpdate:obj.sql withArgumentsInArray:obj.arguments];
+            if (!result)  {
+                *stop = YES;
             }
         }];
     } else {
-        [_queue inDatabase:^(IHFDatabase *db) {
-            [statements enumerateObjectsUsingBlock:^(IHFSQLStatement * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-                
-                BOOL success = [db executeUpdate:obj.sql withArgumentsInArray:obj.arguments];
-                if (!success) {
-                    if(completion) completion(success,db);
-                    result = NO;
-                    *stop = YES;
-                }
+        if (useTransaction) { // If execute update fail , it will be roll back
+            [_queue inTransaction:^(IHFDatabase *db, BOOL *rollback) {
+                newDb = db;
+                [statements enumerateObjectsUsingBlock:^(IHFSQLStatement * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                    result = [db executeUpdate:obj.sql withArgumentsInArray:obj.arguments];
+                    if (!result)  {
+                        *stop = YES;
+                        *rollback = YES; // roll back
+                    }
+                }];
             }];
-            if (result) {
-                if(completion) completion(YES,db);
-            }
-        }];
+        } else {
+            [_queue inDatabase:^(IHFDatabase *db) {
+                newDb = db;
+                [statements enumerateObjectsUsingBlock:^(IHFSQLStatement * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                    result = [db executeUpdate:obj.sql withArgumentsInArray:obj.arguments];
+                    if (!result) {
+                        *stop = YES;
+                    }
+                }];
+            }];
+        }
     }
+    if (completion) completion(result,newDb);
     return result;
 }
 
 #pragma mark -  delete dirty data
-- (void)deleteDirtyDataFromClass:(Class)newClass predicate:(IHFPredicate *)predicate customTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion {
-        
+- (BOOL)deleteDirtyDataFromClass:(Class)newClass predicate:(IHFPredicate *)predicate customTableName:(NSString *)tableName inDataBase:(IHFDatabase *)db isCascade:(BOOL)cascade completeBlock:(IHFDBCompleteBlock)completion {
+    __block BOOL result = NO;
     // To get resetDirtySql first!
     NSString *resetDirtySql = [self resetDirtySqlStatementWithClass:newClass customTableName:tableName predicate:predicate];
     
@@ -989,10 +989,9 @@ static NSMutableDictionary *_propertyNameDict;
     NSString *selectedStatment = [self selectSystemColumnsqlStatementWithClass:newClass predicate:predicate customTableName:tableName];
 
     if (db) {
-    
         IHFResultSet *rs = [db executeQuery:selectedStatment];
         NSMutableString *inSqlStatement = [NSMutableString string];
-        
+
         while (rs.next) {
             [inSqlStatement appendFormat:@"%ld,",(long)[rs intForColumn:IHFDBPrimaryKey]];
         }
@@ -1000,22 +999,20 @@ static NSMutableDictionary *_propertyNameDict;
         if ([inSqlStatement length]) {
             [inSqlStatement deleteCharactersInRange:NSMakeRange(inSqlStatement.length -  1, 1)];
         }
-        
         // delete dirty is 0
         NSString *deleteSql = [self deleteStatementWithClass:newClass predicate:predicate customTableName:tableName];
         BOOL success = [db executeUpdate:deleteSql];
-        
         if (success) {
-            
             // delete Model dirty is 0 relation table!
             if ([inSqlStatement length])  {
                 [self deleteRelationUseIn_SqlStatement:inSqlStatement forClass:newClass inDataBase:db];
             }
-            
             // reset dirty is 1
-            [db executeUpdate:resetDirtySql];
+            result = [db executeUpdate:resetDirtySql];
         }
-        
+        if (completion) {
+            completion(result,db);
+        }
     } else {
         __weak typeof(self) weakSelf = self;
         [_queue inTransaction:^(IHFDatabase *db, BOOL *rollback) {
@@ -1035,16 +1032,19 @@ static NSMutableDictionary *_propertyNameDict;
             BOOL success = [db executeUpdate:deleteSql];
             
             if (success) {
-                
                 // use in sql stament to delete
                 if ([inSqlStatement length]) {
                     [self deleteRelationUseIn_SqlStatement:inSqlStatement forClass:newClass inDataBase:db];
                 }
                 // reset dirty is 1
-                [db executeUpdate:resetDirtySql];
+                result = [db executeUpdate:resetDirtySql];
+            }
+            if (completion) {
+                completion(result,db); 
             }
         }];
     }
+    return result;
 }
 
 - (NSString *)resetDirtySqlStatementWithClass:(Class)newClass customTableName:(NSString *)tableName predicate:(IHFPredicate *)predicate {
@@ -1067,12 +1067,11 @@ static NSMutableDictionary *_propertyNameDict;
 
 - (BOOL)isTableExistWithTableName:(NSString *)tableName inDatabase:(IHFDatabase *)db {
     if (db) return [db tableExists:tableName];
-
     __block BOOL isExist ;
     [_queue inDatabase:^(IHFDatabase *db) {
         isExist = [db tableExists:tableName];
     }];
-    
+
     return isExist;
 }
 
@@ -1088,8 +1087,7 @@ static NSMutableDictionary *_propertyNameDict;
     return [dateFormat dateFromString:dateString];
 }
 
-- (NSInteger)maxObjectIDIntableName:(NSString *)tableName inDataBase:(IHFDatabase *)db {
-    
+- (NSInteger)maxObjectIDfromTable:(NSString *)tableName inDataBase:(IHFDatabase *)db {
     NSInteger maxObjectID = 0;
     NSString *selectMaxIDSQL =  [NSString stringWithFormat:@"Select seq From sqlite_sequence Where name = '%@'",tableName];
     

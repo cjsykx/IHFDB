@@ -27,9 +27,7 @@
 }
 
 - (NSString *)tableName {
-    
     if (self.sourceObject && self.relationName) {
-        
         return [NSString stringWithFormat:@"%@_%@_Relation",NSStringFromClass([self.sourceObject class]),self.relationName];
     }
     return nil;
@@ -51,18 +49,24 @@
 - (void)saveInDataBase:(IHFDatabase *)db completeBlock:(IHFDBCompleteBlock)completion {
     [[self class] saveModelArray:[NSArray arrayWithObject:self] inDataBase:db];
 }
+
 - (void)saveInDataBase:(IHFDatabase *)db {
     [self saveInDataBase:db completeBlock:nil];
 }
 
 + (void)saveModelArray:(NSArray *)modelArray inDataBase:(IHFDatabase *)db completeBlock:(IHFDBCompleteBlock)completion {
-    
     if (![modelArray count]) return;
     
     id relationTable = [modelArray firstObject];
     if (![relationTable isKindOfClass:[IHFRelationTable class]]) return;
-    
-    [[IHFDataBaseExecute shareDataBaseExecute] insertIntoClassWithModelArray:modelArray inTableName:[relationTable tableName] inDataBase:db completeBlock:completion];
+    IHFRelationTable *table = relationTable;
+    // select to judge if exist in db , void insert the same relation
+    IHFPredicate *predicate = [[IHFPredicate alloc] initWithFormat:@"sourceObjectID = %ld AND destinationObjectID = %ld",(long)table.sourceObjectID,(long)table.destinationObjectID];
+    NSArray *relations = [[self class] selectWithPredicate:predicate fromTable:[table tableName] inDataBase:db];
+
+    if (![relations count]) {
+        [[IHFDataBaseExecute shareDataBaseExecute] insertIntoClassWithModelArray:modelArray fromTable:[relationTable tableName] inDataBase:db completeBlock:completion];
+    }
 }
 
 + (void)saveModelArray:(NSArray *)modelArray inDataBase:(IHFDatabase *)db {
@@ -76,11 +80,10 @@
     __weak typeof(self) weakSelf = self;
 
     if (self.relation == IHFRelationOneToOne) {
-    
         NSString *predicateStr = [NSString stringWithFormat:@"%@ = %ld",IHFDBPrimaryKey,(long)self.destinationObjectID];
         IHFPredicate *predicate = [IHFPredicate predicateWithString:predicateStr];
         
-        NSArray *relationModels = [[weakSelf.destinationObject class] selectWithPredicate:predicate inTableName:nil inDataBase:db];
+        NSArray *relationModels = [[weakSelf.destinationObject class] selectWithPredicate:predicate fromTable:nil inDataBase:db];
         if ([relationModels count]) { // If have count , because predicate is ObjectID , so there is only one object!
             NSObject *object = [relationModels lastObject];
             if (self.sourceObject) {
@@ -89,11 +92,9 @@
             [selectArray addObject:object];
         }
     } else if (self.relation == IHFRelationOneToMany) {
-    
         // Fetch the Object ID in relation table
         IHFPredicate *predicate = [[IHFPredicate alloc] initWithFormat:@"sourceObjectID = %ld",(long)self.sourceObjectID];
-        NSArray *relations = [[self class] selectWithPredicate:predicate inTableName:[self tableName] inDataBase:db];
-        
+        NSArray *relations = [[self class] selectWithPredicate:predicate fromTable:[self tableName] inDataBase:db];
         [relations enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
             
             if (![obj isKindOfClass:[IHFRelationTable class]]) return ;
@@ -103,7 +104,7 @@
             IHFPredicate *predicate = [IHFPredicate predicateWithString:predicateStr];
 
             // run loop!
-            NSArray *relationModels = [[weakSelf.destinationObject class] selectWithPredicate:predicate inTableName:nil inDataBase:db];
+            NSArray *relationModels = [[weakSelf.destinationObject class] selectWithPredicate:predicate fromTable:nil inDataBase:db];
             if ([relationModels count]) { // If have count , because predicate is ObjectID , so there is only one object!
                 NSObject *object = [relationModels lastObject];
                 if (self.sourceObject) {
@@ -113,15 +114,12 @@
             }
         }];
     }
-    
     return selectArray;
 }
 
 - (void)deleteInDataBase:(IHFDatabase *)db completeBlock:(IHFDBCompleteBlock)completion {
-    
     IHFPredicate *predicate = [[IHFPredicate alloc] initWithFormat:@"sourceObjectID = %ld",(long)self.sourceObjectID];
-    
-    [[self class] deleteWithPredicate:predicate inTableName:[self tableName] inDataBase:db completeBlock:^(BOOL success,IHFDatabase *db) {
+    [[self class] deleteWithPredicate:predicate fromTable:[self tableName] inDataBase:db completeBlock:^(BOOL success,IHFDatabase *db) {
         if(completion) completion(success,db);
     }];
 }

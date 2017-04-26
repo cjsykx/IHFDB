@@ -5,12 +5,9 @@
 //  Created by chenjiasong on 16/12/13.
 //  Copyright © 2016年 IHEFE CO., LIMITED. All rights reserved.
 //
-
-#import <IHFKit/IHFKit.h>
-#import "RemoteFormResult.h"
-#import "RemoteApplication.h"
-#import "RemoteConsultationRequest.h"
-@interface RemoteApplicationCreateRequest : RemoteConsultationRequest
+#import <Foundation/Foundation.h>
+#import "PatientImage.h"
+@interface RemoteApplicationCreateRequest : NSObject
 
 // If not set , can from formResult
 @property (nonatomic, strong) NSDictionary *content;
@@ -35,13 +32,11 @@
 @property (copy, nonatomic) NSString *template_type;
 
 // Send the patient image
-@property (strong, nonatomic) NSArray <RemotePatientImage *> *patientImages;
+@property (strong, nonatomic) NSArray <PatientImage *> *patientImages;
 
 // Ignore
-@property (strong, nonatomic, readonly) RemoteApplication *application;
+//@property (strong, nonatomic, readonly) RemoteApplication *application;
 
 // It will be removed while do custom model convert to dictionary , it only use for primary key for save
 @property (copy, nonatomic) NSString *applicationId;
-
-- (instancetype)initWithApplication:(RemoteApplication *)application recipient:(NSString *)recipient serverId:(NSString *)serverId;
 @end

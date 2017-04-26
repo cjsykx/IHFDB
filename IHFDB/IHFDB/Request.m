@@ -9,5 +9,8 @@
 #import "Request.h"
 
 @implementation Request
++ (NSArray<NSString *> *)propertyNamesForCustomPrimarykeys {
+    return @[@"requestId"];
+}
 
 @end

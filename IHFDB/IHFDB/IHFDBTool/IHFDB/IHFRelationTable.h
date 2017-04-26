@@ -12,8 +12,7 @@
 #import "NSObject+IHFModelOperation.h"
 #import "IHFDataBaseExecute.h"
 
-typedef NS_OPTIONS(NSUInteger, IHFRelation) {
-    
+typedef NS_ENUM(NSUInteger, IHFRelation) {
     IHFRelationOneToOne                 = 0x00,
     IHFRelationOneToMany                = 0x01,
     IHFRelationNone                     = 0x02,
@@ -34,22 +33,37 @@ typedef NS_OPTIONS(NSUInteger, IHFRelation) {
 //@property (copy,nonatomic) NSString *tableName;  /**< Get table name */
 
 - (NSString *)tableName;
-- (instancetype)initWithSourceObject:(id<IHFDBObejctDataSource>)sourceObject destinationObject:(id<IHFDBObejctDataSource>)destinationObject relationName:(NSString *)relationName relation:(IHFRelation)relation;
-+ (instancetype)relationTableWithSourceObject:(id<IHFDBObejctDataSource>)sourceObject destinationObject:(id<IHFDBObejctDataSource>)destinationObject relationName:(NSString *)relationName relation:(IHFRelation)relation;;
+- (instancetype)initWithSourceObject:(id<IHFDBObejctDataSource>)sourceObject
+                   destinationObject:(id<IHFDBObejctDataSource>)destinationObject
+                        relationName:(NSString *)relationName
+                            relation:(IHFRelation)relation;
+
++ (instancetype)relationTableWithSourceObject:(id<IHFDBObejctDataSource>)sourceObject
+                            destinationObject:(id<IHFDBObejctDataSource>)destinationObject
+                                 relationName:(NSString *)relationName
+                                     relation:(IHFRelation)relation;;
 
 
 /** Create relation table  */
 
 - (void)createInDataBase:(IHFDatabase *)db;
-- (void)createInDataBase:(IHFDatabase *)db completeBlock:(IHFDBCompleteBlock)completion;
+
+- (void)createInDataBase:(IHFDatabase *)db
+           completeBlock:(IHFDBCompleteBlock)completion;
 
 /** Insert relation */
 
 - (void)saveInDataBase:(IHFDatabase *)db;
-- (void)saveInDataBase:(IHFDatabase *)db completeBlock:(IHFDBCompleteBlock)completion;
 
-+ (void)saveModelArray:(NSArray *)modelArray inDataBase:(IHFDatabase *)db;
-+ (void)saveModelArray:(NSArray *)modelArray inDataBase:(IHFDatabase *)db completeBlock:(IHFDBCompleteBlock)completion;
+- (void)saveInDataBase:(IHFDatabase *)db
+         completeBlock:(IHFDBCompleteBlock)completion;
+
++ (void)saveModelArray:(NSArray *)modelArray
+            inDataBase:(IHFDatabase *)db;
+
++ (void)saveModelArray:(NSArray *)modelArray
+            inDataBase:(IHFDatabase *)db
+         completeBlock:(IHFDBCompleteBlock)completion;
 
 /** Select relation */
 - (NSArray *)selectRelationsInDataBase:(IHFDatabase *)db;

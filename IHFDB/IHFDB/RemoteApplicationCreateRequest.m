@@ -10,36 +10,36 @@
 
 @implementation RemoteApplicationCreateRequest
 
-- (instancetype)initWithApplication:(RemoteApplication *)application recipient:(NSString *)recipient serverId:(NSString *)serverId {
-    self = [super init];
-    if (self) {
-        _recipient = recipient;
-        _serverId = serverId;
-        if (application) {
-            _application = application;
-            RemoteFormResult *result = application.formResult;
-            self.template_id = result.template_id;
-            self.content = result.resultDictM;
-            self.applicationId = result.applicationId;
-            self.patientImages = result.patientImages;
-            self.content_text  = result.additionalResultDictM;
-
-            // Application
-            self.formTitle = application.title;
-            self.patientId = application.patient.homepageNo;
-            self.startTime = application.startTime;
-            self.planEndTime = application.planEndTime;
-            self.hospital = @"tlyy";
-            self.patName = application.patientName;
-            self.ihefeid = application.ihefeId;
-            self.phoneNumber = @"13818183704";
-        }
-    }
-    return self;
-}
+//- (instancetype)initWithApplication:(RemoteApplication *)application recipient:(NSString *)recipient serverId:(NSString *)serverId {
+//    self = [super init];
+//    if (self) {
+//        _recipient = recipient;
+//        _serverId = serverId;
+//        if (application) {
+//            _application = application;
+//            RemoteFormResult *result = application.formResult;
+//            self.template_id = result.template_id;
+//            self.content = result.resultDictM;
+//            self.applicationId = result.applicationId;
+//            self.patientImages = result.patientImages;
+//            self.content_text  = result.additionalResultDictM;
+//
+//            // Application
+//            self.formTitle = application.title;
+//            self.patientId = application.patient.homepageNo;
+//            self.startTime = application.startTime;
+//            self.planEndTime = application.planEndTime;
+//            self.hospital = @"tlyy";
+//            self.patName = application.patientName;
+//            self.ihefeid = application.ihefeId;
+//            self.phoneNumber = @"13818183704";
+//        }
+//    }
+//    return self;
+//}
 
 + (NSDictionary *)propertyNameDictForClassInArray {
-    return @{@"patientImages": [RemotePatientImage class]};
+    return @{@"patientImages": [PatientImage class]};
 }
 
 + (NSArray<NSString *> *)propertyNamesForCustomPrimarykeys {

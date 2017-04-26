@@ -17,15 +17,15 @@
 - (instancetype)objectForKey:(NSString *)key defaultValue:(id)defaultValue{
     
     NSAssert(key, @"key can not be nil");
-    if (key) return defaultValue;
+    if (!key) return defaultValue;
     
     id object = [self objectForKey:key];
     
     BOOL isNull = [object isKindOfClass:[NSNull class]];
-    NSAssert(!isNull, @"the object returns will be NSNull class");
-    
     if (!isNull) {
         return [self objectForKey:key];
+    } else {
+        NSLog(@"Warning : the object for key %@ is NSNull clsss",key);
     }
     return defaultValue;
 }

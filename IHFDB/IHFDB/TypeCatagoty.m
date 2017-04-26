@@ -10,8 +10,7 @@
 
 @implementation TypeCatagoty
 
-+(NSDictionary *)relationshipDictForClassInArray{
-    
++ (NSDictionary *)propertyNameDictForClassInArray {
     return @{
              @"typeCatagotys" : [TypeCatagoty class],
              };

@@ -20,15 +20,15 @@
 //format = [[IHFPredicate alloc] initWithString:str];
 //
 
-@property (nonatomic,copy) NSString * predicateFormat;
-@property (nonatomic,copy) NSString * orderBy;
+@property (nonatomic, copy) NSString *predicateFormat;
+@property (nonatomic, copy) NSString *orderBy;
 
-@property (nonatomic,assign) BOOL  isDesc; /**< Defalt is ASC (NO) , if you want DESC , you can set it YES */
+@property (nonatomic, assign) BOOL isDesc; /**< Defalt is ASC (NO) , if you want DESC , you can set it YES */
 
 // TODO: add groupBy . Because group by need count !
-@property (nonatomic,copy) NSString * groupBy;
+@property (nonatomic, copy) NSString *groupBy;
 
-@property (nonatomic,assign) NSRange limitRange; /**< the range of data you want to select , it can be "limit (range.location,range.location + range.length)"*/
+@property (nonatomic, assign) NSRange limitRange; /**< the range of data you want to select , it can be "limit (range.location,range.location + range.length)"*/
 
 
 - (instancetype)initWithString:(NSString *)string;
